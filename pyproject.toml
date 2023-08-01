@@ -1,0 +1,20 @@
+[project]
+
+name = "vistaml"
+version = "0.0.1"
+authors = [
+  { name="Garrett Smith", email="garrett@placeon.earth" },
+]
+description = "ML experiment tracking and model optimization"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+
+"Homepage" = "https://github.com/vistaml/vistaml"
+"Bug Tracker" = "https://github.com/vistaml/vistaml/issues"
