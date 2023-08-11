@@ -1,0 +1,14 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.analysis.ignore": ["vml/_vendor"],
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUntypedFunctionDecorator": "none",
+    "reportUnusedImport": "warning",
+    "reportGeneralTypeIssues": "warning",
+    "reportUnknownParameterType": "warning",
+    "reportMissingParameterType": "warning"
+  }
+}
