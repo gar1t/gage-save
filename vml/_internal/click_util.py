@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import *
+from typing import Pattern
+
 import contextlib
-
-# import functools
+import functools
 import json
-
 # import os
 import re
-import typing as t
 
 import vml
 from vml._vendor import click
@@ -31,27 +31,27 @@ CMD_SPLIT_P = re.compile(r", ?")
 #             raise ValueError(f"{s!r} is not a valid number") from e
 
 
-# class Args:
-#     def __init__(self, **kw):
-#         self.__names = set()
-#         for name, val in kw.items():
-#             setattr(self, name, val)
+class Args:
+    def __init__(self, **kw: Any):
+        self.__names = set()
+        for name, val in kw.items():
+            setattr(self, name, val)
 
-#     def __repr__(self):
-#         return f"<guild.click_util.Args {self.as_kw()}>"
+    def __repr__(self):
+        return f"<guild.click_util.Args {self.as_kw()}>"
 
-#     def as_kw(self):
-#         return {name: getattr(self, name) for name in self.__names}
+    def as_kw(self) -> Dict[str, Any]:
+        return {name: getattr(self, name) for name in self.__names}
 
-#     def __setattr__(self, name, val):
-#         self.__dict__[name] = val
-#         if name[0] != "_":
-#             self.__names.add(name)
+    def __setattr__(self, name: str, val: Any):
+        self.__dict__[name] = val
+        if name[0] != "_":
+            self.__names.add(name)
 
-#     def copy(self, **kw):
-#         copy_kw = self.as_kw()
-#         copy_kw.update(kw)
-#         return Args(**copy_kw)
+    def copy(self, **kw: Any):
+        copy_kw = self.as_kw()
+        copy_kw.update(kw)
+        return Args(**copy_kw)
 
 
 class Group(click.Group):
@@ -68,7 +68,7 @@ class Group(click.Group):
 
 
 def _group_cmd_name(
-    group_command_names: t.ValuesView[click.Command], default_name: str
+    group_command_names: ValuesView[click.Command], default_name: str
 ):
     for cmd in group_command_names:
         if cmd.name and default_name in CMD_SPLIT_P.split(cmd.name):
@@ -76,7 +76,7 @@ def _group_cmd_name(
     return default_name
 
 
-_DLItems = t.Sequence[t.Tuple[str, str]]
+_DLItems = Sequence[Tuple[str, str]]
 
 
 class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
@@ -129,8 +129,8 @@ class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
                 self.write("\n")
 
 
-_HelpFormatSubs = t.List[
-    t.Tuple[t.Pattern[str], t.Union[str, t.Callable[[t.Any], str]]]
+_HelpFormatSubs = List[
+    Tuple[Pattern[str], Union[str, Callable[[Any], str]]]
 ]
 
 
@@ -153,32 +153,32 @@ class HelpFormatter(ClickBaseHelpFormatter):
     def write_dl(
         self,
         rows: _DLItems,
-        col_max: t.Optional[int] = None,
-        col_spacing: t.Optional[int] = None,
+        col_max: Optional[int] = None,
+        col_spacing: Optional[int] = None,
         preserve_paragraphs: bool = False,
     ):
         rows = [(term, self._format_text(text)) for term, text in rows]
         super().write_dl(rows, preserve_paragraphs=preserve_paragraphs)
 
 
-_DLDictItems = t.List[t.Dict[t.Union[t.Literal["term"], t.Literal["help"]], str]]
+_DLDictItems = List[Dict[Union[Literal["term"], Literal["help"]], str]]
 
 
 class JSONHelpFormatter(click.HelpFormatter):
     _finalized: object = object()
 
     def __init__(self):
-        self._val: t.Dict[str, t.Any] = {"version": vml.__version__}
-        self._help_text: t.Union[None, t.List[str], object] = None
-        self._cur_dl: t.Union[None, _DLDictItems] = None
+        self._val: Dict[str, Any] = {"version": vml.__version__}
+        self._help_text: Union[None, List[str], object] = None
+        self._cur_dl: Union[None, _DLDictItems] = None
         self.width = 999999999
 
-    def write_usage(self, prog: str, args: str = "", prefix: t.Optional[str] = None):
+    def write_usage(self, prog: str, args: str = "", prefix: Optional[str] = None):
         self._val["usage"] = {"prog": prog, "args": args}
 
     def write_paragraph(self):
         if self._help_text is not None and self._help_text is not self._finalized:
-            t.cast(t.List[str], self._help_text).append("\n")
+            cast(List[str], self._help_text).append("\n")
 
     @contextlib.contextmanager
     def indentation(self):
@@ -194,13 +194,13 @@ class JSONHelpFormatter(click.HelpFormatter):
 
     def dedent(self):
         if self._help_text is not None and self._help_text is not self._finalized:
-            self._val["help"] = "".join(t.cast(t.List[str], self._help_text))
+            self._val["help"] = "".join(cast(List[str], self._help_text))
             self._help_text = self._finalized
 
     def write_text(self, text: str):
         assert self._help_text is not None
         assert self._help_text is not self._finalized
-        t.cast(t.List[str], self._help_text).append(text)
+        cast(List[str], self._help_text).append(text)
 
     @contextlib.contextmanager
     def section(self, name: str):
@@ -247,11 +247,12 @@ class JSONHelpFormatter(click.HelpFormatter):
 #     CmdContext._handlers.append((on_enter, on_exit))
 
 
-# def use_args(fn0):
-#     def fn(*args, **kw):
-#         return fn0(*(args + (Args(**kw),)))
 
-#     return functools.update_wrapper(fn, fn0)
+def use_args(fn0: Callable[..., Any]) -> click.Command:
+    def fn(*args: Any, **kw: Any):
+        return fn0(*(args + (Args(**kw),)))
+
+    return cast(click.Command, functools.update_wrapper(fn, fn0))
 
 
 # def append_params(fn, params):
@@ -271,7 +272,7 @@ def format_error_message(e: click.exceptions.ClickException):
     return "".join(msg_parts)
 
 
-def _format_click_error_message(e: click.exceptions.ClickException):
+def _format_click_error_message(e: click.exceptions.ClickException) -> str:
     if isinstance(e, click.exceptions.MissingParameter):
         return _format_missing_parameter_error(e)
     if isinstance(e, click.exceptions.NoSuchOption):
@@ -294,7 +295,7 @@ def _format_no_such_option_error(e: click.exceptions.NoSuchOption):
     return f"unrecognized option '{e.option_name}'{more_help}"
 
 
-def _format_usage_error(e: click.exceptions.UsageError):
+def _format_usage_error(e: click.exceptions.UsageError) -> str:
     msg = e.format_message()
     replacements = [
         ('No such command "(.+)"', "unrecognized command '%s'"),

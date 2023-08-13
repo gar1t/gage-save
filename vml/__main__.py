@@ -9,14 +9,14 @@ from vml._internal import exit_codes
 
 from vml._vendor import click
 
-from vml._internal.commands import vml as vml_cmd
+from vml._internal.commands import main as main_cmd
 
 
 def main():
     _configure_help_formatter()
     try:
         # pylint: disable=unexpected-keyword-arg,no-value-for-parameter
-        vml_cmd.main(standalone_mode=False)  # type: ignore
+        main_cmd.main(standalone_mode=False)  # type: ignore
     except click.exceptions.Abort:
         _handle_keyboard_interrupt()
     except click.exceptions.ClickException as e:

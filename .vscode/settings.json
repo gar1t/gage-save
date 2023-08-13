@@ -2,13 +2,17 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.analysis.ignore": ["vml/_vendor"],
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.ignore": [
+    "vml/_vendor",
+    "vml/_internal/tests/samples/scripts"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportUntypedFunctionDecorator": "none",
     "reportUnusedImport": "warning",
     "reportGeneralTypeIssues": "warning",
     "reportUnknownParameterType": "warning",
-    "reportMissingParameterType": "warning"
+    "reportMissingParameterType": "warning",
+    "reportWildcardImportFromLibrary": "none"
   }
 }

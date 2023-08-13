@@ -1,0 +1,4 @@
+chardet
+natsort
+psutil
+pyyaml
