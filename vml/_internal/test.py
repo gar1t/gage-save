@@ -2,6 +2,7 @@
 
 from typing import *
 from typing import Match
+from typing import Pattern
 
 import codecs
 import doctest
@@ -657,7 +658,7 @@ def _run_bash_doctest(filename: str, globs: _Globs, optionflags: int):
     return _gen_run_doctest(filename, globs, optionflags, parser, checker)
 
 
-def _load_testfile(filename: str):
+def _load_testfile(filename: str) -> Tuple[str, str]:
     # Copied from Python 3.6 doctest._load_testfile to ensure consistent
     # interface.
     package = doctest._normalize_module(None, 3)  # type: ignore
@@ -798,7 +799,7 @@ def _standarize_paths(paths: List[str]):
     return [util.stdpath(path) for path in paths]
 
 
-def _filter_ignored(paths, ignore):
+def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
     if isinstance(ignore, str):
         ignore = [ignore]
     return [
@@ -806,7 +807,7 @@ def _filter_ignored(paths, ignore):
     ]
 
 
-def _diff(path1, path2):
+def _diff(path1: str, path2: str):
     import difflib
 
     lines1 = [s.rstrip() for s in open(path1).readlines()]
@@ -815,7 +816,7 @@ def _diff(path1, path2):
         print(line)
 
 
-def _example(name):
+def _example(name: str):
     return os.path.join(_examples_dir(), name)
 
 
@@ -826,7 +827,7 @@ def _examples_dir():
         return os.path.join(vml.__pkgdir__, "examples")
 
 
-def cat(*parts):
+def cat(*parts: str):
     # pylint: disable=no-value-for-parameter
     with open(os.path.join(*parts), "r") as f:
         s = f.read()
@@ -836,7 +837,7 @@ def cat(*parts):
             print(s)
 
 
-def cat_json(*parts):
+def cat_json(*parts: str):
     # pylint: disable=no-value-for-parameter
     with open(os.path.join(*parts), "r") as f:
         data = json.load(f)
@@ -846,7 +847,7 @@ def cat_json(*parts):
 _py_dir = dir
 
 
-def dir(path=".", ignore=None):
+def dir(path: str = ".", ignore: Optional[List[str]] = None):
     return sorted(
         [
             name
@@ -856,9 +857,7 @@ def dir(path=".", ignore=None):
     )
 
 
-def copyfile(*args, **kw):
-    # No return value here to normalize differenced between python2
-    # and python3.
+def copyfile(*args: Any, **kw: Any):
     shutil.copy2(*args, **kw)
 
 
@@ -866,20 +865,22 @@ def PrintStderr():
     return util.StderrCapture(autoprint=True)
 
 
-def write(filename, contents, append=False):
-    try:
-        contents = contents.encode()
-    except AttributeError:
-        pass
+def write(filename: str, contents: str, append: bool = False):
+    encoded = contents.encode()
     opts = "ab" if append else "wb"
     with open(filename, opts) as f:
-        f.write(contents)
+        f.write(encoded)
 
 
 class SysPath:
     _sys_path0 = None
 
-    def __init__(self, path=None, prepend=None, append=None):
+    def __init__(
+        self,
+        path: Optional[List[str]] = None,
+        prepend: Optional[List[str]] = None,
+        append: Optional[List[str]] = None,
+    ):
         path = path if path is not None else sys.path
         if prepend:
             path = prepend + path
@@ -891,7 +892,7 @@ class SysPath:
         self._sys_path0 = sys.path
         sys.path = self.sys_path
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any):
         assert self._sys_path0 is not None
         sys.path = self._sys_path0
 
@@ -964,36 +965,37 @@ class SysPath:
 #     return class_name[class_name.rfind(".") + 1:]
 
 
-def _normlf(s):
+def _normlf(s: str):
     return s.replace("\r", "")
 
 
-def _printl(l):
+def _printl(l: List[Any]):
     for x in l:
         print(x)
 
 
-def _rm(path, force=False):
+def _rm(path: str, force: bool = False):
     if force and not os.path.exists(path):
         return
     os.remove(path)
 
 
-def _run_capture(*args, **kw):
+def _run_capture(*args: Any, **kw: Any):
     return _run(*args, _capture=True, **kw)
 
 
+_Env = Dict[str, str]
+
+
 def _run(
-    cmd,
-    quiet=False,
-    ignore=None,
-    timeout=3600,
-    cut=None,
-    cwd=None,
-    env=None,
-    _capture=False,
+    cmd: str,
+    quiet: bool = False,
+    ignore: Optional[Union[str, List[str]]] = None,
+    timeout: int = 3600,
+    cwd: Optional[str] = None,
+    env: Optional[_Env] = None,
+    _capture: bool = False,
 ):
-    cmd = _run_shell_cmd(cmd)
     proc_env = dict(os.environ)
     _apply_venv_bin_path(proc_env)
     if env:
@@ -1016,8 +1018,6 @@ def _run(
     out = out.strip().decode("latin-1")
     if ignore:
         out = _strip_lines(out, ignore)
-    if cut:
-        out = _cut_cols(out, cut)
     if _capture:
         if exit_code != 0:
             assert False, "TODO"
@@ -1027,18 +1027,6 @@ def _run(
         print(out)
     print(f"<exit {exit_code}>")
     return None
-
-
-def _run_shell_cmd(cmd):
-    if util.get_platform() == "Windows":
-        return _run_shell_win_cmd(cmd)
-    return _run_shell_posix_cmd(cmd)
-
-
-def _run_shell_win_cmd(cmd):
-    parts = util.shlex_split(util.stdpath(cmd))
-    # _apply_guild_cmd_for_win(parts)
-    return parts
 
 
 # def _apply_guild_cmd_for_win(parts):
@@ -1091,36 +1079,33 @@ def _run_shell_win_cmd(cmd):
 #     raise RuntimeError("cannot find guild exe for Windows")
 
 
-def _run_shell_posix_cmd(cmd):
-    return f"set -eu && {cmd}"
-
-
-def _apply_venv_bin_path(env):
+def _apply_venv_bin_path(env: Dict[str, str]):
     python_bin_dir = os.path.dirname(sys.executable)
     path = env.get("PATH") or ""
     if python_bin_dir not in path:
         env["PATH"] = f"{python_bin_dir}{os.path.pathsep}${path}"
 
 
-def _popen(cmd, env, cwd):
+def _popen(cmd: str, env: _Env, cwd: Optional[str]):
     if util.get_platform() == "Windows":
         return _popen_win(cmd, env, cwd)
     return _popen_posix(cmd, env, cwd)
 
 
-def _popen_win(cmd, env, cwd):
+def _popen_win(cmd: str, env: _Env, cwd: Optional[str]):
+    split_cmd = util.shlex_split(util.stdpath(cmd))
     return subprocess.Popen(
-        cmd,
+        split_cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,  # type: ignore Windows only
         env=env,
         cwd=cwd,
     )
 
 
-def _popen_posix(cmd, env, cwd):
-    # pylint: disable=subprocess-popen-preexec-fn
+def _popen_posix(cmd: str, env: _Env, cwd: Optional[str]):
+    cmd = f"set -eu && {cmd}"
     return subprocess.Popen(
         cmd,
         shell=True,
@@ -1133,7 +1118,7 @@ def _popen_posix(cmd, env, cwd):
 
 
 class _kill_after:
-    def __init__(self, p, timeout):
+    def __init__(self, p: "subprocess.Popen[bytes]", timeout: int):
         self._p = p
         self._timer = threading.Timer(timeout, self._kill)
 
@@ -1148,7 +1133,7 @@ class _kill_after:
 
     def _kill_win(self):
         try:
-            self._p.send_signal(signal.CTRL_BREAK_EVENT)
+            self._p.send_signal(signal.CTRL_BREAK_EVENT)  # type: ignore Windows only
             self._p.kill()
         except OSError as e:
             if e.errno != errno.ESRCH:  # no such process
@@ -1165,11 +1150,11 @@ class _kill_after:
         self._timer.start()
         return self
 
-    def __exit__(self, _type, _val, _tb):
+    def __exit__(self, *exc: Any):
         self._timer.cancel()
 
 
-def _strip_lines(out, patterns):
+def _strip_lines(out: str, patterns: Union[str, List[str]]):
     if isinstance(patterns, str):
         patterns = [patterns]
     stripped_lines = [
@@ -1180,21 +1165,7 @@ def _strip_lines(out, patterns):
     return "\n".join(stripped_lines)
 
 
-def _cut_cols(out, to_cut):
-    assert isinstance(to_cut, list) and to_cut, to_cut
-    cut_lines = [_cut_line(line, to_cut) for line in out.split("\n")]
-    return "\n".join([" ".join(cut_line) for cut_line in cut_lines])
-
-
-def _cut_line(line, to_cut):
-    cut_line = []
-    cols = line.split()
-    for i in to_cut:
-        cut_line.extend(cols[i : i + 1])
-    return cut_line
-
-
-def _chdir(s):
+def _chdir(s: str):
     os.chdir(os.path.expandvars(s))
 
 
@@ -1204,7 +1175,7 @@ def _chdir(s):
 #     config.set_guild_home(path)
 
 
-def _compare_dirs(d1, d2):
+def _compare_dirs(d1: str, d2: str):
     if not isinstance(d1, tuple) and len(d1) != 2:
         raise ValueError("d1 must be a tuple of (dir, label)")
     if not isinstance(d2, tuple) and len(d2) != 2:
@@ -1331,39 +1302,39 @@ def _compare_dirs(d1, d2):
 class _Platform:
     _platform_save = None
 
-    def __init__(self, platform):
+    def __init__(self, platform: str):
         self._platform = platform
 
     def __enter__(self):
         self._platform_save = PLATFORM
         globals()["PLATFORM"] = self._platform
 
-    def __exit__(self, *_args):
+    def __exit__(self, *args: Any):
         globals()["PLATFORM"] = self._platform_save
 
 
 class _Ignore(util.StdoutCapture):
-    def __init__(self, ignore_patterns):
+    def __init__(self, ignore_patterns: List[str]):
         self.ignore_patterns = _compile_ignore_patterns(ignore_patterns)
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any):
         super().__exit__(*args)
         sys.stdout.write(_strip_ignored_lines(self._captured, self.ignore_patterns))
 
 
-def _compile_ignore_patterns(patterns):
+def _compile_ignore_patterns(patterns: List[str]):
     if not isinstance(patterns, list):
         patterns = [patterns]
     return [re.compile(p) for p in patterns]
 
 
-def _strip_ignored_lines(captured, ignore_patterns):
+def _strip_ignored_lines(captured: List[str], ignore_patterns: List[Pattern[str]]):
     lines = "".join(captured).split("\n")
     filtered = [line for line in lines if not _capture_ignored(line, ignore_patterns)]
     return "\n".join(filtered)
 
 
-def _capture_ignored(s, ignore_patterns):
+def _capture_ignored(s: str, ignore_patterns: List[Pattern[str]]):
     return any(p.search(s) for p in ignore_patterns)
 
 
@@ -1371,6 +1342,25 @@ def _capture_ignored(s, ignore_patterns):
 #     guild_home = guild_home or mkdtemp()
 #     _chdir(sample("projects", project_name))
 #     _set_guild_home(guild_home)
+
+
+class _ConcurrentTest:
+    def __init__(self, name: str, skip: bool):
+        self.name = name
+        self.skip = skip
+        self.success = None
+        self.output = None
+        self._done_event = threading.Event()
+
+    def wait_done(self):
+        self._done_event.wait()
+
+    def set_done(self, success: bool, output: str):
+        assert success is not None
+        assert output is not None
+        self.success = success
+        self.output = output
+        self._done_event.set()
 
 
 def _run_parallel(
@@ -1381,8 +1371,8 @@ def _run_parallel(
     concurrency: Optional[int],
 ) -> bool:
     skip = skip or []
-    ctests = _init_concurrent_tests(tests, skip)
-    test_queue = _init_test_queue([test for test in tests if not test.skip])
+    ctests = _init_concurrent_tests(tests, skip or [])
+    test_queue = _init_test_queue([ctest for ctest in ctests if not ctest.skip])
     test_runners = _init_test_runners(test_queue, fail_fast, force, concurrency)
     try:
         success = True
@@ -1406,45 +1396,37 @@ def _run_parallel(
         raise
 
 
-def _init_concurrent_tests(tests: List[str], skip: Optional[List[str]]):
+def _init_concurrent_tests(tests: List[str], skip: List[str]):
     return [_ConcurrentTest(name, name in skip) for name in tests]
 
 
-class _ConcurrentTest:
-    def __init__(self, name, skip):
-        self.name = name
-        self.skip = skip
-        self.success = None
-        self.output = None
-        self._done_event = threading.Event()
-
-    def wait_done(self):
-        self._done_event.wait()
-
-    def set_done(self, success, output):
-        assert success is not None
-        assert output is not None
-        self.success = success
-        self.output = output
-        self._done_event.set()
-
-
-def _init_test_queue(tests):
+def _init_test_queue(tests: List[_ConcurrentTest]) -> "queue.Queue[_ConcurrentTest]":
     q = queue.Queue()
     for test in tests:
         q.put(test)
     return q
 
 
-def _init_test_runners(test_queue, fail_fast, force, concurrency):
+def _init_test_runners(
+    test_queue: "queue.Queue[_ConcurrentTest]",
+    fail_fast: Optional[bool],
+    force: Optional[bool],
+    concurrency: Optional[int],
+):
     assert not test_queue.empty()
     return [
-        _ConcurrentTestRunner(test_queue, fail_fast, force) for _ in range(concurrency)
+        _ConcurrentTestRunner(test_queue, fail_fast, force)
+        for _ in range(concurrency or 1)
     ]
 
 
 class _ConcurrentTestRunner(threading.Thread):
-    def __init__(self, test_queue, fail_fast, force):
+    def __init__(
+        self,
+        test_queue: "queue.Queue[_ConcurrentTest]",
+        fail_fast: Optional[bool],
+        force: Optional[bool],
+    ):
         super().__init__()
         self.test_queue = test_queue
         self.fail_fast = fail_fast
@@ -1460,7 +1442,7 @@ class _ConcurrentTestRunner(threading.Thread):
         with self._running_lock:
             return self._running
 
-    def stop(self, timeout=5):
+    def stop(self, timeout: int = 5):
         with self._running_lock:
             self._running = False
         with self._p_lock:
@@ -1503,7 +1485,9 @@ class _ConcurrentTestRunner(threading.Thread):
                     test.set_done(success, out)
 
 
-def _start_external_test_proc(test_name: str, fail_fast: bool, force: bool):
+def _start_external_test_proc(
+    test_name: str, fail_fast: Optional[bool], force: Optional[bool]
+):
     env = dict(os.environ)
     env["PYTHONPATH"] = vml.__pkgdir__
     cmd = [

@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import *
+
 import logging
 import logging.config
 import os
@@ -7,7 +9,7 @@ import sys
 
 from vml._internal import ansi_util  # lightweight
 
-__last_init_kw = None
+__last_init_kw = {}
 
 _isatty = sys.stderr.isatty()
 _shell = os.getenv("SHELL")
@@ -27,7 +29,7 @@ class _FakeTTY:
         self._saved = _isatty
         globals()["_isatty"] = True
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         assert self._saved is not None
         globals()["_isatty"] = self._saved
 
@@ -41,18 +43,18 @@ class _FakeShell:
         self._saved = _shell
         globals()["_shell"] = "fake"
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         globals()["_shell"] = self._saved
 
 
 class Formatter(logging.Formatter):
-    def format(self, record):
+    def format(self, record: logging.LogRecord):
         return self._maybe_strip_ansi(
             self._color(super().format(record), record.levelno)
         )
 
     @staticmethod
-    def _color(s, level):
+    def _color(s: str, level: int):
         if not _isatty or not _shell:
             return s
         if level >= logging.ERROR:
@@ -62,7 +64,7 @@ class Formatter(logging.Formatter):
         return s
 
     @staticmethod
-    def _maybe_strip_ansi(s):
+    def _maybe_strip_ansi(s: str):
         if _isatty:
             return s
         return ansi_util.strip_ansi_format(s)
@@ -75,23 +77,22 @@ class ConsoleLogHandler(logging.StreamHandler):
         "INFO": "%(message)s",
     }
 
-    def __init__(self, formats=None):
+    def __init__(self, formats: Optional[Dict[str, str]] = None):
         super().__init__()
         formats = formats or self.DEFAULT_FORMATS
         self._formatters = {level: Formatter(fmt) for level, fmt in formats.items()}
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord):
         fmt = self._formatters.get(record.levelname) or self._formatters.get("_")
         if fmt:
             return fmt.format(record)
         return super().format(record)
 
 
-def init_logging(level=None, formats=None):
+def init_logging(level: Optional[int] = None, formats: Optional[Dict[str, str]] = None):
     level = _log_level_for_arg(level)
-    # _preempt_logging_mods()
     console_handler = {
-        "class": "guild.log.ConsoleLogHandler",
+        "class": "vml._internal.log.ConsoleLogHandler",
         "formats": formats,
     }
     logging.config.dictConfig(
@@ -105,7 +106,7 @@ def init_logging(level=None, formats=None):
     globals()["__last_init_kw"] = {"level": level, "formats": formats}
 
 
-def _log_level_for_arg(arg):
+def _log_level_for_arg(arg: Optional[int]):
     if arg is not None:
         return arg
     try:
@@ -114,35 +115,22 @@ def _log_level_for_arg(arg):
         return logging.INFO
 
 
-# def _preempt_logging_mods():
-#     """Preempt known logging mods.
-
-#     Some modules modify logging without respecting previous config
-#     (e.g. absl.logging). This function preempts those changes so that
-#     our config is applied afterward.
-#     """
-#     try:
-#         import absl.logging as _unused
-#     except Exception:
-#         pass
-
-
-def disable_noisy_loggers(level=logging.INFO):
+def disable_noisy_loggers(level: int = logging.INFO):
     if level <= logging.DEBUG:
         _set_logger_level(NOISY_LOGGERS, logging.INFO)
 
 
-def _set_logger_level(pkgs, level):
+def _set_logger_level(pkgs: Sequence[str], level: int):
     for pkg in pkgs:
         log = logging.getLogger(pkg)
         log.setLevel(level)
 
 
-def current_settings():
+def current_settings() -> Dict[str, Any]:
     return __last_init_kw
 
 
-def dim(text):
+def dim(text: str):
     if not _shell:
         return text
     return f"\x1b[2m{text}\x1b[0m"

@@ -7,6 +7,8 @@ import re
 
 import yaml
 
+from yaml.scanner import ScannerError
+
 
 def encode_yaml(val: Any, default_flow_style: bool = False, strict: bool = False):
     """Returns val encoded as YAML.
@@ -38,7 +40,7 @@ def _strip_encoded_yaml(encoded: str):
 def decode_yaml(s: str):
     try:
         return yaml.safe_load(s)
-    except yaml.scanner.ScannerError as e:
+    except ScannerError as e:
         raise ValueError(e) from e
 
 
@@ -93,7 +95,7 @@ class StrictPatch:
         "n": False,
     }
 
-    def __init__(self, strict=True):
+    def __init__(self, strict: bool = True):
         self.strict = strict
 
     def __enter__(self):
@@ -111,7 +113,7 @@ class StrictPatch:
             assert key not in yaml.constructor.SafeConstructor.bool_values, key
             yaml.constructor.SafeConstructor.bool_values[key] = val
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         if not self.strict:
             return
         self._unapply_implicit_resolver_patches()
