@@ -1,21 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import *
+from typing import IO
 
 import datetime
 import errno
-import fnmatch
-import os
+import hashlib
 import logging
+import os
 import re
 import shlex
 import shutil
-import struct
 import subprocess
 import sys
 import tempfile
-import time
 import threading
+import time
 
 from . import ansi_util
 
@@ -36,7 +36,7 @@ class TryFailed(RuntimeError):
     """Raise to indicate an attempt in try_apply failed."""
 
 
-def find_apply(funs, *args, **kw):
+def find_apply(funs: List[Callable[..., Any]], *args: Any, **kw: Any):
     for f in funs:
         result = f(*args)
         if result is not None:
@@ -44,7 +44,7 @@ def find_apply(funs, *args, **kw):
     return kw.get("default")
 
 
-def try_apply(funs, *args):
+def try_apply(funs: Iterable[Callable[..., Any]], *args: Any):
     for f in funs:
         try:
             return f(*args)
@@ -53,21 +53,21 @@ def try_apply(funs, *args):
     raise TryFailed(funs, args)
 
 
-def any_apply(funs, *args):
+def any_apply(funs: Iterable[Callable[..., Any]], *args: Any):
     for f in funs:
         if f(*args):
             return True
     return False
 
 
-def all_apply(funs, *args):
+def all_apply(funs: List[Callable[..., Any]], *args: Any):
     for f in funs:
         if not f(*args):
             return False
     return True
 
 
-def pop_find(l, f, default=None):
+def pop_find(l: List[Any], f: Callable[[Any], Any], default: Any = None):
     popped = default
     for x in list(l):
         if f(x):
@@ -77,7 +77,7 @@ def pop_find(l, f, default=None):
     return popped
 
 
-def ensure_dir(d):
+def ensure_dir(d: str):
     d = realpath(d)
     try:
         os.makedirs(d)
@@ -86,7 +86,7 @@ def ensure_dir(d):
             raise
 
 
-def ensure_deleted(path):
+def ensure_deleted(path: str):
     try:
         os.remove(path)
     except OSError as e:
@@ -94,7 +94,14 @@ def ensure_deleted(path):
             raise
 
 
-def try_read(path, default=None, apply=None):
+_ReadApp = Callable[[str], Any]
+
+
+def try_read(
+    path: str,
+    default: Any = None,
+    apply: Union[_ReadApp, List[_ReadApp], None] = None,
+):
     try:
         f = open(path, "r")
     except IOError as e:
@@ -111,7 +118,7 @@ def try_read(path, default=None, apply=None):
         return out
 
 
-def pid_exists(pid, default=True):
+def pid_exists(pid: int, default: Optional[bool] = True):
     return find_apply(
         [
             _proc_pid_exists,
@@ -122,13 +129,13 @@ def pid_exists(pid, default=True):
     )
 
 
-def _proc_pid_exists(pid):
+def _proc_pid_exists(pid: int):
     if os.path.exists("/proc"):
         return os.path.exists(os.path.join("/proc", str(pid)))
     return None
 
 
-def _psutil_pid_exists(pid):
+def _psutil_pid_exists(pid: int):
     try:
         import psutil
     except Exception as e:
@@ -139,7 +146,7 @@ def _psutil_pid_exists(pid):
     return psutil.pid_exists(pid)
 
 
-def free_port(start=None):
+def free_port(start: Optional[int] = None) -> int:
     import random
     import socket
 
@@ -153,13 +160,11 @@ def free_port(start=None):
     else:
         next_port = lambda p: p + 1
         port = start
-    while True:
-        if attempts > max_attempts:
-            raise RuntimeError("too many free port attempts")
+    while attempts <= max_attempts:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(0.1)
         try:
-            sock.connect(('localhost', port))
+            sock.connect(("localhost", port))
         except socket.timeout:
             return port
         except socket.error as e:
@@ -169,9 +174,10 @@ def free_port(start=None):
             sock.close()
         attempts += 1
         port = next_port(port)
+    raise RuntimeError("too many free port attempts")
 
 
-def open_url(url):
+def open_url(url: str):
     try:
         _open_url_with_cmd(url)
     except (OSError, URLOpenError):
@@ -182,7 +188,7 @@ class URLOpenError(Exception):
     pass
 
 
-def _open_url_with_cmd(url):
+def _open_url_with_cmd(url: str):
     if sys.platform == "darwin":
         args = ["open", url]
     else:
@@ -194,20 +200,31 @@ def _open_url_with_cmd(url):
             raise URLOpenError(url, e) from e
 
 
-def _open_url_with_webbrowser(url):
+def _open_url_with_webbrowser(url: str):
     import webbrowser
 
     webbrowser.open(url)
 
 
-def loop(cb, wait, interval, first_interval=None):
+LoopCallback = Callable[[], Any]
+LoopWait = Callable[[float], Any]
+
+
+def loop(
+    cb: LoopCallback,
+    wait: LoopWait,
+    interval: int,
+    first_interval: Optional[float] = None,
+):
     try:
         _loop(cb, wait, interval, first_interval)
     except (Stop, KeyboardInterrupt):
         pass
 
 
-def _loop(cb, wait, interval, first_interval):
+def _loop(
+    cb: LoopCallback, wait: LoopWait, interval: float, first_interval: Optional[float]
+):
     loop_interval = first_interval if first_interval is not None else interval
     start = time.time()
     while True:
@@ -219,7 +236,7 @@ def _loop(cb, wait, interval, first_interval):
         cb()
 
 
-def _sleep_interval(interval, start):
+def _sleep_interval(interval: float, start: float):
     if interval <= 0:
         return 0
     now_ms = time.time_ns() // 1000000
@@ -232,7 +249,13 @@ def _sleep_interval(interval, start):
 
 
 class LoopingThread(threading.Thread):
-    def __init__(self, cb, interval, first_interval=None, stop_timeout=0):
+    def __init__(
+        self,
+        cb: LoopCallback,
+        interval: int,
+        first_interval: Optional[float] = None,
+        stop_timeout: float = 0,
+    ):
         super().__init__()
         self._cb = cb
         self._interval = interval
@@ -259,25 +282,24 @@ class LoopingThread(threading.Thread):
 
 def safe_osenv():
     return {
-        name: val
-        for name, val in os.environ.items() if name not in UNSAFE_OS_ENVIRON
+        name: val for name, val in os.environ.items() if name not in UNSAFE_OS_ENVIRON
     }
 
 
-def match_filters(filters, vals, match_any=False):
+def match_filters(filters: List[str], vals: List[str], match_any: bool = False):
     test_fun = any if match_any else all
     vals_lower = [val.lower() for val in vals]
     filters_lower = [f.lower() for f in filters]
     return test_fun((any((f in val for val in vals_lower)) for f in filters_lower))
 
 
-def split_description(s):
+def split_description(s: str):
     lines = s.split("\n")
     return lines[0], _format_details(lines[1:])
 
 
-def _format_details(details):
-    lines = []
+def _format_details(details: List[str]):
+    lines: List[str] = []
     for i, line in enumerate(details):
         if i > 0:
             lines.append("")
@@ -285,24 +307,21 @@ def _format_details(details):
     return lines
 
 
-def file_sha256(path, use_cache=True):
+def file_sha256(path: str, use_cache: bool = True):
     if use_cache:
         cached_sha = try_cached_sha(path)
         if cached_sha:
             return cached_sha
     import hashlib
 
-    return _gen_file_hash(path, hashlib.sha256)
+    return _gen_file_hash(path, hashlib.sha256())
 
 
-def file_sha1(path):
-    import hashlib
-
-    return _gen_file_hash(path, hashlib.sha1)
+def file_sha1(path: str):
+    return _gen_file_hash(path, hashlib.sha1())
 
 
-def _gen_file_hash(path, hash_f):
-    hash = hash_f()
+def _gen_file_hash(path: str, hash: "hashlib._Hash"):
     with open(path, "rb") as f:
         while True:
             data = f.read(102400)
@@ -312,7 +331,7 @@ def _gen_file_hash(path, hash_f):
     return hash.hexdigest()
 
 
-def try_cached_sha(for_file):
+def try_cached_sha(for_file: str):
     try:
         f = open(_cached_sha_filename(for_file), "r")
     except IOError:
@@ -321,30 +340,30 @@ def try_cached_sha(for_file):
         return f.read().rstrip()
 
 
-def _cached_sha_filename(for_file):
+def _cached_sha_filename(for_file: str):
     parent, name = os.path.split(for_file)
     return os.path.join(parent, f".vistaml-cache-{name}.sha")
 
 
-def write_cached_sha(sha, for_file):
+def write_cached_sha(sha: str, for_file: str):
     with open(_cached_sha_filename(for_file), "w") as f:
         f.write(sha)
 
 
-def file_md5(path):
+def file_md5(path: str):
     import hashlib
 
-    return _gen_file_hash(path, hashlib.md5)
+    return _gen_file_hash(path, hashlib.md5())
 
 
-def parse_url(url):
+def parse_url(url: str):
     from urllib.parse import urlparse
 
     return urlparse(url)
 
 
 class TempBase:
-    def __init__(self, prefix="vistaml-", suffix="", keep=False):
+    def __init__(self, prefix: str = "vistaml-", suffix: str = "", keep: bool = False):
         self._prefix = prefix
         self._suffix = suffix
         self._keep = keep
@@ -354,23 +373,23 @@ class TempBase:
         return self
 
     @staticmethod
-    def _init_temp(prefix, suffix):
+    def _init_temp(prefix: str, suffix: str) -> str:
         raise NotImplementedError()
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         if not self._keep:
             self.delete()
 
     def keep(self):
         self._keep = True
 
-    def delete(self):
+    def delete(self) -> None:
         raise NotImplementedError()
 
 
 class TempDir(TempBase):
     @staticmethod
-    def _init_temp(prefix, suffix):
+    def _init_temp(prefix: str, suffix: str):
         return tempfile.mkdtemp(prefix=prefix, suffix=suffix)
 
     def delete(self):
@@ -379,7 +398,7 @@ class TempDir(TempBase):
 
 class TempFile(TempBase):
     @staticmethod
-    def _init_temp(prefix, suffix):
+    def _init_temp(prefix: str, suffix: str):
         f, path = tempfile.mkstemp(prefix=prefix, suffix=suffix)
         os.close(f)
         return path
@@ -388,11 +407,11 @@ class TempFile(TempBase):
         os.remove(self.path)
 
 
-def mktempdir(prefix=""):
+def mktempdir(prefix: str = ""):
     return tempfile.mkdtemp(prefix=prefix)
 
 
-def rmtempdir(path):
+def rmtempdir(path: str):
     assert os.path.dirname(path) == tempfile.gettempdir(), path
     try:
         shutil.rmtree(path)
@@ -403,7 +422,7 @@ def rmtempdir(path):
             log.error("error removing %s: %s", path, e)
 
 
-def safe_rmtree(path, force=False):
+def safe_rmtree(path: str, force: bool = False):
     """Removes path if it's not top level or user dir."""
     assert not _top_level_dir(path), path
     assert path != os.path.expanduser("~"), path
@@ -415,7 +434,7 @@ def safe_rmtree(path, force=False):
         raise ValueError(f"{path} does not exist")
 
 
-def ensure_safe_rmtree(path):
+def ensure_safe_rmtree(path: str):
     try:
         safe_rmtree(path, force=True)
     except OSError as e:
@@ -423,7 +442,7 @@ def ensure_safe_rmtree(path):
             raise
 
 
-def _top_level_dir(path):
+def _top_level_dir(path: str):
     abs_path = os.path.abspath(path)
     parts = [p for p in re.split(r"[/\\]", abs_path) if p]
     if get_platform() == "Windows":
@@ -434,13 +453,13 @@ def _top_level_dir(path):
 class LogCapture:
     def __init__(
         self,
-        use_root_handler=False,
-        echo_to_stdout=False,
-        strip_ansi_format=True,
-        log_level=None,
-        other_loggers=None,
+        use_root_handler: bool = False,
+        echo_to_stdout: bool = False,
+        strip_ansi_format: bool = True,
+        log_level: Optional[int] = None,
+        other_loggers: Optional[List[logging.Logger]] = None,
     ):
-        self._records = []
+        self._records: List[logging.LogRecord] = []
         self._use_root_handler = use_root_handler
         self._echo_to_stdout = echo_to_stdout
         self._strip_ansi_format = strip_ansi_format
@@ -451,23 +470,23 @@ class LogCapture:
     def __enter__(self):
         assert not self._saved_log_levels
         for logger in self._iter_loggers():
-            logger.addFilter(self)
+            logger.addFilter(cast("logging._FilterType", self))
             self._apply_log_level(logger)
         self._records = []
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any):
         for logger in self._iter_loggers():
             self._restore_log_level(logger)
-            logger.removeFilter(self)
+            logger.removeFilter(cast("logging._FilterType", self))
         self._saved_log_levels.clear()
 
-    def _apply_log_level(self, logger):
+    def _apply_log_level(self, logger: logging.Logger):
         if self._log_level is not None:
             self._saved_log_levels[logger] = logger.level
             logger.setLevel(self._log_level)
 
-    def _restore_log_level(self, logger):
+    def _restore_log_level(self, logger: logging.Logger):
         try:
             level = self._saved_log_levels[logger]
         except KeyError:
@@ -483,13 +502,13 @@ class LogCapture:
         for logger in self._other_loggers:
             yield logger
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord):
         self._records.append(record)
         if self._echo_to_stdout:
             sys.stdout.write(self._format_record(record))
             sys.stdout.write("\n")
 
-    def _format_record(self, r):
+    def _format_record(self, r: logging.LogRecord):
         msg = self._handler().format(r)
         if self._strip_ansi_format:
             msg = ansi_util.strip_ansi_format(msg)
@@ -511,14 +530,14 @@ class LogCapture:
         return self._records
 
 
-def format_timestamp(ts, fmt=None):
+def format_timestamp(ts: float, fmt: Optional[str] = None):
     if not ts:
         return ""
     dt = datetime.datetime.fromtimestamp(ts / 1000000)
     return dt.strftime(fmt or "%Y-%m-%d %H:%M:%S")
 
 
-def utcformat_timestamp(ts, fmt=None):
+def utcformat_timestamp(ts: float, fmt: Optional[str] = None):
     if not ts:
         return None
     dt = datetime.datetime.utcfromtimestamp(ts / 1000000)
@@ -528,18 +547,19 @@ def utcformat_timestamp(ts, fmt=None):
 _raise_error_marker = object()
 
 
-def resolve_refs(val, kv, undefined=_raise_error_marker):
+def resolve_refs(val: Any, kv: Dict[str, Any], undefined: Any = _raise_error_marker):
     return _resolve_refs_recurse(val, kv, undefined, [])
 
 
-def resolve_all_refs(kv, undefined=_raise_error_marker):
+def resolve_all_refs(kv: Dict[str, Any], undefined: Any = _raise_error_marker):
     return {
-        name: _resolve_refs_recurse(kv[name], kv, undefined, [])
-        for name in sorted(kv)
+        name: _resolve_refs_recurse(kv[name], kv, undefined, []) for name in sorted(kv)
     }
 
 
-def _resolve_refs_recurse(val, kv, undefined, stack):
+def _resolve_refs_recurse(
+    val: Any, kv: Dict[str, Any], undefined: Any, stack: List[str]
+) -> str:
     if not isinstance(val, str):
         return val
     parts = [part for part in REF_P.split(val) if part != ""]
@@ -549,7 +569,7 @@ def _resolve_refs_recurse(val, kv, undefined, stack):
     return "".join([_resolved_part_str(part) for part in resolved])
 
 
-def _resolved_part_str(part):
+def _resolved_part_str(part: Any):
     if isinstance(part, str):
         return part
     from vml._internal import yaml_util  # expensive
@@ -557,11 +577,11 @@ def _resolved_part_str(part):
     return yaml_util.encode_yaml(part)
 
 
-def resolve_rel_paths(kv):
+def resolve_rel_paths(kv: Dict[str, Any]):
     return {name: _resolve_rel_path(kv[name]) for name in kv}
 
 
-def _resolve_rel_path(maybe_path):
+def _resolve_rel_path(maybe_path: str):
     if os.path.exists(maybe_path) and not os.path.isabs(maybe_path):
         return os.path.abspath(maybe_path)
     return maybe_path
@@ -576,12 +596,14 @@ class ReferenceCycleError(ReferenceResolutionError):
 
 
 class UndefinedReferenceError(ReferenceResolutionError):
-    def __init__(self, reference):
+    def __init__(self, reference: Any):
         super().__init__(reference)
         self.reference = reference
 
 
-def _iter_resolved_ref_parts(parts, kv, undefined, stack):
+def _iter_resolved_ref_parts(
+    parts: List[str], kv: Dict[str, Any], undefined: Any, stack: List[str]
+):
     for part in parts:
         if part.startswith("${") and part.endswith("}"):
             ref_name = part[2:-1]
@@ -599,35 +621,35 @@ def _iter_resolved_ref_parts(parts, kv, undefined, stack):
             yield part
 
 
-def strip_trailing_sep(path):
+def strip_trailing_sep(path: str):
     if path and path[-1] in ("/", "\\"):
         return path[:-1]
     return path
 
 
-def strip_leading_sep(path):
+def strip_leading_sep(path: str):
     if path and path[0] in ("/", "\\"):
         return path[1:]
     return path
 
 
-def ensure_trailing_sep(path, sep=None):
+def ensure_trailing_sep(path: str, sep: Optional[str] = None):
     sep = sep or os.path.sep
     if path[-1:] != sep:
         path += sep
     return path
 
 
-def subpath(path, start, sep=None):
+def subpath(path: str, start: str, sep: Optional[str] = None):
     if path == start:
         raise ValueError(path, start)
     start_with_sep = ensure_trailing_sep(start, sep)
     if path.startswith(start_with_sep):
-        return path[len(start_with_sep):]
+        return path[len(start_with_sep) :]
     raise ValueError(path, start)
 
 
-def which(cmd):
+def which(cmd: str):
     which_cmd = "where" if get_platform() == "Windows" else "which"
     devnull = open(os.devnull, "w")
     try:
@@ -639,19 +661,19 @@ def which(cmd):
         return out.decode("utf-8").split(os.linesep, 1)[0]
 
 
-def symlink(target, link):
+def symlink(target: str, link: str):
     if get_platform() == "Windows":
         _windows_symlink(target, link)
     else:
         os.symlink(target, link)
 
 
-def copyfile(src, dest):
+def copyfile(src: str, dest: str):
     shutil.copyfile(src, dest)
     shutil.copymode(src, dest)
 
 
-def _windows_symlink(target, link):
+def _windows_symlink(target: str, link: str):
     if os.path.isdir(target):
         args = ["mklink", "/D", link, target]
     else:
@@ -664,7 +686,7 @@ def _windows_symlink(target, link):
         raise OSError(e.returncode, err_msg) from e
 
 
-def _maybe_symlink_error(err_msg, err_code):
+def _maybe_symlink_error(err_msg: str, err_code: int):
     if "You do not have sufficient privilege to perform this operation" in err_msg:
         raise SystemExit(
             "You do not have sufficient privilege to perform this operation\n\n"
@@ -674,78 +696,80 @@ def _maybe_symlink_error(err_msg, err_code):
         )
 
 
-_text_ext = set([
+_text_ext = {
     ".csv",
+    ".html",
+    ".html",
+    ".json",
+    ".jsx",
     ".md",
     ".py",
+    ".r",
     ".sh",
-    ".txt",
-])
+    ".ts",
+    ".tsx" ".txt",
+    ".yaml",
+    ".yml",
+    "js",
+}
 
-_binary_ext = set(
-    [
-        ".ai",
-        ".bmp",
-        ".gif",
-        ".ico",
-        ".jpeg",
-        ".jpg",
-        ".png",
-        ".ps",
-        ".psd",
-        ".svg",
-        ".tif",
-        ".tiff",
-        ".aif",
-        ".mid",
-        ".midi",
-        ".mpa",
-        ".mp3",
-        ".ogg",
-        ".wav",
-        ".wma",
-        ".avi",
-        ".mov",
-        ".mp4",
-        ".mpeg",
-        ".swf",
-        ".wmv",
-        ".7z",
-        ".deb",
-        ".gz",
-        ".pkg",
-        ".rar",
-        ".rpm",
-        ".tar",
-        ".xz",
-        ".z",
-        ".zip",
-        ".doc",
-        ".docx",
-        ".key",
-        ".pdf",
-        ".ppt",
-        ".pptx",
-        ".xlr",
-        ".xls",
-        ".xlsx",
-        ".bin",
-        ".pickle",
-        ".pkl",
-        ".pyc",
-    ]
-)
+_binary_ext = {
+    ".ai",
+    ".bmp",
+    ".gif",
+    ".ico",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".ps",
+    ".psd",
+    ".svg",
+    ".tif",
+    ".tiff",
+    ".aif",
+    ".mid",
+    ".midi",
+    ".mpa",
+    ".mp3",
+    ".ogg",
+    ".wav",
+    ".wma",
+    ".avi",
+    ".mov",
+    ".mp4",
+    ".mpeg",
+    ".swf",
+    ".wmv",
+    ".7z",
+    ".deb",
+    ".gz",
+    ".pkg",
+    ".rar",
+    ".rpm",
+    ".tar",
+    ".xz",
+    ".z",
+    ".zip",
+    ".doc",
+    ".docx",
+    ".key",
+    ".pdf",
+    ".ppt",
+    ".pptx",
+    ".xlr",
+    ".xls",
+    ".xlsx",
+    ".bin",
+    ".pickle",
+    ".pkl",
+    ".pyc",
+}
 
-_control_chars = b'\n\r\t\f\b'
-if bytes is str:
-    _printable_ascii = _control_chars + b"".join([chr(x) for x in range(32, 127)])
-    _printable_high_ascii = b"".join([chr(x) for x in range(127, 256)])
-else:
-    _printable_ascii = _control_chars + bytes(range(32, 127))
-    _printable_high_ascii = bytes(range(127, 256))
+_control_chars = b"\n\r\t\f\b"
+_printable_ascii = _control_chars + bytes(range(32, 127))
+_printable_high_ascii = bytes(range(127, 256))
 
-
-def is_text_file(path, ignore_ext=False):
+def is_text_file(path: str, ignore_ext: bool = False):
     import chardet
 
     # Adapted from https://github.com/audreyr/binaryornot under the
@@ -761,7 +785,7 @@ def is_text_file(path, ignore_ext=False):
         if ext in _binary_ext:
             return False
     try:
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             sample = f.read(1024)
     except IOError:
         return False
@@ -771,9 +795,8 @@ def is_text_file(path, ignore_ext=False):
     nontext_ratio1 = float(len(low_chars)) / float(len(sample))
     high_chars = sample.translate(None, _printable_high_ascii)
     nontext_ratio2 = float(len(high_chars)) / float(len(sample))
-    likely_binary = (
-        (nontext_ratio1 > 0.3 and nontext_ratio2 < 0.05)
-        or (nontext_ratio1 > 0.8 and nontext_ratio2 > 0.8)
+    likely_binary = (nontext_ratio1 > 0.3 and nontext_ratio2 < 0.05) or (
+        nontext_ratio1 > 0.8 and nontext_ratio2 > 0.8
     )
     detected_encoding = chardet.detect(sample)
     decodable_as_unicode = False
@@ -782,7 +805,7 @@ def is_text_file(path, ignore_ext=False):
         and detected_encoding["encoding"] != "ascii"
     ):
         try:
-            sample.decode(encoding=detected_encoding["encoding"])
+            sample.decode(encoding=detected_encoding["encoding"] or "utf-8")
         except LookupError:
             pass
         except UnicodeDecodeError:
@@ -793,12 +816,12 @@ def is_text_file(path, ignore_ext=False):
         return decodable_as_unicode
     if decodable_as_unicode:
         return True
-    if b'\x00' in sample or b'\xff' in sample:
+    if b"\x00" in sample or b"\xff" in sample:
         return False
     return True
 
 
-def safe_is_text_file(path, ignore_ext=False):
+def safe_is_text_file(path: str, ignore_ext: bool = False):
     try:
         return is_text_file(path, ignore_ext)
     except OSError as e:
@@ -806,31 +829,31 @@ def safe_is_text_file(path, ignore_ext=False):
         return False
 
 
-def touch(filename):
+def touch(filename: str):
     open(filename, "ab").close()
     now = time.time()
     os.utime(filename, (now, now))
 
 
-def ensure_file(filename):
+def ensure_file(filename: str):
     if not os.path.exists(filename):
         touch(filename)
 
 
-def getmtime(filename):
+def getmtime(filename: str):
     try:
         return os.path.getmtime(filename)
     except OSError:
         return None
 
 
-def kill_process_tree(pid, force=False, timeout=None):
+def kill_process_tree(pid: int, force: bool = False, timeout: Optional[float] = None):
     import psutil
     import signal
 
     sig = signal.SIGKILL if force else signal.SIGTERM
 
-    def send_sig(proc):
+    def send_sig(proc: psutil.Process):
         try:
             proc.send_signal(sig)
         except psutil.NoSuchProcess:
@@ -847,25 +870,25 @@ def kill_process_tree(pid, force=False, timeout=None):
     return psutil.wait_procs([root] + children, timeout=timeout)
 
 
-def safe_filesize(path):
+def safe_filesize(path: str):
     try:
         return os.path.getsize(path)
     except OSError:
         return None
 
 
-def safe_mtime(path):
+def safe_mtime(path: str):
     try:
         return os.path.getmtime(path)
     except OSError:
         return None
 
 
-def safe_list_remove(x, l):
+def safe_list_remove(x: Any, l: List[Any]):
     safe_list_remove_all([x], l)
 
 
-def safe_list_remove_all(xs, l):
+def safe_list_remove_all(xs: List[Any], l: List[Any]):
     for x in xs:
         try:
             l.remove(x)
@@ -873,7 +896,7 @@ def safe_list_remove_all(xs, l):
             pass
 
 
-def local_server_url(host, port):
+def local_server_url(host: str, port: int):
     import socket
 
     if not host or host == "0.0.0.0":
@@ -886,7 +909,7 @@ def local_server_url(host, port):
     return f"http://{host}:{port}"
 
 
-def format_duration(start_time, end_time=None):
+def format_duration(start_time: float, end_time: Optional[float] = None):
     """Returns formatted H:MM:SS time for start and end in microseconds."""
     if start_time is None:
         return None
@@ -898,20 +921,20 @@ def format_duration(start_time, end_time=None):
     return f"{h}:{m:02d}:{s:02d}"
 
 
-def format_dir(dir):
+def format_dir(dir: str):
     return format_user_dir(os.path.abspath(dir))
 
 
-def format_user_dir(s):
+def format_user_dir(s: str):
     if get_platform() == "Windows":
         return s
     user_dir = os.path.expanduser("~")
     if s.startswith(user_dir):
-        return os.path.join("~", s[len(user_dir) + 1:])
+        return os.path.join("~", s[len(user_dir) + 1 :])
     return s
 
 
-def apply_env(target, source, names):
+def apply_env(target: Dict[str, str], source: Dict[str, str], names: List[str]):
     for name in names:
         try:
             target[name] = source[name]
@@ -919,82 +942,15 @@ def apply_env(target, source, names):
             pass
 
 
-def safe_filename(s):
+def safe_filename(s: str):
     if get_platform() == "Windows":
         s = re.sub(r"[:<>?]", "_", s).rstrip()
     return re.sub(r"[/\\]+", "_", s)
 
 
-def wait_forever(sleep_interval=0.1):
+def wait_forever(sleep_interval: float = 0.1):
     while True:
         time.sleep(sleep_interval)
-
-
-class RunOutputReader:
-    def __init__(self, run_dir):
-        self.run_dir = run_dir
-        self._lines = []
-        self._output = None
-        self._index = None
-
-    def read(self, start=0, end=None):
-        """Read run output from start to end.
-
-        Both start and end are zero-based indexes to run output lines
-        and are both inclusive. Note this is different from the Python
-        slice function where end is exclusive.
-        """
-        self._read_next(end)
-        if end is None:
-            slice_end = None
-        else:
-            slice_end = end + 1
-        return self._lines[start:slice_end]
-
-    def _read_next(self, end):
-        if end is not None and end < len(self._lines):
-            return
-        try:
-            output, index = self._ensure_open()
-        except IOError as e:
-            if e.errno != errno.EEXIST:
-                raise
-        else:
-            lines = self._lines
-            while True:
-                line = output.readline().rstrip().decode()
-                if not line:
-                    break
-                header = index.read(9)
-                if len(header) < 9:
-                    break
-                time, stream = struct.unpack("!QB", header)
-                lines.append((time, stream, line))
-                if end is not None and end < len(self._lines):
-                    break
-
-    def _ensure_open(self):
-        if self._output is None:
-            guild_path = os.path.join(self.run_dir, ".guild")
-            output = open(os.path.join(guild_path, "output"), "rb")
-            index = open(os.path.join(guild_path, "output.index"), "rb")
-            self._output, self._index = output, index
-        assert self._output is not None
-        assert self._index is not None
-        return self._output, self._index
-
-    def close(self):
-        self._try_close(self._output)
-        self._try_close(self._index)
-
-    @staticmethod
-    def _try_close(f):
-        if f is None:
-            return
-        try:
-            f.close()
-        except IOError:
-            pass
 
 
 def gpu_available():
@@ -1021,7 +977,7 @@ def gpu_available():
     return False
 
 
-def get_env(name: str, type: Callable[[Any], Any], default: Any=None):
+def get_env(name: str, type: Callable[[Any], Any], default: Any = None):
     try:
         val = os.environ[name]
     except KeyError:
@@ -1034,7 +990,7 @@ def get_env(name: str, type: Callable[[Any], Any], default: Any=None):
             return default
 
 
-def del_env(names):
+def del_env(names: List[str]):
     for name in names:
         try:
             del os.environ[name]
@@ -1042,11 +998,11 @@ def del_env(names):
             pass
 
 
-def is_executable_file(path):
+def is_executable_file(path: str):
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
 
-def copytree(src, dest, preserve_links=True):
+def copytree(src: str, dest: str, preserve_links: bool = True):
     try:
         # dirs_exist_ok was added in Python 3.8:
         # https://docs.python.org/3/library/shutil.html#shutil.copytree
@@ -1060,130 +1016,134 @@ def copytree(src, dest, preserve_links=True):
         dir_util.copy_tree(src, dest, preserve_symlinks=preserve_links)
 
 
-class CopyFilter:
-    """Interface of `copy_filter` used with `select_copytree()`."""
-    def delete_excluded_dirs(self, parent, dirs):
-        """Delete excluded dirs prior to copy tree traversal.
+# TODO: Restore when under test in tests/lib-util.md
+# class CopyFilter:
+#     """Interface of `copy_filter` used with `select_copytree()`."""
 
-        Use as optimization to avoid traversing into directories that
-        don't contain files to copy.
-        """
+#     def delete_excluded_dirs(self, parent: str, dirs: List[str]) -> None:
+#         """Delete excluded dirs prior to copy tree traversal.
 
-    def default_select_path(self, path):
-        """Return the default selection result for `path`.
+#         Use as optimization to avoid traversing into directories that
+#         don't contain files to copy.
+#         """
 
-        This value is used to determine the selection if no other
-        selection rule from `config` returns a non-None value.
-        """
-        raise NotImplementedError()
+#     def default_select_path(self, path: str) -> bool:
+#         """Return the default selection result for `path`.
 
-    def pre_copy(self, path):
-        """Perform an action prior to copying a selected file."""
+#         This value is used to determine the selection if no other
+#         selection rule from `config` returns a non-None value.
+#         """
+#         raise NotImplementedError()
 
-
-def select_copytree(src, dest, config, copy_filter=None):
-    """Copies files from src to dest using select configuration.
-
-    `config` is an instance of `guild.guildfile.FileSelectDef`. If the
-    files spec is empty, all files are selected. Otherwise, the select
-    rules are applied to each file to determine if it's copied.
-
-    `copy_filter` is an optional filter that is applied after the file
-    select process.
-    """
-    if not isinstance(config, list):
-        raise ValueError(f"invalid config: expected list got {config!r}")
-    log.debug("copying files from %s to %s", src, dest)
-    to_copy = _select_files_to_copy(src, config, copy_filter)
-    if not to_copy:
-        log.debug("no files to copy")
-        return
-    for file_src, file_src_rel_path in to_copy:
-        file_dest = os.path.join(dest, file_src_rel_path)
-        log.debug("copying file %s to %s", file_src, file_dest)
-        ensure_dir(os.path.dirname(file_dest))
-        _try_copy_file(file_src, file_dest)
+#     def pre_copy(self, path: str) -> None:
+#         """Perform an action prior to copying a selected file."""
 
 
-def _select_files_to_copy(src_dir, config, copy_filter):
-    to_copy = []
-    seen_dirs = set()
-    log.debug("generating file list from %s", src_dir)
-    for root, dirs, files in os.walk(src_dir, followlinks=True):
-        seen_dirs.add(realpath(root))
-        _del_excluded_select_copy_dirs(
-            dirs, src_dir, root, seen_dirs, config, copy_filter
-        )
-        for name in files:
-            path = os.path.join(root, name)
-            if not os.path.isfile(path):
-                continue
-            rel_path = os.path.relpath(path, src_dir)
-            log.debug("considering file to copy %s", path)
-            if _select_to_copy(path, rel_path, config, copy_filter):
-                log.debug("seleted file to copy %s", path)
-                to_copy.append((path, rel_path))
-    # Sort before notifying copy_filter to have deterministic result
-    to_copy.sort()
-    if copy_filter:
-        copy_filter.pre_copy(to_copy)
-    return to_copy
+# def select_copytree(src: str, dest: str, config, copy_filter=None):
+#     """Copies files from src to dest using select configuration.
+
+#     `config` is an instance of `guild.guildfile.FileSelectDef`. If the
+#     files spec is empty, all files are selected. Otherwise, the select
+#     rules are applied to each file to determine if it's copied.
+
+#     `copy_filter` is an optional filter that is applied after the file
+#     select process.
+#     """
+#     if not isinstance(config, list):
+#         raise ValueError(f"invalid config: expected list got {config!r}")
+#     log.debug("copying files from %s to %s", src, dest)
+#     to_copy = _select_files_to_copy(src, config, copy_filter)
+#     if not to_copy:
+#         log.debug("no files to copy")
+#         return
+#     for file_src, file_src_rel_path in to_copy:
+#         file_dest = os.path.join(dest, file_src_rel_path)
+#         log.debug("copying file %s to %s", file_src, file_dest)
+#         ensure_dir(os.path.dirname(file_dest))
+#         _try_copy_file(file_src, file_dest)
 
 
-def _del_excluded_select_copy_dirs(dirs, src_dir, root, seen_dirs, config, copy_filter):
-    _del_seen_dirs(dirs, root, seen_dirs)
-    _del_config_excluded_dirs(dirs, src_dir, root, config)
-    if copy_filter:
-        copy_filter.delete_excluded_dirs(root, dirs)
+# def _select_files_to_copy(src_dir: str, config, copy_filter):
+#     to_copy = []
+#     seen_dirs = set()
+#     log.debug("generating file list from %s", src_dir)
+#     for root, dirs, files in os.walk(src_dir, followlinks=True):
+#         seen_dirs.add(realpath(root))
+#         _del_excluded_select_copy_dirs(
+#             dirs, src_dir, root, seen_dirs, config, copy_filter
+#         )
+#         for name in files:
+#             path = os.path.join(root, name)
+#             if not os.path.isfile(path):
+#                 continue
+#             rel_path = os.path.relpath(path, src_dir)
+#             log.debug("considering file to copy %s", path)
+#             if _select_to_copy(path, rel_path, config, copy_filter):
+#                 log.debug("seleted file to copy %s", path)
+#                 to_copy.append((path, rel_path))
+#     # Sort before notifying copy_filter to have deterministic result
+#     to_copy.sort()
+#     if copy_filter:
+#         copy_filter.pre_copy(to_copy)
+#     return to_copy
 
 
-def _del_seen_dirs(dirs, root, seen):
-    for dir_name in dirs:
-        real_path = realpath(os.path.join(root, dir_name))
-        if real_path in seen:
-            dirs.remove(dir_name)
+# def _del_excluded_select_copy_dirs(
+#     dirs, src_dir: str, root, seen_dirs, config, copy_filter
+# ):
+#     _del_seen_dirs(dirs, root, seen_dirs)
+#     _del_config_excluded_dirs(dirs, src_dir, root, config)
+#     if copy_filter:
+#         copy_filter.delete_excluded_dirs(root, dirs)
 
 
-def _del_config_excluded_dirs(dirs, src_dir, root, config):
-    for name in list(dirs):
-        path = os.path.join(root, name)
-        rel_path = os.path.relpath(path, src_dir)
-        if not _select_to_copy(path, rel_path, config):
-            dirs.remove(name)
+# def _del_seen_dirs(dirs, root, seen):
+#     for dir_name in dirs:
+#         real_path = realpath(os.path.join(root, dir_name))
+#         if real_path in seen:
+#             dirs.remove(dir_name)
 
 
-def _select_to_copy(path, rel_path, config, copy_filter=None):
-    assert isinstance(config, list)
-    last_match = None
-    for config_item in config:
-        for spec in config_item.specs:
-            if _select_file_match(rel_path, spec):
-                last_match = spec
-    if last_match:
-        return _select_to_copy_for_spec(last_match)
-    if copy_filter:
-        return copy_filter.default_select_path(path)
-    return True
+# def _del_config_excluded_dirs(dirs, src_dir, root, config):
+#     for name in list(dirs):
+#         path = os.path.join(root, name)
+#         rel_path = os.path.relpath(path, src_dir)
+#         if not _select_to_copy(path, rel_path, config):
+#             dirs.remove(name)
 
 
-def _select_file_match(rel_path, spec):
-    return any((fnmatch.fnmatch(rel_path, p) for p in spec.patterns))
+# def _select_to_copy(path, rel_path, config, copy_filter=None):
+#     assert isinstance(config, list)
+#     last_match = None
+#     for config_item in config:
+#         for spec in config_item.specs:
+#             if _select_file_match(rel_path, spec):
+#                 last_match = spec
+#     if last_match:
+#         return _select_to_copy_for_spec(last_match)
+#     if copy_filter:
+#         return copy_filter.default_select_path(path)
+#     return True
 
 
-def _select_to_copy_for_spec(spec):
-    return spec.type == "include"
+# def _select_file_match(rel_path, spec):
+#     return any((fnmatch.fnmatch(rel_path, p) for p in spec.patterns))
 
 
-def _try_copy_file(src, dest):
-    try:
-        shutil.copyfile(src, dest)
-    except (IOError, OSError) as e:
-        # This is not an error we want to stop an operation for. Log
-        # and continue.
-        if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception("copy %s to %s", src, dest)
-        else:
-            log.warning("could not copy source code file %s: %s", src, e)
+# def _select_to_copy_for_spec(spec):
+#     return spec.type == "include"
+
+
+# def _try_copy_file(src, dest):
+#     try:
+#         shutil.copyfile(src, dest)
+#     except (IOError, OSError) as e:
+#         # This is not an error we want to stop an operation for. Log
+#         # and continue.
+#         if log.getEffectiveLevel() <= logging.DEBUG:
+#             log.exception("copy %s to %s", src, dest)
+#         else:
+#             log.warning("could not copy source code file %s: %s", src, e)
 
 
 def hostname():
@@ -1205,7 +1165,7 @@ def user():
     return os.getenv("USER") or ""
 
 
-def shlex_split(s):
+def shlex_split(s: str):
     # If s is None, this call will block (see
     # https://bugs.python.org/issue27775)
     s = s or ""
@@ -1231,12 +1191,12 @@ def _simplify_shlex_quote(s: str):
         if not s.endswith(pattern_end):
             continue
         repl_end = "".join(reversed(repl_start))
-        stripped = s[len(pattern_start):-len(pattern_end)]
+        stripped = s[len(pattern_start) : -len(pattern_end)]
         return repl_start + stripped + repl_end
     return s
 
 
-def format_bytes(n: int):
+def format_bytes(n: float):
     units = [None, "K", "M", "G", "T", "P", "E", "Z"]
     for unit in units[:-1]:
         if abs(n) < 1024:
@@ -1262,26 +1222,7 @@ class Chdir:
         os.chdir(self._save)
 
 
-def log_apply(f, *args, **kw):
-    level = kw.pop("logging_level", logging.DEBUG)
-    prefix = kw.pop("logging_prefix", "CALLING")
-    log.log(level, "%s %s", prefix, _log_apply_msg(f, args, kw))
-    return f(*args, **kw)
-
-
-class _log_apply_msg:
-    def __init__(self, f, args, kw):
-        self.f = f
-        self.args = args
-        self.kw = kw
-
-    def __str__(self):
-        f_mod = self.f.__module__
-        f_name = self.f.__name__
-        return f"{f_mod} {f_name} {self.args} {self.kw}"
-
-
-def dir_size(dir):
+def dir_size(dir: str):
     size = 0
     for root, dirs, names in os.walk(dir):
         for name in dirs + names:
@@ -1307,7 +1248,7 @@ def _platform_base_info():
     }
 
 
-def _platform_psutil_info():
+def _platform_psutil_info() -> Dict[str, Any]:
     try:
         import psutil
     except ImportError:
@@ -1326,17 +1267,19 @@ def vistaml_user_agent():
     return f"python-vistaml/{vml.__version__} ({system}; {machine}; {release})"
 
 
-def apply_nested_config(kv, config):
+def apply_nested_config(kv: Dict[str, Any], config: Dict[str, Any]):
     for name, val in kv.items():
         _apply_nested_config(name, val, config)
 
 
-def _apply_nested_config(name, val, config):
+def _apply_nested_config(name: str, val: Any, config: Dict[str, Any]):
     name, parent = _nested_config_dest(name, config)
     parent[name] = val
 
 
-def _nested_config_dest(name, config, nested_name_prefix=""):
+def _nested_config_dest(
+    name: str, config: Dict[str, Any], nested_name_prefix: str = ""
+) -> Tuple[str, Dict[str, Any]]:
     """Returns a tuple of name and dict as dest for a named value.
 
     `name` may contain dots, which are used to locate the destination
@@ -1357,7 +1300,7 @@ def _nested_config_dest(name, config, nested_name_prefix=""):
         except KeyError:
             pass
         else:
-            attr_name = name[len(name_trial) + 1:]
+            attr_name = name[len(name_trial) + 1 :]
             if not attr_name:
                 return name_trial, config
             if not isinstance(val, dict):
@@ -1369,7 +1312,7 @@ def _nested_config_dest(name, config, nested_name_prefix=""):
     return _ensure_nested_dest(name, config)
 
 
-def _iter_dot_name_trials(name):
+def _iter_dot_name_trials(name: str):
     while True:
         yield name
         parts = name.rsplit(".", 1)
@@ -1378,7 +1321,7 @@ def _iter_dot_name_trials(name):
         name = parts[0]
 
 
-def _ensure_nested_dest(name, data):
+def _ensure_nested_dest(name: str, data: Dict[str, Any]):
     name_parts = name.split(".")
     for i in range(len(name_parts) - 1):
         data = data.setdefault(name_parts[i], {})
@@ -1386,14 +1329,16 @@ def _ensure_nested_dest(name, data):
     return name_parts[-1], data
 
 
-def encode_nested_config(config):
+def encode_nested_config(config: Dict[str, Any]) -> Dict[str, Any]:
     encoded = {}
     for name, val in config.items():
         _apply_nested_encoded(name, val, [], encoded)
     return encoded
 
 
-def _apply_nested_encoded(name, val, parents, encoded):
+def _apply_nested_encoded(
+    name: str, val: Any, parents: List[str], encoded: Dict[str, Any]
+):
     key_path = parents + [name]
     if isinstance(val, dict) and val:
         for item_name, item_val in val.items():
@@ -1402,28 +1347,30 @@ def _apply_nested_encoded(name, val, parents, encoded):
         encoded[".".join(key_path)] = val
 
 
-def short_digest(s):
+def short_digest(s: str):
     if not s:
         return ""
     return s[:8]
 
 
-def safe_listdir(path):
+def safe_listdir(path: str) -> List[str]:
     try:
         return os.listdir(path)
     except OSError:
         return []
 
 
-def compare_paths(p1, p2):
+def compare_paths(p1: str, p2: str):
     return _resolve_path(p1) == _resolve_path(p2)
 
 
-def _resolve_path(p):
+def _resolve_path(p: str):
     return realpath(os.path.expanduser(p))
 
 
-def shorten_path(path, max_len=28, ellipsis="\u2026", sep=os.path.sep):
+def shorten_path(
+    path: str, max_len: int = 28, ellipsis: str = "\u2026", sep: str = os.path.sep
+):
     if len(path) <= max_len:
         return path
     parts = _shorten_path_split_path(path, sep)
@@ -1448,15 +1395,14 @@ def shorten_path(path, max_len=28, ellipsis="\u2026", sep=os.path.sep):
         side.append(part)
         pop_r = not pop_r
     shortened = os.path.sep.join(
-        [os.path.sep.join(l), ellipsis,
-         os.path.sep.join(reversed(r))]
+        [os.path.sep.join(l), ellipsis, os.path.sep.join(reversed(r))]
     )
     if len(shortened) >= len(path):
         return path
     return shortened
 
 
-def _shorten_path_split_path(path, sep):
+def _shorten_path_split_path(path: str, sep: str) -> List[str]:
     """Splits path into parts.
 
     Leading and repeated '/' chars are prepended to the
@@ -1480,7 +1426,7 @@ def _shorten_path_split_path(path, sep):
 
 
 class HTTPResponse:
-    def __init__(self, resp):
+    def __init__(self, resp: Any):
         self.status_code = resp.status
         self.text = resp.read()
 
@@ -1489,7 +1435,7 @@ class HTTPConnectionError(Exception):
     pass
 
 
-def http_post(url, data, timeout=None):
+def http_post(url: str, data: Dict[str, Any], timeout: Optional[float] = None):
     headers = {
         "User-Agent": vistaml_user_agent(),
         "Content-type": "application/x-www-form-urlencoded",
@@ -1497,18 +1443,24 @@ def http_post(url, data, timeout=None):
     return _http_request(url, headers, data, "POST", timeout)
 
 
-def http_get(url, timeout=None):
+def http_get(url: str, timeout: Optional[float] = None):
     return _http_request(url, timeout=timeout)
 
 
-def _http_request(url, headers=None, data=None, method="GET", timeout=None):
-    import urllib
+def _http_request(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    data: Optional[Dict[str, str]] = None,
+    method: str = "GET",
+    timeout: Optional[float] = None,
+):
+    from urllib.parse import urlencode, urlparse
     import socket
 
     headers = headers or {}
-    url_parts = urllib.parse.urlparse(url)
+    url_parts = urlparse(url)
     conn = _HTTPConnection(url_parts.scheme, url_parts.netloc, timeout)
-    params = urllib.parse.urlencode(data) if data else ""
+    params = urlencode(data) if data else ""
     try:
         conn.request(method, url_parts.path, params, headers)
     except socket.error as e:
@@ -1519,7 +1471,7 @@ def _http_request(url, headers=None, data=None, method="GET", timeout=None):
         return HTTPResponse(conn.getresponse())
 
 
-def _HTTPConnection(scheme, netloc, timeout):
+def _HTTPConnection(scheme: str, netloc: str, timeout: Optional[float]):
     from http import client as http_client
 
     if scheme == "http":
@@ -1530,17 +1482,17 @@ def _HTTPConnection(scheme, netloc, timeout):
 
 
 class StdIOContextManager:
-    def __init__(self, stream):
+    def __init__(self, stream: IO[AnyStr]):
         self.stream = stream
 
     def __enter__(self):
         return self.stream
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         pass
 
 
-def check_env(env):
+def check_env(env: Dict[str, Any]):
     for name, val in env.items():
         if not isinstance(name, str):
             raise ValueError(f"non-string env name {name!r}")
@@ -1549,7 +1501,7 @@ def check_env(env):
 
 
 class SysArgv:
-    def __init__(self, args):
+    def __init__(self, args: List[str]):
         self._args = args
         self._save = None
 
@@ -1558,14 +1510,14 @@ class SysArgv:
         self._save = sys.argv[1:]
         sys.argv[1:] = self._args
 
-    def __exit__(self, *_exc):
+    def __exit__(self, *exc: Any):
         assert self._save is not None
         sys.argv[1:] = self._save
         self._save = None
 
 
 class Env:
-    def __init__(self, vals, replace=False):
+    def __init__(self, vals: Dict[str, str], replace: bool = False):
         self._vals = vals
         self._replace = replace
         self._revert_ops = []
@@ -1594,7 +1546,7 @@ class Env:
             env[name] = val
 
     @staticmethod
-    def _del_env_fun(name, env):
+    def _del_env_fun(name: str, env: "os._Environ[str]"):
         def f():
             try:
                 del env[name]
@@ -1604,13 +1556,13 @@ class Env:
         return f
 
     @staticmethod
-    def _set_env_fun(name, val, env):
+    def _set_env_fun(name: str, val: str, env: "os._Environ[str]"):
         def f():
             env[name] = val
 
         return f
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any):
         if self._replace:
             self._restore_env()
         else:
@@ -1627,7 +1579,7 @@ class Env:
 
 
 class StdinReader:
-    def __init__(self, stop_on_blank_line=False):
+    def __init__(self, stop_on_blank_line: bool = False):
         self.stop_on_blank_line = stop_on_blank_line
 
     __enter__ = lambda self, *_args: self
@@ -1641,17 +1593,17 @@ class StdinReader:
             yield line
 
 
-def env_var_name(s):
+def env_var_name(s: str):
     return re.sub("[^A-Z0-9_]", "_", s.upper())
 
 
-def env_var_quote(s):
+def env_var_quote(s: str):
     if s == "":
         return ""
     return shlex_quote(s)
 
 
-def realpath(path):
+def realpath(path: str):
     # Workaround for https://bugs.python.org/issue9949
     try:
         link = os.readlink(path)
@@ -1662,7 +1614,7 @@ def realpath(path):
         return os.path.abspath(os.path.join(path_dir, _strip_windows_prefix(link)))
 
 
-def _strip_windows_prefix(path):
+def _strip_windows_prefix(path: str):
     if get_platform() != "Windows":
         return path
     if path.startswith("\\\\?\\"):
@@ -1670,15 +1622,15 @@ def _strip_windows_prefix(path):
     return path
 
 
-def stdpath(path):
+def stdpath(path: str):
     return path.replace(os.path.sep, "/")
 
 
-def bind_method(obj, method_name, function):
+def bind_method(obj: Any, method_name: str, function: Any):
     setattr(obj, method_name, function.get(obj, obj.__class__))
 
 
-def edit(s, extension=".txt", strip_comment_lines=False):
+def edit(s: str, extension: str = ".txt", strip_comment_lines: bool = False):
     from vml._vendor import click
 
     try:
@@ -1718,7 +1670,7 @@ def _try_editor_bin():
     return None
 
 
-def _strip_comment_lines(s):
+def _strip_comment_lines(s: str):
     return "\n".join([line for line in s.split("\n") if line.rstrip()[:1] != "#"])
 
 
@@ -1729,26 +1681,25 @@ def test_windows_symlinks():
         os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
 
 
+PropertyCacheProp = Tuple[str, Any, Callable[..., Any], float]
+
+
 class PropertyCache:
-    def __init__(self, properties):
+    def __init__(self, properties: List[PropertyCacheProp]):
         self._vals = {
-            name: default
-            for name, default, _callback, _timeout in properties
+            name: default for name, default, _callback, _timeout in properties
         }
         self._expirations = {
-            name: 0
-            for name, _default, _callback, _timeout in properties
+            name: 0.0 for name, _default, _callback, _timeout in properties
         }
         self._timeouts = {
-            name: timeout
-            for name, _default, _callback, timeout in properties
+            name: timeout for name, _default, _callback, timeout in properties
         }
         self._callbacks = {
-            name: callback
-            for name, _default, callback, _timeout in properties
+            name: callback for name, _default, callback, _timeout in properties
         }
 
-    def get(self, name, *args, **kw):
+    def get(self, name: str, *args: Any, **kw: Any):
         if time.time() < self._expirations[name]:
             return self._vals[name]
         val = self._callbacks[name](*args, **kw)
@@ -1763,20 +1714,20 @@ def get_platform():
     return platform.system()
 
 
-def make_executable(path):
+def make_executable(path: str):
     import stat
 
     os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
 
 
-def natsorted(*args, **kw):
+def natsorted(*args: Any, **kw: Any):
     from natsort import natsorted as ns
 
     return ns(*args, **kw)
 
 
 class lazy_str:
-    def __init__(self, f):
+    def __init__(self, f: Callable[[], str]):
         self.f = f
 
     def __str__(self):
@@ -1817,7 +1768,10 @@ def _active_shell():
     return None
 
 
-def _shell_for_proc(p):
+_Process = Any  # proxy for psutil.Process
+
+
+def _shell_for_proc(p: _Process):
     name = p.name()
     if name.endswith(".exe"):
         return name[:-4]
@@ -1829,7 +1783,7 @@ class StderrCapture:
     _stderr = None
     _captured = []
 
-    def __init__(self, autoprint=False):
+    def __init__(self, autoprint: bool = False):
         self._autoprint = autoprint
 
     def __enter__(self):
@@ -1839,18 +1793,15 @@ class StderrCapture:
         sys.stderr = self
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any):
         assert self._stderr is not None
         sys.stderr = self._stderr
         self.closed = True
 
-    def write(self, b):
-        self._captured.append(b)
+    def write(self, s: str):
+        self._captured.append(s)
         if self._autoprint:
-            if hasattr(b, "decode"):
-                sys.stdout.write(b.decode("utf-8"))
-            else:
-                sys.stdout.write(b)
+            sys.stdout.write(s)
             sys.stdout.flush()
 
     def flush(self):
@@ -1865,7 +1816,7 @@ class StderrCapture:
         return "".join([self._decode_part(part) for part in self._captured])
 
     @staticmethod
-    def _decode_part(part):
+    def _decode_part(part: Any):
         return part.decode("utf-8") if hasattr(part, "decode") else part
 
 
@@ -1881,12 +1832,12 @@ class StdoutCapture:
         sys.stdout = self
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any):
         assert self._stdout is not None
         sys.stdout = self._stdout
         self.closed = True
 
-    def write(self, b):
+    def write(self, b: bytes):
         self._captured.append(b)
 
     def flush(self):
@@ -1896,22 +1847,22 @@ class StdoutCapture:
         return "".join(self._captured)
 
 
-def check_vml_version(req):
+def check_vml_version(req: str):
     import vml
     from . import python_util
 
     return python_util.check_package_version(vml.__version__, req)
 
 
-def split_lines(s):
+def split_lines(s: str):
     return [line for line in re.split(r"\r?\n", s) if line]
 
 
-def dict_to_camel_case(d):
+def dict_to_camel_case(d: Dict[str, Any]):
     return {to_camel_case(k): v for k, v in d.items()}
 
 
-def to_camel_case(s):
+def to_camel_case(s: str):
     parts = tokenize_snake_case_for_camel_case(s)
     in_upper = False
     for i, part in enumerate(parts):
@@ -1925,7 +1876,7 @@ def to_camel_case(s):
     return "".join(parts)
 
 
-def tokenize_snake_case_for_camel_case(s):
+def tokenize_snake_case_for_camel_case(s: str):
     under_split = s.split("_")
     # If all underscores, remove extra token
     if not any(iter(under_split)):
@@ -1933,11 +1884,11 @@ def tokenize_snake_case_for_camel_case(s):
     return under_split
 
 
-def flatten(l):
+def flatten(l: List[Any]):
     return [item for sublist in l for item in sublist]
 
 
-def try_env(name, cvt=None):
+def try_env(name: str, cvt: Optional[Callable[[str], Any]] = None):
     val_str = os.getenv(name)
     if val_str is None or cvt is None:
         return None
@@ -1947,7 +1898,7 @@ def try_env(name, cvt=None):
         return None
 
 
-def decode_cfg_val(s):
+def decode_cfg_val(s: str) -> Union[int, float, bool, str]:
     for conv in [int, float, _cfg_bool]:
         try:
             return conv(s)
@@ -1956,7 +1907,7 @@ def decode_cfg_val(s):
     return s
 
 
-def _cfg_bool(s):
+def _cfg_bool(s: str):
     import configparser
 
     try:
@@ -1965,5 +1916,5 @@ def _cfg_bool(s):
         raise ValueError() from None
 
 
-def encode_cfg_val(x):
+def encode_cfg_val(x: Any):
     return str(x)

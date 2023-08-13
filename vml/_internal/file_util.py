@@ -484,7 +484,7 @@ def find(
     includedirs: bool = False,
     unsorted: bool = False,
 ):
-    paths = []
+    paths: List[str] = []
 
     def relpath(path: str, name: str):
         return os.path.relpath(os.path.join(path, name), root)
