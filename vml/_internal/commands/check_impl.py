@@ -77,11 +77,11 @@ class Check:
 
 
 def main(args: Any):
-    _check(args)
-    # if args.remote:
-    #     remote_impl_support.check(args)
-    # else:
-    #     _check(args)
+    if args.remote:
+        assert False
+        # remote_impl_support.check(args)
+    else:
+        _check(args)
 
 
 def _check(args: Any):

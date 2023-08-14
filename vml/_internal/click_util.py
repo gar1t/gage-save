@@ -6,10 +6,12 @@ from typing import Pattern
 import contextlib
 import functools
 import json
+
 # import os
 import re
 
 import vml
+
 from vml._vendor import click
 
 # from click import shell_completion
@@ -67,9 +69,7 @@ class Group(click.Group):
         return super().get_command(ctx, cmd_name)
 
 
-def _group_cmd_name(
-    group_command_names: ValuesView[click.Command], default_name: str
-):
+def _group_cmd_name(group_command_names: ValuesView[click.Command], default_name: str):
     for cmd in group_command_names:
         if cmd.name and default_name in CMD_SPLIT_P.split(cmd.name):
             return cmd.name
@@ -129,9 +129,7 @@ class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
                 self.write("\n")
 
 
-_HelpFormatSubs = List[
-    Tuple[Pattern[str], Union[str, Callable[[Any], str]]]
-]
+_HelpFormatSubs = List[Tuple[Pattern[str], Union[str, Callable[[Any], str]]]]
 
 
 class HelpFormatter(ClickBaseHelpFormatter):
@@ -247,7 +245,6 @@ class JSONHelpFormatter(click.HelpFormatter):
 #     CmdContext._handlers.append((on_enter, on_exit))
 
 
-
 def use_args(fn0: Callable[..., Any]) -> click.Command:
     def fn(*args: Any, **kw: Any):
         return fn0(*(args + (Args(**kw),)))
@@ -255,13 +252,15 @@ def use_args(fn0: Callable[..., Any]) -> click.Command:
     return cast(click.Command, functools.update_wrapper(fn, fn0))
 
 
-# def append_params(fn, params):
-#     fn.__click_params__ = getattr(fn, "__click_params__", [])
-#     for param in reversed(params):
-#         if callable(param):
-#             param(fn)
-#         else:
-#             fn.__click_params__.append(param)
+def append_params(
+    fn: Callable[..., Any], params: Sequence[Any]
+):
+    fn.__click_params__ = getattr(fn, "__click_params__", [])
+    for param in reversed(params):
+        if callable(param):
+            param(fn)
+        else:
+            fn.__click_params__.append(param)
 
 
 def format_error_message(e: click.exceptions.ClickException):
@@ -323,21 +322,21 @@ def normalize_command_path(cmd_path: str):
     return m.group(1) if m else cmd_path
 
 
-# def render_doc(fn):
-#     parts = re.split("({{.*}})", fn.__doc__, re.DOTALL)
-#     vars = fn.__globals__
-#     rendered_parts = [_maybe_render_doc(part, vars) for part in parts]
-#     fn.__doc__ = "".join(rendered_parts)
-#     return fn
+def render_doc(fn: Callable[..., Any]) -> click.Command:
+    parts = re.split("({{.*}})", fn.__doc__ or "", re.DOTALL)
+    vars = fn.__globals__
+    rendered_parts = [_maybe_render_doc(part, vars) for part in parts]
+    fn.__doc__ = "".join(rendered_parts)
+    return cast(click.Command, fn)
 
 
-# def _maybe_render_doc(s, vars):
-#     m = re.match("{{(.+)}}", s)
-#     if not m:
-#         return s
-#     # pylint: disable=eval-used
-#     fn = eval(m.group(1).strip(), vars)
-#     return fn.__doc__
+def _maybe_render_doc(s: str, vars: Dict[str, Any]):
+    m = re.match("{{(.+)}}", s)
+    if not m:
+        return s
+    # pylint: disable=eval-used
+    fn = eval(m.group(1).strip(), vars)
+    return fn.__doc__
 
 
 # def patch_click():

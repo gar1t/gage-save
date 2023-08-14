@@ -1,7 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+
 from vml._internal import click_util
+
 from vml._vendor import click
 
 from .check import check
+from .help import help
+from .runs import runs
 
 
 @click.group(cls=click_util.Group)
@@ -9,3 +14,5 @@ def main():
     pass
 
 main.add_command(check)
+main.add_command(help)
+main.add_command(runs)

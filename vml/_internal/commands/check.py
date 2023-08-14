@@ -7,7 +7,7 @@ from vml._vendor import click
 from vml._internal import click_util
 
 # from . import ac_support
-# from . import remote_support
+from . import remote_support
 
 
 # def _ac_all_tests(ctx, param, incomplete):
@@ -72,19 +72,20 @@ from vml._internal import click_util
 @click.option(
     "--notify", is_flag=True, help="Send system notification when check is complete."
 )
-# @remote_support.remote_option("Check remote environment.")
-# @click.option(
-#     "--offline/--no-offline",
-#     default=None,
-#     help="Don't check guild.ai for latest versions.",
-#     is_flag=True,
-# )
+@remote_support.remote_option("Check remote environment.")
+@click.option(
+    "--offline/--no-offline",
+    default=None,
+    help="Don't check guild.ai for latest versions.",
+    is_flag=True,
+)
 @click.option("--check-url", hidden=True, default="http://api.guild.ai/check")
 # @click.option("--uat", hidden=True, is_flag=True)
 # @click.option("--force-uat", hidden=True, is_flag=True)
 @click.option("--external", hidden=True)
 @click.option("--no-chrome", hidden=True, is_flag=True)
 @click_util.use_args
+@click_util.render_doc
 def check(args: Any):
     """Check the Guild setup.
 
@@ -103,6 +104,8 @@ def check(args: Any):
     version 0.7.0, use `--version '>=0.7.0'`. Note you must quote
     arguments that contain less-than or greater-than symbols in POSIX
     shells.
+
+    {{ remote_support.remote_option }}
     """
     from . import check_impl
 
