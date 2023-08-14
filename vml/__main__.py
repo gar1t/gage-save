@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
+from typing import *
+
 import os
 import sys
-from typing import Any, cast, Tuple, Union
 
-from vml._internal import click_util
-from vml._internal import exit
+from ._internal import click_util
+from ._internal import exit
 
-from vml._vendor import click
+from ._vendor import click
 
-from vml._internal.commands import main as main_cmd
+from ._internal.commands import main as main_cmd
 
 
 def main():

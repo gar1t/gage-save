@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
-from vml._vendor import click
+from ..._vendor import click
 
-from vml._internal import click_util
+from .. import click_util
 
 from . import remote_support
 from . import runs_support

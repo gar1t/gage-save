@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
 import logging
@@ -7,7 +9,7 @@ import logging.config
 import os
 import sys
 
-from vml._internal import ansi_util  # lightweight
+from . import ansi_util  # lightweight
 
 __last_init_kw = {}
 

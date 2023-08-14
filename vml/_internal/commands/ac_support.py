@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
 from pathlib import Path
@@ -271,7 +273,7 @@ def ac_safe_apply(f: Callable[..., Any], args: Any):
 
 
 def _active_shell():
-    from vml._internal import util
+    from .. import util
 
     return os.getenv("_GUILD_COMPLETE_SHELL") or util.active_shell()
 

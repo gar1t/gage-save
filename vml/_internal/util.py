@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 from typing import IO
 
@@ -18,6 +20,7 @@ import threading
 import time
 
 from . import ansi_util
+from . import log as loglib
 
 # Avoid expensive imports.
 
@@ -522,9 +525,8 @@ class LogCapture:
     def _handler(self):
         if self._use_root_handler:
             return logging.root.handlers[0]
-        from vml._internal import log
 
-        return log.ConsoleLogHandler()
+        return loglib.ConsoleLogHandler()
 
     def get_all(self):
         return self._records
@@ -572,7 +574,7 @@ def _resolve_refs_recurse(
 def _resolved_part_str(part: Any):
     if isinstance(part, str):
         return part
-    from vml._internal import yaml_util  # expensive
+    from . import yaml_util  # expensive
 
     return yaml_util.encode_yaml(part)
 
@@ -1631,7 +1633,7 @@ def bind_method(obj: Any, method_name: str, function: Any):
 
 
 def edit(s: str, extension: str = ".txt", strip_comment_lines: bool = False):
-    from vml._vendor import click
+    from .._vendor import click
 
     try:
         edited = click.edit(s, _try_editor(), extension=extension)

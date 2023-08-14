@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
 import json
@@ -16,19 +18,16 @@ import pkg_resources
 
 import vml
 
-from vml._vendor import click
+from ..._vendor import click
 
-from vml._internal import test as testlib
-from vml._internal import cli
-
-# from vml._internal import config
-from vml._internal import file_util
-
-# from vml._internal import plugin
-# from vml._internal import uat
-from vml._internal import util
-
-# from vml._internal import var
+from .. import test as testlib
+from .. import cli
+# from .. import config
+from .. import file_util
+# from .. import plugin
+# from .. import uat
+from .. import util
+# from .. import var
 
 # from . import remote_impl_support
 
@@ -132,7 +131,7 @@ def _check_external_and_exit(args: Any):
 
 
 # def _check_git_ls_files():
-#     from vml._internal import vcs_util
+#     from .. import vcs_util
 
 #     result = vcs_util.check_git_ls_files()
 #     if result.error:

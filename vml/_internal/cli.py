@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 from typing import BinaryIO
 
@@ -9,7 +11,7 @@ import os
 import sys
 import shutil
 
-from vml._vendor import click
+from .._vendor import click
 
 from . import ansi_util
 

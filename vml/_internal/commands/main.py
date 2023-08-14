@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from vml._internal import click_util
+from .. import click_util
 
-from vml._vendor import click
+from ..._vendor import click
 
 from .check import check
 from .help import help

@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 from typing import Match
 from typing import Pattern
+from queue import Queue
 
 import codecs
 import doctest
@@ -28,11 +31,11 @@ import yaml
 
 import vml
 
-from vml._internal import ansi_util
-from vml._internal import cli
-from vml._internal import file_util
-from vml._internal import util
-from vml._internal import yaml_util
+from . import ansi_util
+from . import cli
+from . import file_util
+from . import util
+from . import yaml_util
 
 PLATFORM = platform.system()
 
@@ -279,7 +282,7 @@ def _is_performant_system():
 
 
 # def _git_ls_files_is_target():
-#     from vml._internal import vcs_util
+#     from . import vcs_util
 
 #     return vcs_util.git_version() >= vcs_util.GIT_LS_FILES_TARGET_VER
 
@@ -748,7 +751,7 @@ def test_globals() -> Dict[str, Any]:
         "sys": sys,
         "tests_dir": tests_dir,
         "touch": util.touch,
-        # "use_project": use_project,
+        "use_project": use_project,
         "which": util.which,
         "write": write,
         "yaml": yaml,
@@ -1338,10 +1341,11 @@ def _capture_ignored(s: str, ignore_patterns: List[Pattern[str]]):
     return any(p.search(s) for p in ignore_patterns)
 
 
-# def use_project(project_name, guild_home=None):
-#     guild_home = guild_home or mkdtemp()
-#     _chdir(sample("projects", project_name))
-#     _set_guild_home(guild_home)
+def use_project(project_name: str, vml_home: Optional[str] = None):
+    pass
+    # guild_home = guild_home or mkdtemp()
+    # _chdir(sample("projects", project_name))
+    # _set_guild_home(guild_home)
 
 
 class _ConcurrentTest:
@@ -1400,7 +1404,7 @@ def _init_concurrent_tests(tests: List[str], skip: List[str]):
     return [_ConcurrentTest(name, name in skip) for name in tests]
 
 
-def _init_test_queue(tests: List[_ConcurrentTest]) -> "queue.Queue[_ConcurrentTest]":
+def _init_test_queue(tests: List[_ConcurrentTest]) -> Queue[_ConcurrentTest]:
     q = queue.Queue()
     for test in tests:
         q.put(test)
@@ -1408,7 +1412,7 @@ def _init_test_queue(tests: List[_ConcurrentTest]) -> "queue.Queue[_ConcurrentTe
 
 
 def _init_test_runners(
-    test_queue: "queue.Queue[_ConcurrentTest]",
+    test_queue: Queue[_ConcurrentTest],
     fail_fast: Optional[bool],
     force: Optional[bool],
     concurrency: Optional[int],
@@ -1423,7 +1427,7 @@ def _init_test_runners(
 class _ConcurrentTestRunner(threading.Thread):
     def __init__(
         self,
-        test_queue: "queue.Queue[_ConcurrentTest]",
+        test_queue: Queue[_ConcurrentTest],
         fail_fast: Optional[bool],
         force: Optional[bool],
     ):

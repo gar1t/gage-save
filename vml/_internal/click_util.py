@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 from typing import Pattern
 
@@ -12,7 +14,7 @@ import re
 
 import vml
 
-from vml._vendor import click
+from .._vendor import click
 
 # from click import shell_completion
 

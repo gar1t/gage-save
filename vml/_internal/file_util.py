@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
 import fnmatch
@@ -10,7 +12,7 @@ import os
 import re
 import shutil
 
-from vml._internal import util
+from . import util
 
 log = logging.getLogger()
 

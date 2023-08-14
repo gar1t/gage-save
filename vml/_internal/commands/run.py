@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from typing import *
 
-from vml._vendor import click
+from ..._vendor import click
 
-from vml._internal import click_util
+from .. import click_util
 
 
 @click.command
@@ -12,7 +14,6 @@ from vml._internal import click_util
     "opspec",
     metavar="OPERATION",
     required=False,
-    # shell_complete=_ac_opspec,
 )
 @click.option(
     "-y",
@@ -20,11 +21,30 @@ from vml._internal import click_util
     help="Do not prompt before running operation.",
     is_flag=True,
 )
+@click.option(
+    "--help-op",
+    help="Show operation help and exit.",
+    is_flag=True,
+)
+@click.option(
+    "--test-opdef",
+    help="Show how the operation def is generated and exit.",
+    is_flag=True,
+)
+@click.option(
+    "--test-sourcecode",
+    help="Test operation source code selection and exit.",
+    is_flag=True,
+)
+@click.option(
+    "--test-output",
+    help="Test operation output and exit.",
+    is_flag=True,
+)
 @click_util.use_args
 @click_util.render_doc
 def run(args: Any):
-    """Start a run.
-    """
+    """Start a run."""
     from .run_impl import main
 
     main(args)

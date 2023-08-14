@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
+from __future__ import annotations
+
 from typing import *
 
-from vml._vendor import click
+from ..._vendor import click
 
-from vml._internal import click_util
+from .. import click_util
 
 # from . import ac_support
 from . import remote_support
@@ -20,7 +24,7 @@ from . import remote_support
 
 
 # def _ac_builtin_tests(ctx, _param, incomplete):
-#     from vml._internal import test
+#     from .. import test
 
 #     if ctx.params.get("remote"):
 #         return []
