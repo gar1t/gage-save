@@ -8,7 +8,9 @@ train-2:
   exec: python train_config.py
   flags.bind:
     - to: config1.json
-      include: x
+      include:
+        - loc: x
+          as: x
     - to: config2.json
       include: noise
   flags:

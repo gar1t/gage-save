@@ -14,7 +14,7 @@ def import_params(fn: Callable[..., Any]):
         fn,
         [
             click.Argument(
-                "archive",
+                ("archive",),
                 # shell_complete=runs_support.ac_archive
             ),
             runs_support.runs_arg,
@@ -30,7 +30,9 @@ def import_params(fn: Callable[..., Any]):
             ),
             runs_support.all_filters,
             click.Option(
-                ("-y", "--yes"), help="Do not prompt before importing.", is_flag=True
+                ("-y", "--yes"),
+                help="Do not prompt before importing.",
+                is_flag=True,
             ),
         ],
     )

@@ -5,7 +5,7 @@ import sys
 from typing import Any, cast, Tuple, Union
 
 from vml._internal import click_util
-from vml._internal import exit_codes
+from vml._internal import exit
 
 from vml._vendor import click
 
@@ -68,7 +68,7 @@ def system_exit_params(e: SystemExit) -> Tuple[Union[str, None], int]:
     elif isinstance(e.code, int):
         msg, code = None, e.code
     else:
-        msg, code = e.code, exit_codes.DEFAULT_ERROR
+        msg, code = e.code, exit.DEFAULT_ERROR
     return msg, code
 
 

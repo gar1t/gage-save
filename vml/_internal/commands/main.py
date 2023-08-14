@@ -6,6 +6,7 @@ from vml._vendor import click
 
 from .check import check
 from .help import help
+from .run import run
 from .runs import runs
 
 
@@ -15,4 +16,5 @@ def main():
 
 main.add_command(check)
 main.add_command(help)
+main.add_command(run)
 main.add_command(runs)

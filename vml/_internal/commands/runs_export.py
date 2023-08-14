@@ -32,7 +32,9 @@ def export_params(fn: Callable[..., Any]):
             ),
             runs_support.all_filters,
             click.Option(
-                ("-y", "--yes"), help="Do not prompt before exporting.", is_flag=True
+                ("-y", "--yes"),
+                help="Do not prompt before exporting.",
+                is_flag=True,
             ),
         ],
     )

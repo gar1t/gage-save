@@ -32,7 +32,7 @@
     vml._internal.commands.check
     vml._internal.commands.check_impl
     vml._internal.commands.main
-    vml._internal.exit_codes
+    vml._internal.exit
     vml._internal.file_util
     vml._internal.log
     vml._internal.python_util
