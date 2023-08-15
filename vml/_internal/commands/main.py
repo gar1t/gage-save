@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import *
+
 from .. import click_util
 
 from ..._vendor import click
@@ -13,6 +15,7 @@ from .runs import runs
 @click.group(cls=click_util.Group)
 def main():
     pass
+
 
 main.add_command(check)
 main.add_command(help)

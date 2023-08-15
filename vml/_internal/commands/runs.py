@@ -20,9 +20,7 @@ from .runs_list import list_runs, runs_list_options
 from .runs_mark import mark_runs
 from .runs_merge import merge_runs
 from .runs_publish import publish_runs
-from .runs_pull import pull_runs
 from .runs_purge import purge_runs
-from .runs_push import push_runs
 from .runs_restore import restore_runs
 from .runs_stop import stop_runs
 from .runs_tag import tag_runs
@@ -39,11 +37,10 @@ def runs(ctx: click.Context, **kw: Any):
     """
     if not ctx.invoked_subcommand:
         ctx.invoke(list_runs, **kw)
-    else:
-        if _params_specified(kw):
-            cli.error(
-                f"options cannot be listed before command ('{ctx.invoked_subcommand}')"
-            )
+    elif _params_specified(kw):
+        cli.error(
+            f"options cannot be listed before command ('{ctx.invoked_subcommand}')"
+        )
 
 
 def _params_specified(kw: Dict[str, Any]):
@@ -60,9 +57,7 @@ runs.add_command(list_runs)
 runs.add_command(mark_runs)
 runs.add_command(merge_runs)
 runs.add_command(publish_runs)
-runs.add_command(pull_runs)
 runs.add_command(purge_runs)
-runs.add_command(push_runs)
 runs.add_command(restore_runs)
 runs.add_command(run_info)
 runs.add_command(stop_runs)

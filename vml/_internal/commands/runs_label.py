@@ -8,7 +8,6 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
@@ -36,7 +35,6 @@ def label_params(fn: Callable[..., Any]):
                 ("-c", "--clear"), help="Clear the entire run label.", is_flag=True
             ),
             runs_support.all_filters,
-            remote_support.remote_option("Label remote runs."),
             click.Option(
                 ("-y", "--yes"),
                 help="Do not prompt before modifying labels.",
@@ -80,12 +78,6 @@ def label_runs(ctx: click.Context, args: Any):
     run).
 
     {{ runs_support.all_filters }}
-
-    ### Label Remote Runs
-
-    To label remote runs, use `--remote`.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO: label runs")
 

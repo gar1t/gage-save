@@ -13,5 +13,5 @@ Test version.
     <exit 0>
 
     >>> run("vml check -V 999")
-    guild: version mismatch: current version '...' does not match '999'
+    vml: version mismatch: current version '...' does not match '999'
     <exit 1>

@@ -81,12 +81,15 @@ def pop_find(l: List[Any], f: Callable[[Any], Any], default: Any = None):
 
 
 def ensure_dir(d: str):
-    d = realpath(d)
     try:
-        os.makedirs(d)
+        mkdir(d)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def mkdir(d: str):
+    os.makedirs(realpath(d))
 
 
 def ensure_deleted(path: str):
@@ -770,6 +773,7 @@ _binary_ext = {
 _control_chars = b"\n\r\t\f\b"
 _printable_ascii = _control_chars + bytes(range(32, 127))
 _printable_high_ascii = bytes(range(127, 256))
+
 
 def is_text_file(path: str, ignore_ext: bool = False):
     import chardet
@@ -1739,6 +1743,7 @@ class lazy_str:
 _KNOWN_SHELLS = (
     "bash",
     "cmd",
+    "code",
     "dash",
     "fish",
     "powershell",

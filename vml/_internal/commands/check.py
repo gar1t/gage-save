@@ -11,12 +11,8 @@ from ..._vendor import click
 from .. import click_util
 
 # from . import ac_support
-from . import remote_support
-
 
 # def _ac_all_tests(ctx, param, incomplete):
-#     if ctx.params.get("remote"):
-#         return []
 #     return (
 #         _ac_builtin_tests(ctx, param, incomplete)
 #         + ac_support.ac_filename(["md", "txt"], incomplete)
@@ -25,9 +21,6 @@ from . import remote_support
 
 # def _ac_builtin_tests(ctx, _param, incomplete):
 #     from .. import test
-
-#     if ctx.params.get("remote"):
-#         return []
 #     return [t for t in test.all_tests() if t.startswith(incomplete)]
 
 
@@ -76,7 +69,6 @@ from . import remote_support
 @click.option(
     "--notify", is_flag=True, help="Send system notification when check is complete."
 )
-@remote_support.remote_option("Check remote environment.")
 @click.option(
     "--offline/--no-offline",
     default=None,
@@ -108,8 +100,6 @@ def check(args: Any):
     version 0.7.0, use `--version '>=0.7.0'`. Note you must quote
     arguments that contain less-than or greater-than symbols in POSIX
     shells.
-
-    {{ remote_support.remote_option }}
     """
     from . import check_impl
 

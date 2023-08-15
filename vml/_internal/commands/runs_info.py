@@ -8,7 +8,6 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
@@ -31,7 +30,6 @@ from . import runs_support
 @click.option("--json", help="Format information as JSON.", is_flag=True)
 @click.option("--private-attrs", is_flag=True, hidden=True)
 @runs_support.all_filters
-@remote_support.remote_option("Show info for remote run.")
 @click.pass_context
 @click_util.use_args
 @click_util.render_doc
@@ -51,12 +49,6 @@ def run_info(ctx: click.Context, args: Any):
     what additional information is available.
 
     {{ runs_support.all_filters }}
-
-    ### Remote Runs
-
-    Use `--remote` to show info for a remote run.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO show runs info")
 

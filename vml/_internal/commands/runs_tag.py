@@ -8,14 +8,10 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
 # def _ac_tag(ctx: click.Context, param: click.Parameter, incomplete: str):
-#     if ctx.params.get("remote"):
-#         return []
-
 #     tags = set()
 #     ctx.params["runs"] = ctx.args or ["1"]
 #     for run in runs_support.runs_for_ctx(ctx):
@@ -65,7 +61,6 @@ def tag_params(fn: Callable[..., Any]):
                 is_flag=True,
             ),
             runs_support.all_filters,
-            remote_support.remote_option("Tag remote runs."),
             click.Option(
                 ("-y", "--yes"),
                 help="Do not prompt before modifying tags.",
@@ -100,12 +95,6 @@ def tag_runs(ctx: click.Context, args: Any):
     run).
 
     {{ runs_support.all_filters }}
-
-    ### Tag Remote Runs
-
-    To tag remote runs, use `--remote`.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO tags runs")
 

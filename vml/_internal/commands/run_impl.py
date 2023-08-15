@@ -6,11 +6,13 @@ from typing import *
 
 from ..opdef import OpDef
 from ..op import Op
+from ..op import OpError
 
 from ..opdef import opdef_to_opspec
 
 from .. import cli
 from .. import config
+from .. import op as oplib
 
 ###################################################################
 # State
@@ -35,6 +37,7 @@ def _init_state(args: Any):
     S = State(args)
     _init_user_op(S)
     return S
+
 
 def _init_user_op(S: State):
     assert not S.user_op, S.user_op
@@ -61,6 +64,8 @@ def _dispatch_cmd(S: State):
         _test_sourcecode(S)
     elif S.args.test_output:
         _test_output(S)
+    elif S.args.test_prompt:
+        _test_prompt(S)
     else:
         _confirm_run(S)
 
@@ -75,7 +80,7 @@ def _print_op_help(S: State):
 
 
 ###################################################################
-# Trace opdef
+# Test commands
 ###################################################################
 
 
@@ -83,22 +88,16 @@ def _test_opdef(S: State):
     pass
 
 
-###################################################################
-# Test source code
-###################################################################
-
-
 def _test_sourcecode(S: State):
     pass
 
 
-###################################################################
-# Test output
-###################################################################
-
-
 def _test_output(S: State):
     pass
+
+
+def _test_prompt(S: State):
+    print(_prompt(S))
 
 
 ###################################################################
@@ -112,7 +111,27 @@ def _confirm_run(S: State):
 
 
 def _run(S: State):
+    assert S.user_op
+    if S.args.stage:
+        _stage_op(S.user_op, S.args)
+    else:
+        _run_op(S.user_op, S.args)
+
+
+def _stage_op(op: Op, args: Any):
     print("TODO run")
+
+
+def _run_op(op: Op, args: Any):
+    try:
+        oplib.run_op(op)
+    except OpError as e:
+        _handle_op_error(e)
+
+
+def _handle_op_error(e: OpError):
+    print(e)
+    raise SystemExit()
 
 
 ###################################################################
@@ -121,26 +140,28 @@ def _run(S: State):
 
 
 def _confirm(S: State):
+    return cli.confirm(_prompt(S), default=True)
+
+
+def _prompt(S: State):
     action = _preview_action(S)
     subject = _preview_subject(S)
     batch_suffix = _preview_batch_suffix(S)
-    remote_suffix = _preview_remote_suffix(S)
     flags_note = _preview_flags_note(S)
     user_flags = _preview_user_flags(S)
     optimizer_flags = _preview_optimizer_flags(S)
-    prompt = (
+    return (
         f"You are about to {action} {subject}"
-        f"{batch_suffix}{remote_suffix}{flags_note}\n"
+        f"{batch_suffix}{flags_note}\n"
         f"{user_flags}"
         f"{optimizer_flags}"
         "Continue?"
     )
-    return cli.confirm(prompt, default=True)
 
 
 def _preview_action(S: State):
-    # if S.args.stage:
-    #     return "stage"
+    if S.args.stage:
+        return "stage"
     # if S.args.stage_trials:
     #     return "stage trials for"
     # if S.args.restart:
@@ -233,12 +254,6 @@ def _preview_batch_suffix(S: State):
 #     if obj[:1] == "-":
 #         return f"maximize {obj[1:]}"
 #     return f"minimize {obj}"
-
-
-def _preview_remote_suffix(S: State):
-    # if S.args.remote:
-    #     return f" on {S.args.remote}"
-    return ""
 
 
 def _preview_flags_note(S: State):

@@ -8,16 +8,11 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
 # def _ac_comment_index(ctx, incomplete, **_kw):
 #     from . import runs_impl
-
-#     if ctx.params.get("remote"):
-#         return []
-
 #     args = click_util.Args(**ctx.params)
 #     args.runs = ctx.args
 #     runs = runs_impl.runs_op_selected(args, ctx, runs_impl.LATEST_RUN_ARG)
@@ -75,7 +70,6 @@ def comment_params(fn: Callable[..., Any]):
                 ),
             ),
             runs_support.all_filters,
-            remote_support.remote_option("Apply comments to remote runs."),
             click.Option(
                 ("-y", "--yes"),
                 help="Do not prompt before modifying comments.",
@@ -112,14 +106,6 @@ def comment_runs(ctx: click.Context, args: Any):
     run).
 
     {{ runs_support.all_filters }}
-
-    ### Comment Remote Runs
-
-    To apply the comment command to remote runs, use `--remote`. When using
-    `--remote` you must explicitly provide comments when adding using `-a,
-    --add`. The `--edit` option is not supported with `--remote`.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO: comment on runs")
 

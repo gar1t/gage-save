@@ -8,7 +8,6 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
@@ -18,11 +17,6 @@ def runs_stop_params(fn: Callable[..., Any]):
         [
             click.Option(
                 ("-y", "--yes"), help="Do not prompt before stopping.", is_flag=True
-            ),
-            click.Option(
-                ("-n", "--no-wait"),
-                help="Don't wait for remote runs to stop.",
-                is_flag=True,
             ),
             click.Option(
                 ("--force",),
@@ -41,7 +35,6 @@ def runs_stop_params(fn: Callable[..., Any]):
             ),
             runs_support.runs_arg,
             runs_support.common_filters,
-            remote_support.remote_option("Stop remote runs."),
         ],
     )
     return fn
@@ -68,12 +61,6 @@ def stop_runs(ctx: click.Context, args: Any):
     with status 'running').
 
     {{ runs_support.common_filters }}
-
-    ### Stop Remote Runs
-
-    To stop remote runs, use `--remote`.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO")
 

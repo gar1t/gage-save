@@ -29,8 +29,6 @@ from .. import file_util
 from .. import util
 # from .. import var
 
-# from . import remote_impl_support
-
 log = logging.getLogger("guild")
 
 # (mod_name, required_flag)
@@ -76,14 +74,6 @@ class Check:
 
 
 def main(args: Any):
-    if args.remote:
-        assert False
-        # remote_impl_support.check(args)
-    else:
-        _check(args)
-
-
-def _check(args: Any):
     try:
         _check_impl(args)
     except SystemExit as e:
@@ -581,7 +571,6 @@ def _print_disk_usage():
         # ("guild_home", config.guild_home()),
         # ("runs", var.runs_dir()),
         # ("deleted_runs", var.runs_dir(deleted=True)),
-        # ("remote_state", var.remote_dir()),
         # ("cache", var.cache_dir()),
     ]
     formatted_disk_usage = [_formatted_disk_usage(path) for _name, path in paths]

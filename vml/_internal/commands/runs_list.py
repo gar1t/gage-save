@@ -8,7 +8,6 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
@@ -34,14 +33,12 @@ def runs_list_options(fn: Callable[..., Any]):
             ),
             click.Option(("-d", "--deleted"), help="Show deleted runs.", is_flag=True),
             runs_support.archive_option("Show archived runs in PATH."),
-            click.Option(("-c", "--comments"), help="Show run comments.", is_flag=True),
             click.Option(("-v", "--verbose"), help="Show run details.", is_flag=True),
             click.Option(("--json",), help="Format runs as JSON.", is_flag=True),
             click.Option(
                 ("-s", "--simplified"), help="Show a simplified list.", is_flag=True
             ),
             runs_support.all_filters,
-            remote_support.remote_option("List runs on REMOTE rather than local runs."),
         ],
     )
     return fn
@@ -77,16 +74,8 @@ def list_runs(ctx: click.Context, args: Any):
     (permanently delete runs).
 
     {{ runs_support.archive_option }}
-
-    ### Show Remote Runs
-
-    To list runs on a remote, specify `--remote REMOTE`. Use ``guild remotes``
-    to list available remotes.
-
-    For information on configuring remotes, see ``guild remotes --help``.
     """
-    print("TODO: list runs")
+    from . import runs_list_impl
 
-    # from . import runs_impl
-
-    # runs_impl.list_runs(args, ctx)
+    with click_util.Context(ctx):
+        runs_list_impl.list_runs(args)

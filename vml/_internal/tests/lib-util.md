@@ -769,7 +769,7 @@ The active shell is provided as a shell string using
     ...     while p:
     ...         proc_path.append(_quote(p.name()))
     ...         p = p.parent()
-    ...     print(f"Unknown active shell - proc path: {' < '.join(proc_path)}")
+    ...     print(f"Unknown active shell (proc path: {' > '.join(reversed(proc_path))})")
     ...     print(f"Expexted one of: {', '.join(_KNOWN_SHELLS)}")
 
 ### Active shell caching

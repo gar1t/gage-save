@@ -8,7 +8,6 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
@@ -16,7 +15,6 @@ from . import runs_support
 @runs_support.runs_arg
 @runs_support.archive_option("Delete archived runs in PATH.")
 @runs_support.all_filters
-@remote_support.remote_option("Delete remote runs.")
 @click.option("-y", "--yes", help="Do not prompt before deleting.", is_flag=True)
 @click.option(
     "-p",
@@ -57,12 +55,6 @@ def delete_runs(ctx: click.Context, args: Any):
     selected).
 
     {{ runs_support.all_filters }}
-
-    ### Delete Remote Runs
-
-    To delete runs on a remote, use `--remote`.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO: delete runs")
 

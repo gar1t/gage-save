@@ -1,0 +1,15 @@
+{
+  "prepare-data": {
+    "exec": "python train.py --prepare"
+  },
+
+  "train": {
+    "exec": "python train.py",
+    "requires": [
+      {
+        "type": "runfiles",
+        "select": ["data.csv"]
+      }
+    ]
+  }
+}

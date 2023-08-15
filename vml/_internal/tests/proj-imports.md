@@ -33,8 +33,8 @@
     vml._internal.commands.check
     vml._internal.commands.check_impl
     vml._internal.commands.help
+    vml._internal.commands.impl_support
     vml._internal.commands.main
-    vml._internal.commands.remote_support
     vml._internal.commands.run
     vml._internal.commands.run_impl
     vml._internal.commands.runs
@@ -46,12 +46,11 @@
     vml._internal.commands.runs_info
     vml._internal.commands.runs_label
     vml._internal.commands.runs_list
+    vml._internal.commands.runs_list_impl
     vml._internal.commands.runs_mark
     vml._internal.commands.runs_merge
     vml._internal.commands.runs_publish
-    vml._internal.commands.runs_pull
     vml._internal.commands.runs_purge
-    vml._internal.commands.runs_push
     vml._internal.commands.runs_restore
     vml._internal.commands.runs_stop
     vml._internal.commands.runs_support
@@ -61,9 +60,10 @@
     vml._internal.file_util
     vml._internal.log
     vml._internal.op
-    vml._internal.op_util
     vml._internal.opdef
     vml._internal.python_util
+    vml._internal.run
+    vml._internal.run_manifest
     vml._internal.run_util
     vml._internal.test
     vml._internal.util

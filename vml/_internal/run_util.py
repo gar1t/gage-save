@@ -5,9 +5,15 @@ from __future__ import annotations
 from typing import *
 from typing import BinaryIO
 
+from .run import Run
+
 import errno
 import os
 import struct
+import uuid
+
+from . import config
+from . import util
 
 RunOutput = Tuple[float, int, str]
 
@@ -77,3 +83,21 @@ class RunOutputReader:
             f.close()
         except IOError:
             pass
+
+
+def init_run():
+    run_id = mkid()
+    run_base = os.path.join(config.runs_home(), mkid())
+    run = Run(run_id, run_base)
+    mk_run_dirs(run)
+    return run
+
+
+def mk_run_dirs(run: Run):
+    util.mkdir(run.run_dir)
+    util.mkdir(run.meta_dir)
+    util.mkdir(run.user_dir)
+
+
+def mkid():
+    return uuid.uuid4().hex

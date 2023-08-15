@@ -14,8 +14,6 @@ log = logging.getLogger()
 
 
 # def ac_run(ctx, param, incomplete):
-#     if ctx.params.get("remote"):
-#         return []
 #     # ensure that other_run follows the same logic as run, without needing to make
 #     #    that logic know about other_run
 #     if param.name == "other_run":
@@ -57,17 +55,12 @@ log = logging.getLogger()
 
 # def ac_operation(ctx, _param, incomplete):
 #     from guild import run_util
-
-#     if ctx.params.get("remote"):
-#         return []
 #     runs = runs_for_ctx(ctx)
 #     ops = {run_util.format_operation(run, nowarn=True) for run in runs}
 #     return sorted([op for op in ops if op.startswith(incomplete)])
 
 
 # def ac_label(ctx, _param, incomplete):
-#     if ctx.params.get("remote"):
-#         return []
 #     runs = runs_for_ctx(ctx)
 #     labels = {run.get("label") or "" for run in runs}
 #     return sorted([_quote_label(l) for l in labels if l and l.startswith(incomplete)])
@@ -78,8 +71,6 @@ log = logging.getLogger()
 
 
 # def ac_tag(ctx, _param, incomplete):
-#     if ctx.params.get("remote"):
-#         return []
 #     # Reset tags to avoid limiting results based on selected tags.
 #     ctx.params["tags"] = []
 #     runs = runs_for_ctx(ctx)
@@ -94,8 +85,6 @@ log = logging.getLogger()
 
 
 # def ac_digest(ctx, _param, incomplete):
-#     if ctx.params.get("remote"):
-#         return []
 #     runs = runs_for_ctx(ctx)
 #     digests = {run.get("sourcecode_digest") or "" for run in runs}
 #     return sorted([d for d in digests if d and d.startswith(incomplete)])

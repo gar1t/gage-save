@@ -8,14 +8,12 @@ from ..._vendor import click
 
 from .. import click_util
 
-from . import remote_support
 from . import runs_support
 
 
 @click.command("purge")
 @runs_support.runs_arg
 @runs_support.all_filters
-@remote_support.remote_option("Permanently delete remote runs.")
 @click.option("-y", "--yes", help="Do not prompt before purging.", is_flag=True)
 @click.pass_context
 @click_util.use_args
@@ -46,13 +44,6 @@ def purge_runs(ctx: click.Context, args: Any):
     selected).
 
     {{ runs_support.all_filters }}
-
-    ### Permanently Delete Remote Runs
-
-    If a run has been deleted remotely, you can permanently delete it using
-    `--remote` provided the remote type supports deleted run recovery.
-
-    {{ remote_support.remote_option }}
     """
     print("TODO purge runs")
 

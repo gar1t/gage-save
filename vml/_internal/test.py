@@ -33,6 +33,7 @@ import vml
 
 from . import ansi_util
 from . import cli
+from . import config
 from . import file_util
 from . import util
 from . import yaml_util
@@ -743,7 +744,7 @@ def test_globals() -> Dict[str, Any]:
         "run_capture": _run_capture,
         "sample": sample,
         # "samples_dir": samples_dir,
-        # "set_guild_home": _set_guild_home,
+        "set_var_home": _set_var_home,
         "sha256": util.file_sha256,
         "shlex_quote": util.shlex_quote,
         "sleep": time.sleep,
@@ -1172,10 +1173,8 @@ def _chdir(s: str):
     os.chdir(os.path.expandvars(s))
 
 
-# def _set_guild_home(path):
-#     if os.getenv("DEBUG") == "1":
-#         sys.stderr.write(f"Setting Guild home: {path}\n")
-#     config.set_guild_home(path)
+def _set_var_home(path: str):
+    config.set_var_home(path)
 
 
 def _compare_dirs(d1: str, d2: str):
@@ -1341,11 +1340,10 @@ def _capture_ignored(s: str, ignore_patterns: List[Pattern[str]]):
     return any(p.search(s) for p in ignore_patterns)
 
 
-def use_project(project_name: str, vml_home: Optional[str] = None):
-    pass
-    # guild_home = guild_home or mkdtemp()
-    # _chdir(sample("projects", project_name))
-    # _set_guild_home(guild_home)
+def use_project(project_name: str, var_home: Optional[str] = None):
+    var_home = var_home or mkdtemp()
+    _chdir(sample("projects", project_name))
+    _set_var_home(var_home)
 
 
 class _ConcurrentTest:

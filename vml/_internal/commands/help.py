@@ -9,20 +9,6 @@ from ..._vendor import click
 from .. import click_util
 
 TOPICS: Dict[str, Tuple[str, str]] = {
-    "remotes": (
-        "Help with remotes.",
-        """## Vista ML Remotes
-
-Remotes are systems that Vista ML interacts with. Remotes are defined in user
-configuration.
-
-Remotes may be specified using either a name or an line specification.
-
-See https://vistaml.org/remotes/ for details.
-
-To list available remotes, use ``vml remotes``.
-""",
-    ),
     "filters": (
         "Help with run filter options.",
         """## Vista ML Filter Options

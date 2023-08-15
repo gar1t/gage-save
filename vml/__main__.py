@@ -54,7 +54,7 @@ def _handle_click_exception(e: click.exceptions.ClickException):
 
 def _print_error_and_exit(msg: Union[str, None], exit_status: int):
     if msg:
-        click.echo(f"guild: {msg}", err=True)
+        click.echo(f"vml: {msg}", err=True)
     sys.exit(exit_status)
 
 

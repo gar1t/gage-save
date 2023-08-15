@@ -34,6 +34,25 @@ CMD_SPLIT_P = re.compile(r", ?")
 #         except ValueError as e:
 #             raise ValueError(f"{s!r} is not a valid number") from e
 
+_ctx_stack: List[click.Context] = []
+
+
+class Context:
+    def __init__(self, ctx: click.Context):
+        self.ctx = ctx
+
+    def __enter__(self):
+        _ctx_stack.append(self.ctx)
+        return self.ctx
+
+    def __exit__(*exc: Any):
+        _ctx_stack.pop()
+
+
+def context():
+    assert _ctx_stack
+    return _ctx_stack[-1]
+
 
 class Args:
     def __init__(self, **kw: Any):
@@ -254,9 +273,7 @@ def use_args(fn0: Callable[..., Any]) -> click.Command:
     return cast(click.Command, functools.update_wrapper(fn, fn0))
 
 
-def append_params(
-    fn: Callable[..., Any], params: Sequence[Any]
-):
+def append_params(fn: Callable[..., Any], params: Sequence[Any]):
     fn.__click_params__ = getattr(fn, "__click_params__", [])
     for param in reversed(params):
         if callable(param):
