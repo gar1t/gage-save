@@ -96,7 +96,6 @@ def init_run():
 def mk_run_dirs(run: Run):
     util.mkdir(run.run_dir)
     util.mkdir(run.meta_dir)
-    util.mkdir(run.user_dir)
 
 
 def mkid():

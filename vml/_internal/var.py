@@ -41,13 +41,9 @@ def _iter_runs(root: str):
     except OSError:
         names: Set[str] = set()
     for name in names:
-        if not name.endswith(".meta"):
-            continue
-        base_name = name[:-5]
-        run_dir_name = base_name + ".run"
-        if not run_dir_name in names:
-            continue
-        yield base_name, os.path.join(root, base_name)
+        if name.endswith(".meta"):
+            base_name = name[:-5]
+            yield base_name, os.path.join(root, base_name)
 
 
 def _run_sort_key(sort: str):

@@ -114,26 +114,25 @@ def _check_version_and_exit(req: str):
 
 def _check_external_and_exit(args: Any):
     if args.external == "git-ls-files":
-        assert False, "TODO"
-        # _check_git_ls_files()
+        _check_git_ls_files()
     else:
         cli.error(f"unsupported external check: {args.external}")
 
 
-# def _check_git_ls_files():
-#     from .. import vcs_util
+def _check_git_ls_files():
+    from .. import vcs_util
 
-#     result = vcs_util.check_git_ls_files()
-#     if result.error:
-#         cli.error(
-#             f"git-ls-files NOT OK (git version {result.formatted_git_version}; "
-#             f"{result.git_exe})\n{result.error}"
-#         )
-#     cli.out(
-#         f"git-ls-files is ok (git version {result.formatted_git_version}; "
-#         f"{result.git_exe})"
-#     )
-#     sys.exit(0)
+    result = vcs_util.check_git_ls_files()
+    if result.error:
+        cli.error(
+            f"git-ls-files NOT OK (git version {result.formatted_git_version}; "
+            f"{result.git_exe})\n{result.error}"
+        )
+    cli.out(
+        f"git-ls-files is ok (git version {result.formatted_git_version}; "
+        f"{result.git_exe})"
+    )
+    sys.exit(0)
 
 
 # def _uat_and_exit(args):
