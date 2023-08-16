@@ -68,4 +68,6 @@
     vml._internal.test
     vml._internal.util
     vml._internal.var
+    vml._internal.vcs_util
     vml._internal.yaml_util
+    vml.api

@@ -32,6 +32,12 @@
       "type": "shell",
       "command": "vml",
       "args": ["check", "-t", "${file}"]
+    },
+    {
+      "label": "Rerun Last Test",
+      "type": "shell",
+      "command": "vml",
+      "args": ["check", "--last-test"]
     }
   ]
 }

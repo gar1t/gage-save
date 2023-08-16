@@ -12,6 +12,7 @@ import platform
 # import re
 import subprocess
 import sys
+import tempfile
 import warnings
 
 import pkg_resources
@@ -22,11 +23,14 @@ from ..._vendor import click
 
 from .. import test as testlib
 from .. import cli
+
 # from .. import config
 from .. import file_util
+
 # from .. import plugin
 # from .. import uat
 from .. import util
+
 # from .. import var
 
 log = logging.getLogger("guild")
@@ -90,6 +94,7 @@ def _check_impl(args: Any):
         _check_external_and_exit(args)
     # if args.uat or args.force_uat:
     #     _uat_and_exit(args)
+    _apply_last_tests(args)
     if args.all_tests or args.tests:
         _run_tests_and_exit(args)
     _print_info_and_exit(args)
@@ -165,10 +170,44 @@ def _TestEnv(
     )
 
 
+def _apply_last_tests(args: Any):
+    if args.last_test:
+        if args.tests or args.all_tests:
+            cli.error("cannot use --last-test with other tests")
+        last_tests = _try_load_last_tests()
+        if not last_tests:
+            cli.error(
+                "no last tests to run\n"  # \
+                "Run one or more tests with '-t, --test' and try again."
+            )
+        args.tests = last_tests
+    elif args.tests:
+        _save_last_tests(args.tests)
+
+
+LAST_TESTS_PATH = os.path.join(tempfile.gettempdir(), "vistml-last-tests")
+
+
+def _try_load_last_tests():
+    try:
+        f = open(LAST_TESTS_PATH)
+    except FileNotFoundError:
+        return None
+    else:
+        with f:
+            return json.load(f)
+
+
+def _save_last_tests(tests: List[str]):
+    with open(LAST_TESTS_PATH, "w") as f:
+        json.dump(tests, f)
+
+
 def _run_tests_and_exit(args: Any):
     with _TestEnv(concurrency=args.concurrency):
         success = _run_tests(args)
     if success:
+        _maybe_print_tests_passed()
         raise SystemExit(0)
     cli.error(_tests_failed_msg() if not args.no_chrome else None)
 
@@ -592,6 +631,11 @@ def _formatted_disk_usage(path: str):
 def _format_disk_usage_and_path(usage: str, path: str, max_usage_width: int):
     padding = " " * (max_usage_width - len(usage) + 1)
     return f"{usage}{padding}{path}"
+
+
+def _maybe_print_tests_passed():
+    if os.getenv("TERM_PROGRAM") == "vscode":
+        print("ALL TESTS PASSED ✨")
 
 
 def _tests_failed_msg():

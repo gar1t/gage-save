@@ -1,0 +1,6 @@
+{
+    "hello": {
+        "exec": "python hello.py",
+        "default": true
+    }
+}

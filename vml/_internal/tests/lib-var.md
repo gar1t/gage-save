@@ -12,4 +12,14 @@ feature is to read Runs from a runs location.
     >>> var.runs()
     []
 
-    >>> sleep(5)
+Generate one run.
+
+    >>> import vml
+
+    >>> run = vml.run(sample("hello"))
+
+    >>> run.run_dir
+    'yyy.run'
+
+    >>> find(run.run_dir)
+    <empty>

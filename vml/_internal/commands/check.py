@@ -80,6 +80,7 @@ from .. import click_util
 # @click.option("--force-uat", hidden=True, is_flag=True)
 @click.option("--external", hidden=True)
 @click.option("--no-chrome", hidden=True, is_flag=True)
+@click.option("--last-test", hidden=True, is_flag=True)
 @click_util.use_args
 @click_util.render_doc
 def check(args: Any):

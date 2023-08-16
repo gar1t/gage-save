@@ -6,6 +6,7 @@
 
     >>> find(".")
     hello.py
+    vistaml.json
 
     >>> find(var_home)
     <empty>
