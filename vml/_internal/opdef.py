@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import *
 
 
+class OpDefNotFound(Exception):
+    pass
+
+
 class OpDef:
     def __init__(self, name: str):
         self.name = name
@@ -12,10 +16,6 @@ class OpDef:
 
 class Flag:
     pass
-
-
-def opdef_to_opspec(opdef: OpDef, cwd: Optional[str] = None):
-    return opdef.name
 
 
 class Dependency:
@@ -66,3 +66,6 @@ r""" Dependency notes
   use anyting else. Might just drop download support for 1.0 though.
 
 """
+
+def opdef_to_opspec(opdef: OpDef, cwd: Optional[str] = None):
+    return opdef.name

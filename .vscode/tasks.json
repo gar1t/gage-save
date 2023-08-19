@@ -5,14 +5,11 @@
   "problemMatcher": {
     "owner": "vistaml",
     "fileLocation": "absolute",
-    "pattern": [
-      {
-        "regexp": "^File \"(.*)\", line (\\d+)",
-        "file": 1,
-        "line": 2
-      },
-      { "regexp": "^(Failed example):$", "message": 1 },
-    ]
+    "pattern": {
+      "regexp": "^File \"(.*)\", line (\\d+)",
+      "file": 1,
+      "line": 2
+    }
   },
   "presentation": {
     "revealProblems": "onProblem",

@@ -519,7 +519,7 @@ class Context:
 
         Example usage::
 
-            LANG_KEY = f'{__name__}.lang'
+            LANG_KEY = f"{__name__}.lang'
 
             def set_language(value):
                 ctx = get_current_context()

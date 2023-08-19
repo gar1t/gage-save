@@ -538,7 +538,7 @@ def _handle_doctest_value_error(e: ValueError, name: str, filename: str):
     print("*" * 70)
     m = re.match(r"line (\d+) of the doctest for", str(e))
     if m:
-        print(f'File "{filename}", line {m.group(1)}, in {name}')
+        print(f"File \"{filename}\", line {m.group(1)}, in {name}")
     print(e)
     print("*" * 70)
     return 1, 0
@@ -609,7 +609,7 @@ def _wrap_bash(source: str, options: _Options):
 
 def _cd_from_bash(source: str):
     assert source.startswith("cd ")
-    return f'cd("{source[3:]}")'
+    return f"cd(\"{source[3:]}\")"
 
 
 def _set_bash_env_from_bash(source: str):
@@ -617,17 +617,17 @@ def _set_bash_env_from_bash(source: str):
     parts = source[7:].split("=", 1)
     assert len(parts) == 2, source
     env_name, env_val = parts
-    return f'_bash_env["{env_name}"] = "{env_val}"'
+    return f"_bash_env[\"{env_name}\"] = \"{env_val}\""
 
 
 def _unset_bash_env_from_bash(source: str):
     assert source.startswith("unset ")
-    return f'_ = _bash_env.pop("{source[6:]}", None)'
+    return f"_ = _bash_env.pop(\"{source[6:]}\", None)"
 
 
 def _run_from_bash(source: str):
     source = source.replace('"', '\\"')
-    return f'run("""{source}""", env=_bash_env)'
+    return f"run(\"\"\"{source}\"\"\", env=_bash_env)"
 
 
 def _check_prompt_blank(lines: List[str], indent: int, name: str, lineno: int, *_: Any):

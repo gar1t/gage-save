@@ -14,5 +14,14 @@
     "reportUnknownParameterType": "warning",
     "reportMissingParameterType": "warning",
     "reportWildcardImportFromLibrary": "none"
-  }
+  },
+  "black-formatter.args": [
+    "--skip-string-normalization"
+  ],
+  "json.schemas": [
+    {
+      "fileMatch": ["vistml.json"],
+      "url": "./vml/schema/project.json"
+    }
+  ]
 }

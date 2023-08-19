@@ -12,10 +12,6 @@ from . import ac_support
 from . import runs_support
 
 
-def _ac_dir(ctx: click.Context, param: click.Parameter, incomplete: str):
-    return ac_support.ac_dir(incomplete)
-
-
 def publish_params(fn: Callable[..., Any]):
     click_util.append_params(
         fn,
@@ -25,7 +21,7 @@ def publish_params(fn: Callable[..., Any]):
                 ("-d", "--dest"),
                 metavar="DIR",
                 help="Destination to publish runs.",
-                shell_complete=_ac_dir,
+                shell_complete=ac_support.ac_dir(),
             ),
             click.Option(
                 ("-t", "--template"),

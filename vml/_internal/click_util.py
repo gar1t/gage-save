@@ -316,7 +316,7 @@ def _format_no_such_option_error(e: click.exceptions.NoSuchOption):
 def _format_usage_error(e: click.exceptions.UsageError) -> str:
     msg = e.format_message()
     replacements = [
-        ('No such command "(.+)"', "unrecognized command '%s'"),
+        ("No such command \"(.+)\"", "unrecognized command '%s'"),
         ("Got unexpected extra argument \\((.+?)\\)", "unexpected extra argument '%s'"),
         (
             "Got unexpected extra arguments \\((.+?)\\)",

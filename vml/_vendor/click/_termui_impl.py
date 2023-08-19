@@ -385,7 +385,7 @@ def pager(generator: t.Iterable[str], color: t.Optional[bool] = None) -> None:
     fd, filename = tempfile.mkstemp()
     os.close(fd)
     try:
-        if hasattr(os, "system") and os.system(f'more "{filename}"') == 0:
+        if hasattr(os, "system") and os.system(f"more "{filename}"') == 0:
             return _pipepager(generator, "more", color)
         return _nullpager(stdout, generator, color)
     finally:
@@ -457,7 +457,7 @@ def _tempfilepager(
     with open_stream(filename, "wb")[0] as f:
         f.write(text.encode(encoding))
     try:
-        os.system(f'{cmd} "{filename}"')
+        os.system(f"{cmd} "{filename}"')
     finally:
         os.close(fd)
         os.unlink(filename)
@@ -511,7 +511,7 @@ class Editor:
             environ.update(self.env)
 
         try:
-            c = subprocess.Popen(f'{editor} "{filename}"', env=environ, shell=True)
+            c = subprocess.Popen(f"{editor} "{filename}"', env=environ, shell=True)
             exit_code = c.wait()
             if exit_code != 0:
                 raise ClickException(
@@ -596,20 +596,20 @@ def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
     elif WIN:
         if locate:
             url = _unquote_file(url.replace('"', ""))
-            args = f'explorer /select,"{url}"'
+            args = f"explorer /select,"{url}"'
         else:
             url = url.replace('"', "")
             wait_str = "/WAIT" if wait else ""
-            args = f'start {wait_str} "" "{url}"'
+            args = f"start {wait_str} "" "{url}"'
         return os.system(args)
     elif CYGWIN:
         if locate:
             url = os.path.dirname(_unquote_file(url).replace('"', ""))
-            args = f'cygstart "{url}"'
+            args = f"cygstart "{url}"'
         else:
             url = url.replace('"', "")
             wait_str = "-w" if wait else ""
-            args = f'cygstart {wait_str} "{url}"'
+            args = f"cygstart {wait_str} "{url}"'
         return os.system(args)
 
     try:

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import *
 
-from ..opdef import OpDef
 from ..op import Op
 from ..op import OpError
 
+from ..opdef import OpDefNotFound
 from ..opdef import opdef_to_opspec
+from ..opdef_util import opdef_for_opspec
 
 from .. import cli
 from .. import config
@@ -45,9 +46,16 @@ def _init_user_op(S: State):
     _init_opdef(S.args.opspec, S.args, op)
 
 
-def _init_opdef(opspec: str, args: Any, op: Op):
-    assert opspec
-    op.opdef = opdef = OpDef(opspec)
+def _init_opdef(opspec: Optional[str], args: Any, op: Op):
+    try:
+        opdef = opdef_for_opspec(opspec)
+    except OpDefNotFound:
+        cli.error(
+            f"no such operation {opspec}\n"  # \
+            "Try 'vml operations' for a list of operations."
+        )
+    else:
+        op.opdef = opdef
 
 
 ###################################################################
@@ -123,10 +131,9 @@ def _stage_op(op: Op, args: Any):
 
 
 def _run_op(op: Op, args: Any):
-    try:
-        oplib.run_op(op)
-    except OpError as e:
-        _handle_op_error(e)
+    run = oplib.init_run(op)
+    p = oplib.start_run(run, op)
+    oplib.wait_run_proc(p, run, op)
 
 
 def _handle_op_error(e: OpError):
