@@ -22,3 +22,14 @@ vml = "vml.__main__:main"
 
 "Homepage" = "https://github.com/vistaml/vistaml"
 "Bug Tracker" = "https://github.com/vistaml/vistaml/issues"
+
+[tool.black]
+
+skip-string-normalization = true
+
+[tool.groktest.suites.default]
+
+paths = [
+  "vml/_internal/tests2/*.md"
+]
+concurrency = 8
