@@ -221,7 +221,7 @@ def _run_tests(args: Any):
                 "running all tests (--all-tests specified) - "
                 "ignoring individual tests"
             )
-        success = testlib.run_all(
+        success = testlib.run_all_tests(
             skip=args.skip,
             fail_fast=args.fast,
             concurrency=args.concurrency,
@@ -230,7 +230,7 @@ def _run_tests(args: Any):
     elif args.tests:
         if args.skip:
             log.warning("running individual tests - ignoring --skip")
-        success = testlib.run(
+        success = testlib.run_tests(
             args.tests,
             fail_fast=args.fast,
             concurrency=args.concurrency,

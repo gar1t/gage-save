@@ -69,13 +69,13 @@ DEFAULT_TIMING_MIN_CPUS = 4
 _Options = Dict[int, bool]
 
 
-def run_all(
+def run_all_tests(
     skip: Optional[List[str]] = None,
     fail_fast: bool = False,
     force: bool = False,
     concurrency: Optional[int] = None,
 ):
-    return run(
+    return run_tests(
         all_tests(),
         skip=skip,
         fail_fast=fail_fast,
@@ -98,7 +98,7 @@ def _test_name_for_path(path: str):
     return name
 
 
-def run(
+def run_tests(
     tests: List[str],
     skip: Optional[List[str]] = None,
     fail_fast: bool = False,
@@ -106,11 +106,11 @@ def run(
     concurrency: Optional[int] = None,
 ):
     if concurrency and concurrency > 1:
-        return _run_parallel(tests, skip, fail_fast, force, concurrency)
-    return _run_(tests, skip, fail_fast, force)
+        return _run_tests_parallel(tests, skip, fail_fast, force, concurrency)
+    return _run_tests(tests, skip, fail_fast, force)
 
 
-def _run_(
+def _run_tests(
     tests: List[str],
     skip: Optional[List[str]],
     fail_fast: bool,
@@ -734,14 +734,14 @@ def test_globals() -> Dict[str, Any]:
         # "print_runs": _print_runs,
         "printl": _printl,
         "pprint": pprint.pprint,
-        "quiet": lambda cmd, **kw: _run(cmd, quiet=True, **kw),
+        "quiet": lambda cmd, **kw: _run_cmd(cmd, quiet=True, **kw),
         "re": re,
         "realpath": util.realpath,
         "relpath": os.path.relpath,
         "rm": _rm,
         "rmdir": util.safe_rmtree,
-        "run": _run,
-        "run_capture": _run_capture,
+        "run": _run_cmd,
+        "run_capture": _run_cmd_capture,
         "sample": sample,
         # "samples_dir": samples_dir,
         "set_var_home": _set_var_home,
@@ -984,14 +984,14 @@ def _rm(path: str, force: bool = False):
     os.remove(path)
 
 
-def _run_capture(*args: Any, **kw: Any):
-    return _run(*args, _capture=True, **kw)
+def _run_cmd_capture(*args: Any, **kw: Any):
+    return _run_cmd(*args, _capture=True, **kw)
 
 
 _Env = Dict[str, str]
 
 
-def _run(
+def _run_cmd(
     cmd: str,
     quiet: bool = False,
     ignore: Optional[Union[str, List[str]]] = None,
@@ -1365,7 +1365,7 @@ class _ConcurrentTest:
         self._done_event.set()
 
 
-def _run_parallel(
+def _run_tests_parallel(
     tests: List[str],
     skip: Optional[List[str]],
     fail_fast: Optional[bool],
