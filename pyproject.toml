@@ -26,11 +26,13 @@ vml = "vml.__main__:main"
 [tool.black]
 
 skip-string-normalization = true
-extend-exclude = '/vml/_vendor/|/vml/_internal/tests/'
+extend-exclude = "/vml/_vendor/|/vml/_internal/tests/"
 
-[tool.groktest.suites.default]
+[tool.groktest]
 
-paths = [
+include = [
   "vml/_internal/tests2/*.md"
 ]
-concurrency = 8
+
+## Futuristics
+#concurrency = 8
