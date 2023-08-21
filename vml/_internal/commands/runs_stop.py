@@ -31,7 +31,7 @@ def runs_stop_params(fn: Callable[..., Any]):
                 type=click.IntRange(min=0),
                 metavar="N",
                 default=30,
-                help="Timeout in seconds to wait for a run to stop (default is 30)."
+                help="Timeout in seconds to wait for a run to stop (default is 30).",
             ),
             runs_support.runs_arg,
             runs_support.common_filters,
