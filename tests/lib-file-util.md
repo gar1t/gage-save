@@ -25,50 +25,51 @@ files based on file attributes:
 - Type (text file, binary file, or directory)
 - Number of files previously selected by the rule
 
-For our tests, we generate a source directory and copy files from it
-to a destination directory.
+For our tests, we generate a source directory and copy files from it to
+a destination directory.
 
-Here's a facility for generating a source directory of files to copy:
+Define a facility for generating a source directory of files to copy.
 
+    >>> import os
     >>> from vml._internal import util
 
     >>> class file_base(object):
-    ...   def __init__(self, path, write_mode, base_char, size):
-    ...     self.path = path
-    ...     self.write_mode = write_mode
-    ...     self.base_char = base_char
-    ...     self.size = size
+    ...     def __init__(self, path, write_mode, base_char, size):
+    ...         self.path = path
+    ...         self.write_mode = write_mode
+    ...         self.base_char = base_char
+    ...         self.size = size
     ...
-    ...   def mk(self, root):
-    ...     path = os.path.join(root, self.path)
-    ...     util.ensure_dir(os.path.dirname(path))
-    ...     with open(path, "w" + self.write_mode) as f:
-    ...       f.write(self.base_char * self.size)
+    ...     def mk(self, root):
+    ...         path = os.path.join(root, self.path)
+    ...         util.ensure_dir(os.path.dirname(path))
+    ...         with open(path, "w" + self.write_mode) as f:
+    ...             f.write(self.base_char * self.size)
 
     >>> def empty(path):
-    ...   return text(path)
+    ...     return text(path)
 
     >>> def text(path, size=0):
-    ...   return file_base(path, "", "0", size)
+    ...     return file_base(path, "", "0", size)
 
     >>> def binary(path, size):
-    ...   return file_base(path, "b", b"\x01", size)
+    ...     return file_base(path, "b", b"\x01", size)
 
     >>> def mksrc(specs):
-    ...   src = mkdtemp()
-    ...   for spec in specs:
-    ...     spec.mk(src)
-    ...   return src
+    ...     src = mkdtemp()
+    ...     for spec in specs:
+    ...         spec.mk(src)
+    ...     return src
 
 Here's a function to copy a directory using `copytree`:
 
     >>> def cp(src, select_rules, select_root=None, handler_cls=None):
-    ...   dest = mkdtemp()
-    ...   select = file_util.FileSelect(select_root, select_rules)
-    ...   file_util.copytree(
-    ...     dest, select, src,
-    ...     handler_cls=handler_cls)
-    ...   find(dest)
+    ...     dest = mkdtemp()
+    ...     select = file_util.FileSelect(select_root, select_rules)
+    ...     file_util.copytree(
+    ...         dest, select, src,
+    ...         handler_cls=handler_cls)
+    ...     find(dest)
 
 Here are the functions from `file_util` that define rules:
 
@@ -108,13 +109,13 @@ If we further add another include at the end of our rules list:
 Let's create a more complex source directory structure.
 
     >>> src = mksrc([
-    ...   empty("a.txt"),
-    ...   empty("d1/a.txt"),
-    ...   empty("d1/d1_1/b.txt"),
-    ...   empty("d1/d1_2/c.txt"),
-    ...   empty("d2/d.txt"),
-    ...   empty("d2/d.yml"),
-    ...   ])
+    ...     empty("a.txt"),
+    ...     empty("d1/a.txt"),
+    ...     empty("d1/d1_1/b.txt"),
+    ...     empty("d1/d1_2/c.txt"),
+    ...     empty("d2/d.txt"),
+    ...     empty("d2/d.yml"),
+    ... ])
 
 Include all:
 
@@ -179,8 +180,8 @@ performance benefit as Guild doesn't have to evaluate files.
 Here's a structure with a directory:
 
     >>> src = mksrc([
-    ...   empty("d/a.txt"),
-    ...   empty("b.txt"),
+    ...     empty("d/a.txt"),
+    ...     empty("b.txt"),
     ... ])
 
 We can exclude the directory `d` this way:
@@ -197,8 +198,8 @@ Let's create another source directory structure, which includes both a
 text file and a binary file.
 
     >>> src = mksrc([
-    ...   text("a.txt", 10),
-    ...   binary("a.bin", 10),
+    ...     text("a.txt", 10),
+    ...     binary("a.bin", 10),
     ... ])
 
 Here's a rule that selects only text files:
@@ -223,13 +224,13 @@ contains a file `bin/activat` (e.g. as in the case of a virtual
 environment, which uses this file for activation).
 
     >>> src = mksrc([
-    ...   empty("skip_dir/.nocopy"),
-    ...   empty("skip_dir/a.txt"),
-    ...   empty("skip_dir/b.txt"),
-    ...   empty("venv/bin/activate"),
-    ...   empty("venv/c.txt"),
-    ...   empty("keep_dir/d.txt"),
-    ...   empty("e.txt"),
+    ...     empty("skip_dir/.nocopy"),
+    ...     empty("skip_dir/a.txt"),
+    ...     empty("skip_dir/b.txt"),
+    ...     empty("venv/bin/activate"),
+    ...     empty("venv/c.txt"),
+    ...     empty("keep_dir/d.txt"),
+    ...     empty("e.txt"),
     ... ])
 
 To exclude `skip_dir` and `venv`, we need to indicate in our exclude
@@ -237,9 +238,9 @@ spec that we're excluding a directory (type="dir") and a pattern for
 the applicable sentinel.
 
     >>> cp(src, [
-    ...   include("*"),
-    ...   exclude("*", type="dir", sentinel=".nocopy"),
-    ...   exclude("*", type="dir", sentinel="bin/activate"),
+    ...     include("*"),
+    ...     exclude("*", type="dir", sentinel=".nocopy"),
+    ...     exclude("*", type="dir", sentinel="bin/activate"),
     ... ])
     e.txt
     keep_dir/d.txt
@@ -247,10 +248,10 @@ the applicable sentinel.
 We can re-enable an excluded directory this way:
 
     >>> cp(src, [
-    ...   include("*"),
-    ...   exclude("*", type="dir", sentinel=".nocopy"),
-    ...   exclude("*", type="dir", sentinel="bin/activate"),
-    ...   include("venv", type="dir"),
+    ...     include("*"),
+    ...     exclude("*", type="dir", sentinel=".nocopy"),
+    ...     exclude("*", type="dir", sentinel="bin/activate"),
+    ...     include("venv", type="dir"),
     ... ])
     e.txt
     keep_dir/d.txt
@@ -288,7 +289,7 @@ files.
 Here's a source directory containing ten files:
 
     >>> src = mksrc([empty("%i.txt" % i) for i in range(10)])
-    >>> find(src)
+    >>> find(src)  # +wildcard
     0.txt
     ...
     9.txt
@@ -313,27 +314,27 @@ Let's create a custom handler that simply logs information.
 
     >>> class Handler:
     ...
-    ...   def __init__(self, src_root, dest_root, _select):
-    ...     self.src_root = src_root
-    ...     self.dest_root = dest_root
+    ...     def __init__(self, src_root, dest_root, _select):
+    ...         self.src_root = src_root
+    ...         self.dest_root = dest_root
     ...
-    ...   def copy(self, path, _rule_results):
-    ...     print("copy: %s" % path)
+    ...     def copy(self, path, _rule_results):
+    ...         print("copy: %s" % path)
     ...
-    ...   def ignore(self, path, _rule_results):
-    ...     print("ignore: %s" % path)
+    ...     def ignore(self, path, _rule_results):
+    ...         print("ignore: %s" % path)
     ...
-    ...   def handle_copy_error(self, e, src, dest):
-    ...     assert False, (e, src, dest)
+    ...     def handle_copy_error(self, e, src, dest):
+    ...         assert False, (e, src, dest)
     ...
-    ...   def close(self):
-    ...     pass
+    ...     def close(self):
+    ...         pass
 
 Our source directory:
 
     >>> src = mksrc([
-    ...   empty("a.txt"),
-    ...   binary("a.bin", size=1),
+    ...     empty("a.txt"),
+    ...     binary("a.bin", size=1),
     ... ])
 
 We specify the class for our handler in the call to `copytree`.
@@ -363,16 +364,20 @@ TODO
 
 ### Validation
 
-Valid and invalid rule types:
+Valid rule types:
 
     >>> _ = include("*", type=None)
     >>> _ = include("*", type="text")
     >>> _ = include("*", type="binary")
     >>> _ = include("*", type="dir")
-    >>> _ = include("*", type="invalid")
+
+Invalid:
+
+    >>> include("*", type="invalid")  # +wildcard -whitespace TODO fix error matching
     Traceback (most recent call last):
-    ValueError: invalid value for type 'invalid': expected one of text,
-    binary, dir
+    ...
+    ValueError: invalid value for type 'invalid': expected
+    one of text, binary, dir
 
 ## Test for file difference
 

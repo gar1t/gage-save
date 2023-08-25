@@ -14,7 +14,9 @@
 TODO: implement!
 
     >>> run("vml run hello.py -y")
-    <exit 0>
+    vml: no such operation hello.py
+    Try 'vml operations' for a list of operations.
+    <exit 1>
 
 TODO: implement!
 

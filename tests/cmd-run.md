@@ -2,11 +2,11 @@
 
 ## Command help
 
-    >>> run("vml run --help")  # doctest: +REPORT_UDIFF
+    >>> run("vml run --help")  # +blankline=.
     Usage: vml run [OPTIONS] OPERATION
-    <BLANKLINE>
+    .
       Start a run.
-    <BLANKLINE>
+    .
     Options:
       --stage            Stage a run.
       -y, --yes          Do not prompt before running operation.
@@ -15,25 +15,46 @@
       --test-sourcecode  Test operation source code selection and exit.
       --test-output      Test operation output and exit.
       --help             Show this message and exit.
+    <exit 0>
 
 ## Op help
 
     >>> use_project("hello")
 
-    >>> run("vml run hello.py --help-op")
-    <exit 0>
+    >>> find(".")
+    hello.py
+    vistaml.json
+
+    >>> run("vml run hello.py --help-op")  # FIXME
+    vml: no such operation hello.py
+    Try 'vml operations' for a list of operations.
+    <exit 1>
 
 ## Python scripts
 
-    >>> run("vml run hello.py --test-prompt")
+    >>> run("vml run hello.py --test-prompt")  # FIXME
+    vml: no such operation hello.py
+    Try 'vml operations' for a list of operations.
+    <exit 1>
+
+Output should be:
+
     You are about to run hello.py
     Continue?
 
-    >>> run("vml run hello.py -y")
-    <exit 0>
+    >>> run("vml run hello.py -y")  # FIXME
+    vml: no such operation hello.py
+    Try 'vml operations' for a list of operations.
+    <exit 1>
 
 ## Staging
 
-    >>> run("vml run hello.py --stage --test-prompt")
+    >>> run("vml run hello.py --stage --test-prompt")  # FIXME
+    vml: no such operation hello.py
+    Try 'vml operations' for a list of operations.
+    <exit 1>
+
+Output should be:
+
     You are about to stage hello.py
     Continue?

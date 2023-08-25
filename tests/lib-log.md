@@ -69,7 +69,7 @@ and errors in red (color code 31).
     ...   with vml._internal.log._FakeShell():
     ...      with LogCapture(use_root_handler=True, strip_ansi_format=False) as tty_logs:
     ...          log_sample_messages()
-    ...      tty_logs.print_all() # doctest: -STRIP_ANSI_FMT
+    ...      tty_logs.print_all()
     DEBUG: [test] debug entry
     info entry
     [33mWARNING: warning entry[0m

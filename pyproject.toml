@@ -30,11 +30,7 @@ extend-exclude = "/tests/"
 
 [tool.groktest]
 
-include = [
-  # Working our way up to 'tests/*.md'
-  "tests/cmd-check.md",
-  "tests/lib-test.md"
-]
-
+include = "tests/*.md"
+options = "+blankline=↵"
 python.init = "from vml._internal.test import *"
 parse.functions = "vml._internal.test"

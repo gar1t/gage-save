@@ -1,4 +1,8 @@
-# Guild utils
+---
+test-options: +wildcard
+---
+
+# Utils
 
 ## Matching filters
 
@@ -74,10 +78,12 @@ Missing ref generates an error:
 
     >>> resolve_refs("${a}", {})
     Traceback (most recent call last):
+    ...
     vml._internal.util.UndefinedReferenceError: a
 
     >>> resolve_refs("foo ${bar} baz", {})
     Traceback (most recent call last):
+    ...
     vml._internal.util.UndefinedReferenceError: bar
 
 A default may be provided to use for missing values:
@@ -127,21 +133,21 @@ When used in a string, resolved refs are encoded:
 
     >>> normlf(resolve_refs(
     ...     "foo ${bar} baz",
-    ...     {"bar": [1, 'a', True, None]})) # doctest: -NORMALIZE_PATHS
+    ...     {"bar": [1, 'a', True, None]}))
     'foo - 1\n- a\n- true\n- null baz'
 
 Escaped references aren't resolved:
 
-    >>> resolve_refs("\${a}", {}) # doctest: -NORMALIZE_PATHS
+    >>> resolve_refs("\${a}", {})
     '${a}'
 
-    >>> resolve_refs("\${a}", {"a": "a"}) # doctest: -NORMALIZE_PATHS
+    >>> resolve_refs("\${a}", {"a": "a"})
     '${a}'
 
-    >>> resolve_refs("foo \${bar} baz", {}) # doctest: -NORMALIZE_PATHS
+    >>> resolve_refs("foo \${bar} baz", {})
     'foo ${bar} baz'
 
-    >>> resolve_refs("foo \${bar} baz", {"bar": "bar"}) # doctest: -NORMALIZE_PATHS
+    >>> resolve_refs("foo \${bar} baz", {"bar": "bar"})
     'foo ${bar} baz'
 
 ### `resolve_all_refs`
@@ -163,6 +169,7 @@ Reference to undefined value:
 
     >>> resolve_all_refs({"a": "${b}"})
     Traceback (most recent call last):
+    ...
     vml._internal.util.UndefinedReferenceError: b
 
     >>> resolve_all_refs({"a": "${b}"}, undefined="foo")
@@ -170,17 +177,17 @@ Reference to undefined value:
 
 Reference to a value:
 
-    >>> pprint(resolve_all_refs({"a": "${b}", "b": 1}))
+    >>> resolve_all_refs({"a": "${b}", "b": 1})  # +pprint
     {'a': 1, 'b': 1}
 
 Reference to a value with a reference:
 
-    >>> pprint(resolve_all_refs({"a": "${b}", "b": "${c}", "c": 1}))
+    >>> resolve_all_refs({"a": "${b}", "b": "${c}", "c": 1})  # +pprint
     {'a': 1, 'b': 1, 'c': 1}
 
 Reference embedded in a string:
 
-    >>> pprint(resolve_all_refs({"a": "b equals ${b}", "b": 1}))
+    >>> resolve_all_refs({"a": "b equals ${b}", "b": 1})  # +pprint
     {'a': 'b equals 1', 'b': 1}
 
     >>> resolve_all_refs(
@@ -194,6 +201,7 @@ Reference cycle:
 
     >>> resolve_all_refs({"a": "${b}", "b": "${a}"})
     Traceback (most recent call last):
+    ...
     vml._internal.util.ReferenceCycleError: ['b', 'a', 'b']
 
 Resolving non string values:
@@ -257,6 +265,7 @@ A non-existing file generates an error:
 
     >>> is_text("non-existing")
     Traceback (most recent call last):
+    ...
     OSError: .../samples/textorbinary/non-existing does not exist
 
 Directories aren't text files:
@@ -312,16 +321,16 @@ Tests:
     >>> quote("/foo bar")
     "'/foo bar'"
 
-    >>> quote("\\foo\\bar")  # doctest: -NORMALIZE_PATHS
+    >>> quote("\\foo\\bar")
     "'\\foo\\bar'"
 
-    >>> quote("D:\\foo\\bar")  # doctest: -NORMALIZE_PATHS
+    >>> quote("D:\\foo\\bar")
     "'D:\\foo\\bar'"
 
-    >>> quote("D:\\foo bar")  # doctest: -NORMALIZE_PATHS
+    >>> quote("D:\\foo bar")
     "'D:\\foo bar'"
 
-    >>> quote("'a b c'")  # doctest: -NORMALIZE_PATHS
+    >>> quote("'a b c'")
     '"\'a b c\'"'
 
     >>> quote("~")
@@ -367,7 +376,7 @@ Tests:
     >>> split("'/foo bar' baz bam")
     ['/foo bar', 'baz', 'bam']
 
-    >>> split("'\\foo\\bar'") # doctest: -NORMALIZE_PATHS
+    >>> split("'\\foo\\bar'")
     ['\\foo\\bar']
 
 ## Nested config
@@ -384,6 +393,7 @@ map of dot-delimeted names to values.
 
     >>> def nc(kv, config=None):
     ...     from vml._internal.util import apply_nested_config
+    ...     from pprint import pprint
     ...
     ...     config = config or {}
     ...     apply_nested_config(kv, config)
@@ -405,10 +415,12 @@ Cannot nest within a non-dict:
 
     >>> nc({"1": 1, "1.1": 11, "1.2": 12})
     Traceback (most recent call last):
+    ...
     ValueError: '1.1' cannot be nested: conflicts with {'1': 1}
 
     >>> nc({"1.2": 12, "1.1.1": 111, "1.2.1": 121})
     Traceback (most recent call last):
+    ...
     ValueError: '1.2.1' cannot be nested: conflicts with {'1.2': 12}
 
 An explicit dict is okay:
@@ -449,6 +461,7 @@ Dot-name applied to various combinations of matches:
 
     >>> nc({"a.b": 1}, {"a": 2})
     Traceback (most recent call last):
+    ...
     ValueError: 'a.b' cannot be nested: conflicts with {'a': 2}
 
     >>> nc({"a": 1}, {"a.b": 2})
@@ -538,16 +551,16 @@ deep dict to a flat dict with dot-delimited names.
     >>> enc({"a": "A"})
     {'a': 'A'}
 
-    >>> pprint(enc({"a.a1": "A1", "a.a2": "A2"}))
+    >>> enc({"a.a1": "A1", "a.a2": "A2"})
     {'a.a1': 'A1', 'a.a2': 'A2'}
 
     >>> enc({"1": {"1": 11}})
     {'1.1': 11}
 
-    >>> pprint(enc({"1": {"1": 11, "2": 12}}))
+    >>> enc({"1": {"1": 11, "2": 12}})  # +pprint
     {'1.1': 11, '1.2': 12}
 
-    >>> pprint(enc({"1": {"1": {"1": 111}, "2": {"1": 121}}}))
+    >>> enc({"1": {"1": {"1": 111}, "2": {"1": 121}}})  # +pprint
     {'1.1.1': 111, '1.2.1': 121}
 
 ## Shorten dirs
@@ -586,44 +599,44 @@ The function attempts to include as much of the original path in the
 shortened version as possible. It will always at least include the
 last segment in a shortened version.
 
-    >>> shorten("/aaa/bbb/ccc", max_len=0) # doctest: -ELLIPSIS
-    '/\u2026/ccc'
+    >>> shorten("/aaa/bbb/ccc", max_len=0)
+    '/…/ccc'
 
 If able to, the function includes path segments from both the left and
 right sides.
 
-    >>> shorten("/aaa/bbbb/ccc", max_len=12) # doctest: -ELLIPSIS
-    '/aaa/\u2026/ccc'
+    >>> shorten("/aaa/bbbb/ccc", max_len=12)
+    '/aaa/…/ccc'
 
 The function checks each segment side, starting with the right side
 and then alternating, to include segment parts. It stops when the
 shortened path would exceed max length.
 
-    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=17) # doctest: -ELLIPSIS
-    '/aaa/\u2026/cccc/ddd'
+    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=17)
+    '/aaa/…/cccc/ddd'
 
-    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=16) # doctest: -ELLIPSIS
-    '/aaa/\u2026/cccc/ddd'
+    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=16)
+    '/aaa/…/cccc/ddd'
 
-    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=12) # doctest: -ELLIPSIS
-    '/aaa/\u2026/ddd'
+    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=12)
+    '/aaa/…/ddd'
 
-    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=0) # doctest: -ELLIPSIS
-    '/\u2026/ddd'
+    >>> shorten("/aaa/bbbb/cccc/ddd", max_len=0)
+    '/…/ddd'
 
 The same rules applied to relative paths:
 
-    >>> shorten("aaa/bbbb/cccc/ddd", max_len=16) # doctest: -ELLIPSIS
-    'aaa/\u2026/cccc/ddd'
+    >>> shorten("aaa/bbbb/cccc/ddd", max_len=16)
+    'aaa/…/cccc/ddd'
 
-    >>> shorten("aaa/bbbb/cccc/ddd", max_len=15) # doctest: -ELLIPSIS
-    'aaa/\u2026/cccc/ddd'
+    >>> shorten("aaa/bbbb/cccc/ddd", max_len=15)
+    'aaa/…/cccc/ddd'
 
-    >>> shorten("aaa/bbbb/cccc/ddd", max_len=11) # doctest: -ELLIPSIS
-    'aaa/\u2026/ddd'
+    >>> shorten("aaa/bbbb/cccc/ddd", max_len=11)
+    'aaa/…/ddd'
 
-    >>> shorten("aaa/bbbb/cccc/ddd", max_len=0) # doctest: -ELLIPSIS
-    'aaa/\u2026/ddd'
+    >>> shorten("aaa/bbbb/cccc/ddd", max_len=0)
+    'aaa/…/ddd'
 
 ### Splitting paths for shorten dir
 
@@ -672,11 +685,11 @@ Helper functions:
 
     >>> def rm(x, l):
     ...     safe_list_remove(x, l)
-    ...     pprint(l)
+    ...     return l
 
     >>> def rm_all(xs, l):
     ...     safe_list_remove_all(xs, l)
-    ...     pprint(l)
+    ...     return l
 
 Examples:
 
@@ -707,10 +720,12 @@ Examples:
 
     >>> subpath("/foo/bar", "/bar", "/")
     Traceback (most recent call last):
+    ...
     ValueError: ('/foo/bar', '/bar')
 
     >>> subpath("/foo", "/foo", "/")
     Traceback (most recent call last):
+    ...
     ValueError: ('/foo', '/foo')
 
     >>> subpath("/foo/", "/foo", "/")
@@ -718,10 +733,12 @@ Examples:
 
     >>> subpath("", "", "/")
     Traceback (most recent call last):
+    ...
     ValueError: ('', '')
 
     >>> subpath("/", "/", "/")
     Traceback (most recent call last):
+    ...
     ValueError: ('/', '/')
 
 ## File names
@@ -733,7 +750,7 @@ file name is valid for a platform.
 
 On Windows, the function replaces colons with underscores.
 
-    >>> safe_filename("hello:there")  # doctest: +WINDOWS_ONLY
+    >>> safe_filename("hello:there")  # +skip TODO how to limit to Windows?
     'hello_there'
 
 On all platforms, the function replaces any possible path separator
@@ -838,6 +855,7 @@ Provide an invalid spec (error message varies across Python versions).
 
     >>> check_vml_version("not a valid spec")
     Traceback (most recent call last):
+    ...
     ValueError: invalid version spec 'not a valid spec': ...
 
 ## Format duration
@@ -912,10 +930,10 @@ can be used when interfacing with JavaScript applications.
     >>> dict_to_camel_case({})
     {}
 
-    >>> pprint(dict_to_camel_case({"foo": 123, "bar": 456}))
+    >>> dict_to_camel_case({"foo": 123, "bar": 456})  # +pprint
     {'bar': 456, 'foo': 123}
 
-    >>> pprint(dict_to_camel_case({"foo_bar": 123, "bar_baz": 456}))
+    >>> dict_to_camel_case({"foo_bar": 123, "bar_baz": 456})  # +pprint
     {'barBaz': 456, 'fooBar': 123}
 
     >>> dict_to_camel_case({"_foo": 123})

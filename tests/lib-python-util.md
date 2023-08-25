@@ -1,3 +1,7 @@
+---
+test-options: +wildcard
+---
+
 # Python utils
 
 The module `vml._internal.python_util` provides tools when working with Python
@@ -11,7 +15,7 @@ Some plugins can enumerate models in a location. To assist with this,
 python utils provides `scripts_for_location`.
 
     >>> scripts = python_util.scripts_for_dir(
-    ...   sample("scripts"), exclude=["*/__init__.py"])
+    ...     sample("scripts"), exclude=["*/__init__.py"])
 
 Let's sort by name:
 
@@ -19,7 +23,7 @@ Let's sort by name:
 
 The scripts:
 
-    >>> [script.name for script in scripts]
+    >>> [script.name for script in scripts]  # +pprint
     ['breakable_lines',
      'error',
      'flag_imports',
@@ -40,8 +44,8 @@ Scripts can be inspected for various declarations. Let's example the
 
 The script source can be read using the `src` attribute:
 
-    >>> mnist_mlp.src
-    '.../samples/scripts/mnist_mlp.py'
+    >>> mnist_mlp.src  # +parse
+    '{:abspath}/samples/scripts/mnist_mlp.py'
 
 A script name is the base name (without extension) of the script
 source:
@@ -53,7 +57,7 @@ We can enumerate various script declarations.
 
 Imports:
 
-    >>> mnist_mlp.imports
+    >>> mnist_mlp.imports  # +pprint
     ['keras',
      'keras.datasets',
      'mnist',
@@ -67,7 +71,7 @@ Imports:
 
 Calls:
 
-    >>> pprint([call.name for call in mnist_mlp.calls])
+    >>> [call.name for call in mnist_mlp.calls]  # +pprint
     ['load_data',
      'reshape',
      'reshape',
@@ -99,21 +103,21 @@ Calls:
 
  Params:
 
-    >>> pprint(mnist_mlp.params)
+    >>> mnist_mlp.params  # +pprint
     {'batch_size': 128, 'epochs': 20, 'num_classes': 10}
 
     >>> flag_imports = scripts[2]
     >>> flag_imports.name
     'flag_imports'
 
-    >>> pprint(flag_imports.params)
+    >>> flag_imports.params  # +pprint
     {'b': True, 'd': {}, 'f': 1.0, 'i': 1, 'ii': 2, 's': 'hello'}
 
     >>> params = scripts[6]
     >>> params.name
     'params'
 
-    >>> pprint(params.params)
+    >>> params.params  # +pprint
     {'a': 1,
      'b': -1,
      'c': 1,
@@ -134,9 +138,10 @@ Syntax error:
 
     >>> script_path = path(mkdtemp(), "test.py")
     >>> write(script_path, "+++")
+
     >>> python_util.Script(script_path)
     Traceback (most recent call last):
-    ...
+      ...
       File "<unknown>", line 1
         +++
           ^
@@ -188,7 +193,7 @@ Let's patch `say`:
     ...   say("I've wrapped '%s'" % msg)
 
     >>> python_util.listen_method(Hello, "say", wrap_say)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <vml._internal.python_util.MethodWrapper ...>
 
 When we call `hello` on an object:
 
@@ -224,7 +229,7 @@ its own value by raising `python_util.Result`:
     ...   raise python_util.Result(None)
 
     >>> python_util.listen_method(Hello, "say", wrap_and_prevent)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <vml._internal.python_util.MethodWrapper ...>
 
     >>> hello.say("Hello once more!")
     I've wrapped 'Hello once more!'
@@ -240,11 +245,12 @@ by creating a wrapper that generates an error:
 Let's add this function and call `say`:
 
     >>> python_util.listen_method(Hello, "say", wrap_error)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <vml._internal.python_util.MethodWrapper ...>
 
     >>> hello.say("And again!")
     Traceback (most recent call last):
-    ZeroDivisionError: ...
+    ...
+    ZeroDivisionError: division by zero
 
 We can remove wrappers using `remove_method_listener`:
 
@@ -331,7 +337,8 @@ function:
     2
     >>> calc.incr(1, 2)
     Traceback (most recent call last):
-    TypeError: ...incr() takes ...
+    ...
+    TypeError: incr() takes 2 positional arguments but 3 were given
 
 What happens when we add two listeners that both provide results? The
 behavior is as follows:
@@ -624,16 +631,16 @@ Helper function to print a file with its breakable lines:
     ...             next_line = next_breakable_line(filename, want_line)
     ...         except TypeError as e:
     ...             assert "no breakable lines at or after %i" % want_line in str(e), e
-    ...             print("%0.2i !!  %s" % (want_line, line))
+    ...             print(("%0.2i !!  %s" % (want_line, line)).rstrip())
     ...         else:
     ...             if want_line == next_line:
-    ...                 print("%0.2i >>  %s" % (want_line, line))
+    ...                 print(("%0.2i >>  %s" % (want_line, line)).rstrip())
     ...             else:
-    ...                 print("%0.2i %0.2i  %s" % (want_line, next_line, line))
+    ...                 print(("%0.2i %0.2i  %s" % (want_line, next_line, line)).rstrip())
 
-The output below shows each line along with the next line as returned
-by `next_breakable_line`. If the next breakable line is the requested
-line, `>>` is used to indicate that a break would occur there. If the
+The output below shows each line along with the next line as returned by
+`next_breakable_line`. If the next breakable line is the requested line,
+`>>` is used to indicate that a break would occur there. If the
 requested line does not have a next breakable line, `!!` is shown.
 
     >>> print_breakable(breakable)

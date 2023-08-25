@@ -6,7 +6,8 @@ from typing import *
 
 # import codecs
 # import doctest
-# import fnmatch
+import fnmatch
+
 # import glob
 import errno
 
@@ -23,33 +24,49 @@ import re
 import signal
 import subprocess
 import sys
-
-# import tempfile
+import tempfile
 import threading
 
 # import time
 
 # import yaml
 
-# import vml
+import vml
 
 # from . import ansi_util
 # from . import cli
-# from . import config
-# from . import file_util
+from . import config
+from . import file_util
 from . import util
 
 # from . import yaml_util
 
 __all__ = [
+    "LogCapture",
+    "SysPath",
+    "basename",
+    "cd",
+    "find",
+    "findl",
+    "mkdtemp",
+    "normlf",
     "parse_abspath",
+    "parse_any",
     "parse_semver",
+    "path",
     "quiet",
     "run",
+    "sample",
+    "samples_dir",
+    "set_var_home",
+    "symlink",
+    "touch",
+    "use_project",
+    "write",
 ]
 
 
-def parse_type(name: str, pattern: str, group_count: int):
+def parse_type(name: str, pattern: str, group_count: int = 0):
     def decorator(f: Callable[[str], Any]):
         f.type_name = name
         f.pattern = pattern
@@ -57,6 +74,11 @@ def parse_type(name: str, pattern: str, group_count: int):
         return f
 
     return decorator
+
+
+@parse_type("any", r"[^\n]+")
+def parse_any(s: str):
+    return s
 
 
 # Simplified https://regex101.com/r/Ly7O1x/3/
@@ -68,7 +90,7 @@ SEMVER_PATTERN = (
 __semver_pattern_compiled = re.compile(SEMVER_PATTERN)
 
 
-@parse_type("semver", SEMVER_PATTERN, 3)
+@parse_type("ver", SEMVER_PATTERN, 3)
 def parse_semver(s: str):
     m = __semver_pattern_compiled.match(s)
     if not m:
@@ -76,7 +98,7 @@ def parse_semver(s: str):
     return m.groups()
 
 
-@parse_type("abspath", r"/.*", 0)
+@parse_type("abspath", r"/.*")
 def parse_abspath(s: str):
     return s
 
@@ -132,8 +154,8 @@ def parse_abspath(s: str):
 #     return sorted([_test_name_for_path(path) for path in glob.glob(test_pattern)])
 
 
-# def tests_dir():
-#     return os.path.join(os.path.abspath(os.path.dirname(__file__)), "tests")
+def tests_dir():
+    return os.path.join(vml.__pkgdir__, "tests")
 
 
 # def _test_name_for_path(path: str):
@@ -802,16 +824,26 @@ def parse_abspath(s: str):
 #     }
 
 
-# def sample(*parts: str):
-#     return os.path.join(*(samples_dir(),) + parts)
+LogCapture = util.LogCapture
+
+basename = os.path.basename
+findl = file_util.find
+path = os.path.join
+symlink = os.symlink
+touch = util.touch
 
 
-# def samples_dir():
-#     return os.path.join(tests_dir(), "samples")
+
+def sample(*parts: str):
+    return os.path.join(*(samples_dir(),) + parts)
 
 
-# def mkdtemp(prefix: str = "vistaml-test-"):
-#     return tempfile.mkdtemp(prefix=prefix)
+def samples_dir():
+    return os.path.join(tests_dir(), "samples")
+
+
+def mkdtemp(prefix: str = "vistaml-test-"):
+    return tempfile.mkdtemp(prefix=prefix)
 
 
 # # def mktemp_guild_dir():
@@ -819,39 +851,39 @@ def parse_abspath(s: str):
 # #     init.init_guild_dir(guild_dir)
 # #     return guild_dir
 
-# _FindIgnore = Union[str, List[str]]
+FindIgnore = Union[str, List[str]]
 
 
-# def find(
-#     root: str,
-#     followlinks: bool = False,
-#     includedirs: bool = False,
-#     ignore: Optional[_FindIgnore] = None,
-# ):
-#     import natsort
+def find(
+    root: str,
+    followlinks: bool = False,
+    includedirs: bool = False,
+    ignore: Optional[FindIgnore] = None,
+):
+    import natsort
 
-#     paths = file_util.find(root, followlinks, includedirs)
-#     if ignore:
-#         paths = _filter_ignored(paths, ignore)
-#     paths = _standarize_paths(paths)
-#     paths.sort(key=natsort.natsort_key)
-#     if not paths:
-#         print("<empty>")
-#     else:
-#         for path in paths:
-#             print(path)
-
-
-# def _standarize_paths(paths: List[str]):
-#     return [util.stdpath(path) for path in paths]
+    paths = file_util.find(root, followlinks, includedirs)
+    if ignore:
+        paths = _filter_ignored(paths, ignore)
+    paths = _standarize_paths(paths)
+    paths.sort(key=natsort.natsort_key)
+    if not paths:
+        print("<empty>")
+    else:
+        for path in paths:
+            print(path)
 
 
-# def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
-#     if isinstance(ignore, str):
-#         ignore = [ignore]
-#     return [
-#         p for p in paths if not any((fnmatch.fnmatch(p, pattern) for pattern in ignore))
-#     ]
+def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
+    if isinstance(ignore, str):
+        ignore = [ignore]
+    return [
+        p for p in paths if not any((fnmatch.fnmatch(p, pattern) for pattern in ignore))
+    ]
+
+
+def _standarize_paths(paths: List[str]):
+    return [util.stdpath(path) for path in paths]
 
 
 # def _diff(path1: str, path2: str):
@@ -912,36 +944,36 @@ def parse_abspath(s: str):
 #     return util.StderrCapture(autoprint=True)
 
 
-# def write(filename: str, contents: str, append: bool = False):
-#     encoded = contents.encode()
-#     opts = "ab" if append else "wb"
-#     with open(filename, opts) as f:
-#         f.write(encoded)
+def write(filename: str, contents: str, append: bool = False):
+    encoded = contents.encode()
+    opts = "ab" if append else "wb"
+    with open(filename, opts) as f:
+        f.write(encoded)
 
 
-# class SysPath:
-#     _sys_path0 = None
+class SysPath:
+    _sys_path0 = None
 
-#     def __init__(
-#         self,
-#         path: Optional[List[str]] = None,
-#         prepend: Optional[List[str]] = None,
-#         append: Optional[List[str]] = None,
-#     ):
-#         path = path if path is not None else sys.path
-#         if prepend:
-#             path = prepend + path
-#         if append:
-#             path = path + append
-#         self.sys_path = path
+    def __init__(
+        self,
+        path: Optional[List[str]] = None,
+        prepend: Optional[List[str]] = None,
+        append: Optional[List[str]] = None,
+    ):
+        path = path if path is not None else sys.path
+        if prepend:
+            path = prepend + path
+        if append:
+            path = path + append
+        self.sys_path = path
 
-#     def __enter__(self):
-#         self._sys_path0 = sys.path
-#         sys.path = self.sys_path
+    def __enter__(self):
+        self._sys_path0 = sys.path
+        sys.path = self.sys_path
 
-#     def __exit__(self, *exc: Any):
-#         assert self._sys_path0 is not None
-#         sys.path = self._sys_path0
+    def __exit__(self, *exc: Any):
+        assert self._sys_path0 is not None
+        sys.path = self._sys_path0
 
 
 # # class ModelPath:
@@ -1012,8 +1044,8 @@ def parse_abspath(s: str):
 # #     return class_name[class_name.rfind(".") + 1:]
 
 
-# def _normlf(s: str):
-#     return s.replace("\r", "")
+def normlf(s: str):
+    return s.replace("\r", "")
 
 
 # def _printl(l: List[Any]):
@@ -1166,12 +1198,12 @@ def _strip_lines(out: str, patterns: Union[str, List[str]]):
     return "\n".join(stripped_lines)
 
 
-# def _chdir(s: str):
-#     os.chdir(os.path.expandvars(s))
+def cd(s: str):
+    os.chdir(os.path.expandvars(s))
 
 
-# def _set_var_home(path: str):
-#     config.set_var_home(path)
+def set_var_home(path: str):
+    config.set_var_home(path)
 
 
 # def _compare_dirs(d1: str, d2: str):
@@ -1337,10 +1369,10 @@ def _strip_lines(out: str, patterns: Union[str, List[str]]):
 #     return any(p.search(s) for p in ignore_patterns)
 
 
-# def use_project(project_name: str, var_home: Optional[str] = None):
-#     var_home = var_home or mkdtemp()
-#     _chdir(sample("projects", project_name))
-#     _set_var_home(var_home)
+def use_project(project_name: str, var_home: Optional[str] = None):
+    var_home = var_home or mkdtemp()
+    cd(sample("projects", project_name))
+    set_var_home(var_home)
 
 
 # class _ConcurrentTest:

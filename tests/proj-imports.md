@@ -23,7 +23,7 @@
     ...             yield importlib.import_module(mod_name)
 
     >>> for name in sorted([m.__name__ for m in iter_mods()]):
-    ...     print(name) # doctest: +REPORT_UDIFF
+    ...     print(name)  # +diff
     vml.__init__
     vml.__main__
     vml._internal.ansi_util
@@ -35,6 +35,9 @@
     vml._internal.commands.help
     vml._internal.commands.impl_support
     vml._internal.commands.main
+    vml._internal.commands.main_impl
+    vml._internal.commands.operations
+    vml._internal.commands.operations_impl
     vml._internal.commands.run
     vml._internal.commands.run_impl
     vml._internal.commands.runs
@@ -61,6 +64,9 @@
     vml._internal.log
     vml._internal.op
     vml._internal.opdef
+    vml._internal.opdef_util
+    vml._internal.plugin
+    vml._internal.project
     vml._internal.python_util
     vml._internal.run
     vml._internal.run_manifest

@@ -2,6 +2,7 @@
 
     >>> run("vml --version")
     vml 0.1.0
+    <exit 0>
 
 TODO:
 
