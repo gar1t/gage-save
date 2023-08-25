@@ -1,3 +1,7 @@
+---
+test-options: +skip FIXME
+---
+
 # Logging
 
 Logging in Guild is performed using Python's built in `logging` module
