@@ -21,20 +21,20 @@
     {
       "label": "Run All Tests",
       "type": "shell",
-      "command": "vml",
-      "args": ["check", "-T"]
+      "command": "groktest",
+      "args": ["."]
     },
     {
-      "label": "Run Current Test",
+      "label": "Run Current",
       "type": "shell",
-      "command": "vml",
-      "args": ["check", "-t", "${file}"]
+      "command": "groktest",
+      "args": ["${relativeFile}"]
     },
     {
-      "label": "Rerun Last Test",
+      "label": "Run Last",
       "type": "shell",
-      "command": "vml",
-      "args": ["check", "--last-test"]
+      "command": "groktest",
+      "args": ["--last"]
     }
   ]
 }

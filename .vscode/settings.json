@@ -4,7 +4,7 @@
   },
   "python.analysis.ignore": [
     "vml/_vendor",
-    "vml/_internal/tests/samples/scripts"
+    "tests"
   ],
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticSeverityOverrides": {

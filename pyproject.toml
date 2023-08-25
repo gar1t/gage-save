@@ -26,13 +26,15 @@ vml = "vml.__main__:main"
 [tool.black]
 
 skip-string-normalization = true
-extend-exclude = "/vml/_vendor/|/vml/_internal/tests/"
+extend-exclude = "/tests/"
 
 [tool.groktest]
 
 include = [
-  "vml/_internal/tests2/*.md"
+  # Working our way up to 'tests/*.md'
+  "tests/cmd-check.md",
+  "tests/lib-test.md"
 ]
 
-## Futuristics
-#concurrency = 8
+python.init = "from vml._internal.test import *"
+parse.functions = "vml._internal.test"

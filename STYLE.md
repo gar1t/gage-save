@@ -58,56 +58,30 @@ document are defined in `CONTRIBUTING.md`.
 
 ### Automatic formatting
 
-This project uses the code formatting tool
-[YAPF](https://github.com/google/yapf) to automate code formatting for
-Python source code. The application of this tool may be automated by
-running the following command:
+This project uses Black to format Python source code.
 
-    $ yapf -vv -r -i <Python files and packages>
+To show proposed changes by Black to the project, run:
 
-Rules used by YAPF are defined in `pyproject.toml` in the
-`[tool.yapf]` section. These rules as applied by YAPF constitute the
-required code formatting style for this project.
+    $ black . --preview
 
-### Comment-configured line breaks
+To apply changes, run the command without `--preview`.
 
-In some cases it may be necessary to use hash characters in Python
-within an expression to control how YAPF formats that expression.
+Options for Black `pyproject.toml` in the `[tool.black]` section.
 
-For example, the following function uses a series of conditional
-boolean tests:
+### Quotations
 
-``` python
-def _has_non_path_options(params):
-    return (
-        params.get("env") or params.get("flags") or params.get("attrs")
-        or params.get("deps")
-    )
-```
+Strings MUST be quoted using double-quotes (`"`) even in cases where the
+string contains double quotes. In that case, string double quotes must
+be escaped, e.g. `"Hello \"World\""`.
 
-The return expression would be clearer if each test occurred on a
-separate line. In this case, YAPF can be made to adhere to an ad hoc
-style using a single comment character as follows:
-
-``` python
-def _has_non_path_options(params):
-    return (
-        params.get("env")  #
-        or params.get("flags")  #
-        or params.get("attrs")  #
-        or params.get("deps")
-    )
-```
-
-This technique is an unfortunate requirement in the use of YAPF, which
-otherwise makes a less-readable formatting decision.
-
-The of of comment characters to control formatting in this way should
-be used sparingly.
+This convention simplifies search/replace of strings throughout the
+project. Black must be configured with `skip-string-normalization` to
+prevent it from reformatting strings en mass throughout the project
+code.
 
 ### Other style considerations
 
-Where YAPF formatting does not apply, consult [PEP
+Where Black formatting does not apply, consult [PEP
 8](https://peps.python.org/pep-0008/).
 
 ## Reformatting patches

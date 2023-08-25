@@ -1,11 +1,16 @@
+---
+test-options: +parse
+---
+
 # `check` command
 
-    >>> run("vml check")
-    vistaml_version:           0.1.0
-    vistaml_install_location:  ...
-    python_version:            ...
-    python_exe:                ...
-    platform:                  ...
+    >>> run("vml check")  # +parse
+    vistaml_version:           {:semver}
+    vistaml_install_location:  {:abspath}
+    python_version:            {}
+    python_exe:                {:abspath}
+    platform:                  {}
+
 
 Test version.
 
@@ -13,7 +18,7 @@ Test version.
     <exit 0>
 
     >>> run("vml check -V 999")
-    vml: version mismatch: current version '...' does not match '999'
+    vml: version mismatch: current version '{:semver}' does not match '999'
     <exit 1>
 
 ## Text external functions
@@ -31,7 +36,8 @@ We test only the positive case here, assuming that systems under test all have
 current versions of Git installed.
 
     >>> run("vml check --external git-ls-files")
-    git-ls-files is ok (git version ...; ...)
+    git-ls-files is ok (git version {:semver}; {:abspath})
+    <exit 0>
 
 ### Other checks
 

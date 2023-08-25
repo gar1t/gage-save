@@ -9,10 +9,8 @@ import logging
 import os
 import platform
 
-# import re
 import subprocess
 import sys
-import tempfile
 import warnings
 
 import pkg_resources
@@ -21,23 +19,14 @@ import vml
 
 from ..._vendor import click
 
-from .. import test as testlib
 from .. import cli
-
-# from .. import config
 from .. import file_util
-
-# from .. import plugin
-# from .. import uat
 from .. import util
 
-# from .. import var
-
-log = logging.getLogger("guild")
+log = logging.getLogger("vml")
 
 # (mod_name, required_flag)
 CHECK_MODS = [
-    ("click", True),
     ("dask", False),
     ("distutils", False),
     ("numpy", True),
@@ -92,11 +81,6 @@ def _check_impl(args: Any):
         _check_version_and_exit(args.version)
     if args.external:
         _check_external_and_exit(args)
-    # if args.uat or args.force_uat:
-    #     _uat_and_exit(args)
-    _apply_last_tests(args)
-    if args.all_tests or args.tests:
-        _run_tests_and_exit(args)
     _print_info_and_exit(args)
 
 
@@ -138,107 +122,6 @@ def _check_git_ls_files():
         f"{result.git_exe})"
     )
     sys.exit(0)
-
-
-# def _uat_and_exit(args):
-#     with _TestEnv(
-#         no_vcs_commit=False,
-#         no_pip_freeze=False,
-#         concurrency=args.concurrency,
-#     ):
-#         uat.run(force=args.force_uat, fail_fast=args.fast)
-#     sys.exit(0)
-
-
-def _TestEnv(
-    no_vcs_commit: bool = True,
-    no_pip_freeze: bool = True,
-    concurrency: Optional[int] = None,
-):
-    return util.Env(
-        {
-            "NO_IMPORT_FLAGS_PROGRESS": "1",
-            "COLUMNS": "999",
-            "SYNC_RUN_OUTPUT": "1",
-            "PYTHONDONTWRITEBYTECODE": "1",
-            "CONCURRENCY": str(concurrency or 1),
-            # The following are optimizations for tests. They must be
-            # overridden for any tests that check the disabled behavior.
-            "NO_PIP_FREEZE": "1" if no_pip_freeze else "",
-            "NO_VCS_COMMIT": "1" if no_vcs_commit else "",
-        }
-    )
-
-
-def _apply_last_tests(args: Any):
-    if args.last_test:
-        if args.tests or args.all_tests:
-            cli.error("cannot use --last-test with other tests")
-        last_tests = _try_load_last_tests()
-        if not last_tests:
-            cli.error(
-                "no last tests to run\n"  # \
-                "Run one or more tests with '-t, --test' and try again."
-            )
-        args.tests = last_tests
-    elif args.tests:
-        _save_last_tests(args.tests)
-
-
-LAST_TESTS_PATH = os.path.join(tempfile.gettempdir(), "vistml-last-tests")
-
-
-def _try_load_last_tests():
-    try:
-        f = open(LAST_TESTS_PATH)
-    except FileNotFoundError:
-        return None
-    else:
-        with f:
-            return json.load(f)
-
-
-def _save_last_tests(tests: List[str]):
-    with open(LAST_TESTS_PATH, "w") as f:
-        json.dump(tests, f)
-
-
-def _run_tests_and_exit(args: Any):
-    with _TestEnv(concurrency=args.concurrency):
-        success = _run_tests(args)
-    if success:
-        _maybe_print_tests_passed()
-        raise SystemExit(0)
-    cli.error(_tests_failed_msg() if not args.no_chrome else None)
-
-
-def _run_tests(args: Any):
-    if not args.no_chrome:
-        sys.stdout.write("internal tests:\n")
-    if args.all_tests:
-        if args.tests:
-            log.warning(
-                "running all tests (--all-tests specified) - "
-                "ignoring individual tests"
-            )
-        success = testlib.run_all_tests(
-            skip=args.skip,
-            fail_fast=args.fast,
-            concurrency=args.concurrency,
-            force=args.force_test,
-        )
-    elif args.tests:
-        if args.skip:
-            log.warning("running individual tests - ignoring --skip")
-        success = testlib.run_tests(
-            args.tests,
-            fail_fast=args.fast,
-            concurrency=args.concurrency,
-            force=args.force_test,
-        )
-    else:
-        assert False
-    return success
 
 
 def _print_info_and_exit(args: Any):
@@ -631,15 +514,6 @@ def _formatted_disk_usage(path: str):
 def _format_disk_usage_and_path(usage: str, path: str, max_usage_width: int):
     padding = " " * (max_usage_width - len(usage) + 1)
     return f"{usage}{padding}{path}"
-
-
-def _maybe_print_tests_passed():
-    if os.getenv("TERM_PROGRAM") == "vscode":
-        print("ALL TESTS PASSED ✨")
-
-
-def _tests_failed_msg():
-    return "one or more tests failed - see above for details"
 
 
 def _general_error_msg(args: Any):
