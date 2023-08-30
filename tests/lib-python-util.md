@@ -139,7 +139,7 @@ Syntax error:
     >>> script_path = path(mkdtemp(), "test.py")
     >>> write(script_path, "+++")
 
-    >>> python_util.Script(script_path)
+    >>> python_util.Script(script_path)  # +error-detail
     Traceback (most recent call last):
       ...
       File "<unknown>", line 1
@@ -249,7 +249,6 @@ Let's add this function and call `say`:
 
     >>> hello.say("And again!")
     Traceback (most recent call last):
-    ...
     ZeroDivisionError: division by zero
 
 We can remove wrappers using `remove_method_listener`:
@@ -337,7 +336,6 @@ function:
     2
     >>> calc.incr(1, 2)
     Traceback (most recent call last):
-    ...
     TypeError: incr() takes 2 positional arguments but 3 were given
 
 What happens when we add two listeners that both provide results? The

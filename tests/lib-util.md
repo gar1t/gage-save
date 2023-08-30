@@ -78,12 +78,10 @@ Missing ref generates an error:
 
     >>> resolve_refs("${a}", {})
     Traceback (most recent call last):
-    ...
     vml._internal.util.UndefinedReferenceError: a
 
     >>> resolve_refs("foo ${bar} baz", {})
     Traceback (most recent call last):
-    ...
     vml._internal.util.UndefinedReferenceError: bar
 
 A default may be provided to use for missing values:
@@ -169,7 +167,6 @@ Reference to undefined value:
 
     >>> resolve_all_refs({"a": "${b}"})
     Traceback (most recent call last):
-    ...
     vml._internal.util.UndefinedReferenceError: b
 
     >>> resolve_all_refs({"a": "${b}"}, undefined="foo")
@@ -201,7 +198,6 @@ Reference cycle:
 
     >>> resolve_all_refs({"a": "${b}", "b": "${a}"})
     Traceback (most recent call last):
-    ...
     vml._internal.util.ReferenceCycleError: ['b', 'a', 'b']
 
 Resolving non string values:
@@ -265,7 +261,6 @@ A non-existing file generates an error:
 
     >>> is_text("non-existing")
     Traceback (most recent call last):
-    ...
     OSError: .../samples/textorbinary/non-existing does not exist
 
 Directories aren't text files:
@@ -415,12 +410,10 @@ Cannot nest within a non-dict:
 
     >>> nc({"1": 1, "1.1": 11, "1.2": 12})
     Traceback (most recent call last):
-    ...
     ValueError: '1.1' cannot be nested: conflicts with {'1': 1}
 
     >>> nc({"1.2": 12, "1.1.1": 111, "1.2.1": 121})
     Traceback (most recent call last):
-    ...
     ValueError: '1.2.1' cannot be nested: conflicts with {'1.2': 12}
 
 An explicit dict is okay:
@@ -461,7 +454,6 @@ Dot-name applied to various combinations of matches:
 
     >>> nc({"a.b": 1}, {"a": 2})
     Traceback (most recent call last):
-    ...
     ValueError: 'a.b' cannot be nested: conflicts with {'a': 2}
 
     >>> nc({"a": 1}, {"a.b": 2})
@@ -720,12 +712,10 @@ Examples:
 
     >>> subpath("/foo/bar", "/bar", "/")
     Traceback (most recent call last):
-    ...
     ValueError: ('/foo/bar', '/bar')
 
     >>> subpath("/foo", "/foo", "/")
     Traceback (most recent call last):
-    ...
     ValueError: ('/foo', '/foo')
 
     >>> subpath("/foo/", "/foo", "/")
@@ -733,12 +723,10 @@ Examples:
 
     >>> subpath("", "", "/")
     Traceback (most recent call last):
-    ...
     ValueError: ('', '')
 
     >>> subpath("/", "/", "/")
     Traceback (most recent call last):
-    ...
     ValueError: ('/', '/')
 
 ## File names
@@ -855,8 +843,7 @@ Provide an invalid spec (error message varies across Python versions).
 
     >>> check_vml_version("not a valid spec")
     Traceback (most recent call last):
-    ...
-    ValueError: invalid version spec 'not a valid spec': ...
+    ValueError: invalid version spec 'not a valid spec': Expected end or semicolon (after name and no valid version specifier)
 
 ## Format duration
 

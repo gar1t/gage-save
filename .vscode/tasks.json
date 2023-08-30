@@ -20,21 +20,21 @@
   "tasks": [
     {
       "label": "Run All Tests",
-      "type": "shell",
-      "command": "groktest",
-      "args": ["."]
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": ["-m", "groktest", "."]
     },
     {
       "label": "Run Current",
-      "type": "shell",
-      "command": "groktest",
-      "args": ["${relativeFile}"]
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": ["-m", "groktest", "${relativeFile}"]
     },
     {
       "label": "Run Last",
-      "type": "shell",
-      "command": "groktest",
-      "args": ["--last"]
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": ["-m", "groktest", "--last"]
     }
   ]
 }

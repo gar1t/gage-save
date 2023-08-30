@@ -373,11 +373,9 @@ Valid rule types:
 
 Invalid:
 
-    >>> include("*", type="invalid")  # +wildcard -whitespace TODO fix error matching
+    >>> include("*", type="invalid")
     Traceback (most recent call last):
-    ...
-    ValueError: invalid value for type 'invalid': expected
-    one of text, binary, dir
+    ValueError: invalid value for type 'invalid': expected one of text, binary, dir
 
 ## Test for file difference
 

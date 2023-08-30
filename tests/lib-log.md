@@ -1,7 +1,3 @@
----
-test-options: +skip FIXME
----
-
 # Logging
 
 Logging in Guild is performed using Python's built in `logging` module
@@ -42,17 +38,22 @@ Let's initialize logging with the default settings:
 
 Debug is not logged by default:
 
+    >>> None
+
     >>> log_capture = LogCapture(use_root_handler=True)
-    >>> with log_capture:
-    ...     log_sample_messages()
+    >>> log_sample_messages()
+    <!-- >>> with log_capture:
+    ...     log_sample_messages() -->
     >>> log_capture.print_all()
     info entry
     WARNING: warning entry
     ERROR: error entry
 
+   >>> # +skiprest
+
 ## Enable debug
 
-Let's reinit with debug enabled:
+Reinit with debug enabled.
 
     >>> vml._internal.log.init_logging(logging.DEBUG)
     >>> with log_capture:
