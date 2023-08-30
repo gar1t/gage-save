@@ -843,7 +843,7 @@ Provide an invalid spec (error message varies across Python versions).
 
     >>> check_vml_version("not a valid spec")
     Traceback (most recent call last):
-    ValueError: invalid version spec 'not a valid spec': Expected end or semicolon (after name and no valid version specifier)
+    ValueError: invalid version spec 'not a valid spec': ...
 
 ## Format duration
 

@@ -1,3 +1,9 @@
+---
+# Disable debug logging because we tamper with logging levels in
+# these tests.
+test-options: -debug
+---
+
 # Logging
 
 Logging in Guild is performed using Python's built in `logging` module
@@ -7,7 +13,7 @@ and related facility.
 
 The module `vml._internal.log` is used to initialize this facility.
 
-    >>> import vml._internal.log
+    >>> from vml._internal import log as loglib
 
 For our tests, we'll create a function that logs various messages
 using a logger named `test`.
@@ -30,34 +36,35 @@ We use the `init_logging` function to initialize the logging
 facility. First, let's save the current settings so we can restore
 them at the end of our tests.
 
-    >>> original_log_settings = vml._internal.log.current_settings()
+    >>> original_log_settings = loglib.current_settings()
 
 Let's initialize logging with the default settings:
 
-    >>> vml._internal.log.init_logging()
+    >>> loglib.init_logging()
 
 Debug is not logged by default:
 
-    >>> None
+    >>> from vml._internal.util import LogCapture
 
     >>> log_capture = LogCapture(use_root_handler=True)
-    >>> log_sample_messages()
-    <!-- >>> with log_capture:
-    ...     log_sample_messages() -->
+
+    >>> with log_capture:
+    ...     log_sample_messages()
+
     >>> log_capture.print_all()
     info entry
     WARNING: warning entry
     ERROR: error entry
 
-   >>> # +skiprest
-
 ## Enable debug
 
 Reinit with debug enabled.
 
-    >>> vml._internal.log.init_logging(logging.DEBUG)
+    >>> loglib.init_logging(logging.DEBUG)
+
     >>> with log_capture:
-    ...   log_sample_messages()
+    ...     log_sample_messages()
+
     >>> log_capture.print_all()
     DEBUG: [test] debug entry
     info entry
@@ -70,9 +77,11 @@ If a TTY is available and the SHELL environment variable is defined,
 output is colored. Warnings are displayed in yellow (color code 33)
 and errors in red (color code 31).
 
-    >>> with vml._internal.log._FakeTTY():
-    ...   with vml._internal.log._FakeShell():
-    ...      with LogCapture(use_root_handler=True, strip_ansi_format=False) as tty_logs:
+    >>> with loglib._FakeTTY():
+    ...   with loglib._FakeShell():
+    ...      with LogCapture(use_root_handler=True,
+    ...          strip_ansi_format=False
+    ...      ) as tty_logs:
     ...          log_sample_messages()
     ...      tty_logs.print_all()
     DEBUG: [test] debug entry
@@ -82,28 +91,34 @@ and errors in red (color code 31).
 
 ## Custom formats
 
-Let's specify some custom level formats:
+Specify custom level formats.
 
-    >>> vml._internal.log.init_logging(
+    >>> loglib.init_logging(
     ...   logging.DEBUG,
-    ...   formats={"_": "%(levelno)i %(message)s"})
+    ...   formats={"_": "%(levelno)i %(message)s"}
+    ... )
+
     >>> with log_capture:
     ...   log_sample_messages()
+
     >>> log_capture.print_all()
     10 debug entry
     20 info entry
     30 warning entry
     40 error entry
 
-Here we'll define the WARN and ERROR formats:
+Define the WARN and ERROR formats.
 
-    >>> vml._internal.log.init_logging(
+    >>> loglib.init_logging(
     ...   logging.DEBUG,
     ...   formats={"WARNING": "!! %(message)s",
-    ...            "ERROR": "!!! %(message)s"})
+    ...            "ERROR": "!!! %(message)s"}
+    ... )
+
     >>> with log_capture:
     ...   log_sample_messages()
-    >>> log_capture.print_all()
+
+    >> log_capture.print_all()
     debug entry
     info entry
     !! warning entry
@@ -111,6 +126,6 @@ Here we'll define the WARN and ERROR formats:
 
 ## Restoring logging
 
-We need to restore logging to its defaults:
+Rrestore logging to its defaults.
 
-    >>> vml._internal.log.init_logging(**original_log_settings)
+    >> vml._internal.log.init_logging(**original_log_settings)

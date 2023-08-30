@@ -456,7 +456,7 @@ def _top_level_dir(path: str):
     return len(parts) <= 1
 
 
-class LogCapture:
+class LogCapture(logging.Filter):
     def __init__(
         self,
         use_root_handler: bool = False,
@@ -476,7 +476,7 @@ class LogCapture:
     def __enter__(self):
         assert not self._saved_log_levels
         for logger in self._iter_loggers():
-            logger.addFilter(cast("logging._FilterType", self))
+            logger.addFilter(self)
             self._apply_log_level(logger)
         self._records = []
         return self
@@ -484,7 +484,7 @@ class LogCapture:
     def __exit__(self, *exc: Any):
         for logger in self._iter_loggers():
             self._restore_log_level(logger)
-            logger.removeFilter(cast("logging._FilterType", self))
+            logger.removeFilter(self)
         self._saved_log_levels.clear()
 
     def _apply_log_level(self, logger: logging.Logger):
@@ -513,6 +513,7 @@ class LogCapture:
         if self._echo_to_stdout:
             sys.stdout.write(self._format_record(record))
             sys.stdout.write("\n")
+        return False
 
     def _format_record(self, r: logging.LogRecord):
         msg = self._handler().format(r)
