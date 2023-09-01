@@ -45,6 +45,7 @@ __all__ = [
     "LogCapture",
     "SysPath",
     "basename",
+    "cat",
     "cd",
     "find",
     "findl",
@@ -61,6 +62,7 @@ __all__ = [
     "set_var_home",
     "symlink",
     "touch",
+    "use_example",
     "use_project",
     "write",
 ]
@@ -894,25 +896,15 @@ def _standarize_paths(paths: List[str]):
 #         print(line)
 
 
-# def _example(name: str):
-#     return os.path.join(_examples_dir(), name)
-
-
-# def _examples_dir():
-#     try:
-#         return os.environ["EXAMPLES"]
-#     except KeyError:
-#         return os.path.join(gage.__pkgdir__, "examples")
-
-
-# def cat(*parts: str):
-#     # pylint: disable=no-value-for-parameter
-#     with open(os.path.join(*parts), "r") as f:
-#         s = f.read()
-#         if not s:
-#             print("<empty>")
-#         else:
-#             print(s)
+def cat(*parts: str):
+    with open(os.path.join(*parts), "r") as f:
+        s = f.read()
+        if not s:
+            print("<empty>")
+        else:
+            if s[-1:] == "\n":
+                s = s[:-1]
+            print(s)
 
 
 # def cat_json(*parts: str):
@@ -1107,7 +1099,7 @@ def run(
         return out
     if out:
         print(out)
-    print(f"<exit {exit_code}>")
+    print(f"↳{exit_code}")
     return None
 
 
@@ -1366,6 +1358,23 @@ def set_var_home(path: str):
 
 # def _capture_ignored(s: str, ignore_patterns: List[Pattern[str]]):
 #     return any(p.search(s) for p in ignore_patterns)
+
+
+def use_example(name: str, var_home: Optional[str] = None):
+    var_home = var_home or mkdtemp()
+    cd(_example(name))
+    set_var_home(var_home)
+
+
+def _example(name: str):
+    return os.path.join(_examples_dir(), name)
+
+
+def _examples_dir():
+    try:
+        return os.environ["EXAMPLES"]
+    except KeyError:
+        return os.path.join(gage.__pkgdir__, "examples")
 
 
 def use_project(project_name: str, var_home: Optional[str] = None):

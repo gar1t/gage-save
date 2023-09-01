@@ -2,7 +2,7 @@
 
     >>> run("gage --version")
     gage 0.1.0
-    <exit 0>
+    ↳0
 
 TODO:
 

@@ -9,17 +9,26 @@
       "title": "Operation definition",
       "type": "object",
       "properties": {
+        "description": {
+          "type": "string"
+        },
         "exec": {
           "title": "Exec spec",
           "oneOf": [
             {
               "title": "Shell command",
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             {
               "title": "Command arguments",
               "type": "array",
-              "item": { "type": "string" }
+              "item": {
+                "title": "Command argument",
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
             }
           ]
         }

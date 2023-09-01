@@ -1,0 +1,6 @@
+{
+  "hello": {
+    "description": "A simple 'hello world' style operation",
+    "exec": ["python", "-c", "print('Hello Gage!')"]
+  }
+}

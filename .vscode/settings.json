@@ -22,7 +22,7 @@
   "json.schemas": [
     {
       "fileMatch": ["gage.json"],
-      "url": "./gagefile.schema.json"
+      "url": "/gage/gagefile.schema.json"
     }
   ],
   "files.associations": {
