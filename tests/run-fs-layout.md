@@ -16,7 +16,7 @@ TODO: implement!
     >>> run("gage run hello.py -y")
     gage: no such operation hello.py
     Try 'gage operations' for a list of operations.
-    ↪ 1
+    <1>
 
 TODO: implement!
 

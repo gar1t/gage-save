@@ -617,7 +617,7 @@ behavioral baseline.
     hello bar from nested if
     hello bar from for
     hello bar from nested else
-    ↪ 0
+    <0>
 
 Helper function to print a file with its breakable lines:
 

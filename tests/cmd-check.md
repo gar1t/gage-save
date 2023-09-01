@@ -10,16 +10,16 @@ test-options: +parse
     python_version:            {:ver} {:any}
     python_exe:                {:path}
     platform:                  {:any}
-    ↪ 0
+    <0>
 
 Test version.
 
     >>> run("gage check --version 0.1.0")
-    ↪ 0
+    <0>
 
     >>> run("gage check --version 999")
     gage: version mismatch: current version '{:ver}' does not match '999'
-    ↪ 1
+    <1>
 
 ## Text external functions
 
@@ -37,7 +37,7 @@ current versions of Git installed.
 
     >>> run("gage check --external git-ls-files")
     git-ls-files is ok (git version {:ver}; {:path})
-    ↪ 0
+    <0>
 
 ### Other checks
 
@@ -45,4 +45,4 @@ current versions of Git installed.
 
     >>> run("gage check --external other")
     gage: unsupported external check: other
-    ↪ 1
+    <1>

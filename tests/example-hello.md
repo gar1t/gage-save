@@ -21,16 +21,11 @@ List operations.
 
     >>> run("gage ops")
     hello  A simple 'hello world' style operation
-    ↪ 0
+    <0>
 
-    >>> run("gage ops")
-    hello  A simple 'hello world' style operation
-    ↪ 0
+Run hello.
 
-    >>> run("gage ops")
-    hello  A simple 'hello world' style operation
-    ↪ 0
-
-    >>> run("gage ops")
-    hello  A simple 'hello world' style operation
-    ↪ 0
+    >>> run("gage run hello -y")
+    gage: no such operation hello
+    Try 'gage operations' for a list of operations.
+    <1>

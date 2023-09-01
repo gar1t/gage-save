@@ -11,7 +11,7 @@ test-options: +wildcard
     ⤶
     Options:
       --help  Show this message and exit.
-    ↪ 0
+    <0>
 
 The alias `ops` may also be used.
 
@@ -21,4 +21,4 @@ The alias `ops` may also be used.
       Show available operations.
     ⤶
     ...
-    ↪ 0
+    <0>
