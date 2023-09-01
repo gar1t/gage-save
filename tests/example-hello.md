@@ -21,16 +21,16 @@ List operations.
 
     >>> run("gage ops")
     hello  A simple 'hello world' style operation
-    ↳0
+    ↪ 0
 
     >>> run("gage ops")
     hello  A simple 'hello world' style operation
-    ↳0
+    ↪ 0
 
     >>> run("gage ops")
     hello  A simple 'hello world' style operation
-    ↳0
+    ↪ 0
 
     >>> run("gage ops")
     hello  A simple 'hello world' style operation
-    ↳0
+    ↪ 0

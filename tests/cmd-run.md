@@ -15,7 +15,7 @@
       --test-sourcecode  Test operation source code selection and exit.
       --test-output      Test operation output and exit.
       --help             Show this message and exit.
-    ↳0
+    ↪ 0
 
 
 ## Op help
@@ -25,14 +25,14 @@
     >>> run("gage run hello --help-op")
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
-    ↳1
+    ↪ 1
 
 ## Python scripts
 
     >>> run("gage run hello --test-prompt")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
-    ↳1
+    ↪ 1
 
 Output should be:
 
@@ -42,14 +42,14 @@ Output should be:
     >>> run("gage run hello -y")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
-    ↳1
+    ↪ 1
 
 ## Staging
 
     >>> run("gage run hello --stage --test-prompt")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
-    ↳1
+    ↪ 1
 
 Output should be:
 

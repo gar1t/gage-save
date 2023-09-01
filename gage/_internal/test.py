@@ -1099,7 +1099,7 @@ def run(
         return out
     if out:
         print(out)
-    print(f"↳{exit_code}")
+    print(f"↪ {exit_code}")
     return None
 
 
