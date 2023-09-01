@@ -170,7 +170,7 @@ def run_arg(fn: Callable[..., Any]):
 
 def common_filters(fn: Callable[..., Any]):
     """
-    Runs may be filtered using options listed above. For more information ``vml
+    Runs may be filtered using options listed above. For more information ``gage
     help filters``.
     """
     click_util.append_params(

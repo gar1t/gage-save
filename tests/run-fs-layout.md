@@ -2,20 +2,20 @@
 
     >>> var_home = mkdtemp()
 
-    >>> use_project("hello", var_home)
+    >>> use_project("hello-project", var_home)
 
     >>> find(".")
+    gage.json
     hello.py
-    vistaml.json
 
     >>> find(var_home)
     <empty>
 
 TODO: implement!
 
-    >>> run("vml run hello.py -y")
-    vml: no such operation hello.py
-    Try 'vml operations' for a list of operations.
+    >>> run("gage run hello.py -y")
+    gage: no such operation hello.py
+    Try 'gage operations' for a list of operations.
     <exit 1>
 
 TODO: implement!

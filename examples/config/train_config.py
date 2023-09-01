@@ -2,7 +2,7 @@ import json
 import math
 import random
 
-__vistaml__ = """
+__gage__ = """
 flags:
   x:
     bind: config.json:x
@@ -10,11 +10,11 @@ flags:
     bind: config.json:noise
 """
 
-__vistaml_v2__ = """
+__gage_v2__ = """
 flags.bind: config.json
 """
 
-__vistaml_v3__ = """
+__gage_v3__ = """
 flags.bind:
   - config1.json
   - config2.json

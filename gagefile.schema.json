@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gageml.com/gagefile.schema.json",
+  "title": "Gage ML Project File",
+  "description": "Specification to support Gage ML operations",
+  "type": "object",
+  "patternProperties": {
+    ".+": {
+      "title": "Operation definition",
+      "type": "object",
+      "properties": {
+        "exec": {
+          "title": "Exec spec",
+          "oneOf": [
+            {
+              "title": "Shell command",
+              "type": "string"
+            },
+            {
+              "title": "Command arguments",
+              "type": "array",
+              "item": { "type": "string" }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

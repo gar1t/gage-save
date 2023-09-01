@@ -11,7 +11,7 @@ from .. import click_util
 TOPICS: Dict[str, Tuple[str, str]] = {
     "filters": (
         "Help with run filter options.",
-        """## Vista ML Filter Options
+        """## gage ML Filter Options
 
 ### Filter by Operation
 
@@ -133,7 +133,7 @@ complete or partial digest value.
 @click.command
 @click.argument("topic", metavar="TOPIC", required=False)
 def help(topic: Optional[str] = None):
-    """Show Vista ML help."""
+    """Show gage ML help."""
     if not topic:
         _print_general_help()
         raise SystemExit(0)
@@ -147,7 +147,7 @@ def help(topic: Optional[str] = None):
 def _print_general_help():
     out = click_util.HelpFormatter()
     assert help.__doc__
-    out.write_text("Usage: vml help TOPIC")
+    out.write_text("Usage: gage help TOPIC")
     out.write_paragraph()
     out.write_text(help.__doc__)
     out.write_paragraph()

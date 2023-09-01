@@ -1,8 +1,8 @@
 # File Utils
 
-The module `vml._internal.file_util` implements advanced file utilities.
+The module `gage._internal.file_util` implements advanced file utilities.
 
-    >>> from vml._internal import file_util
+    >>> from gage._internal import file_util
 
 ## Copy tree
 
@@ -31,7 +31,7 @@ a destination directory.
 Define a facility for generating a source directory of files to copy.
 
     >>> import os
-    >>> from vml._internal import util
+    >>> from gage._internal import util
 
     >>> class file_base(object):
     ...     def __init__(self, path, write_mode, base_char, size):
@@ -381,7 +381,7 @@ Invalid:
 
 Use `util.files_differ()` to check whether or not two files differ.
 
-    >>> from vml._internal.file_util import files_differ
+    >>> from gage._internal.file_util import files_differ
 
 Write some files to test:
 

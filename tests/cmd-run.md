@@ -2,11 +2,11 @@
 
 ## Command help
 
-    >>> run("vml run --help")  # +blankline=.
-    Usage: vml run [OPTIONS] OPERATION
-    .
+    >>> run("gage run --help")
+    Usage: gage run [OPTIONS] OPERATION
+    ⤶
       Start a run.
-    .
+    ⤶
     Options:
       --stage            Stage a run.
       -y, --yes          Do not prompt before running operation.
@@ -19,42 +19,38 @@
 
 ## Op help
 
-    >>> use_project("hello")
+    >>> use_project("hello-project")
 
-    >>> find(".")
-    hello.py
-    vistaml.json
-
-    >>> run("vml run hello.py --help-op")  # FIXME
-    vml: no such operation hello.py
-    Try 'vml operations' for a list of operations.
+    >>> run("gage run hello --help-op")
+    gage: no such operation hello
+    Try 'gage operations' for a list of operations.
     <exit 1>
 
 ## Python scripts
 
-    >>> run("vml run hello.py --test-prompt")  # FIXME
-    vml: no such operation hello.py
-    Try 'vml operations' for a list of operations.
+    >>> run("gage run hello --test-prompt")  # FIXME
+    gage: no such operation hello
+    Try 'gage operations' for a list of operations.
     <exit 1>
 
 Output should be:
 
-    You are about to run hello.py
+    You are about to run hello
     Continue?
 
-    >>> run("vml run hello.py -y")  # FIXME
-    vml: no such operation hello.py
-    Try 'vml operations' for a list of operations.
+    >>> run("gage run hello -y")  # FIXME
+    gage: no such operation hello
+    Try 'gage operations' for a list of operations.
     <exit 1>
 
 ## Staging
 
-    >>> run("vml run hello.py --stage --test-prompt")  # FIXME
-    vml: no such operation hello.py
-    Try 'vml operations' for a list of operations.
+    >>> run("gage run hello --stage --test-prompt")  # FIXME
+    gage: no such operation hello
+    Try 'gage operations' for a list of operations.
     <exit 1>
 
 Output should be:
 
-    You are about to stage hello.py
+    You are about to stage hello
     Continue?

@@ -8,7 +8,7 @@ from . import config
 from . import opdef
 from . import util
 
-from .plugin import plugin_opdef_for_opspec
+#from .plugin import plugin_opdef_for_opspec
 
 
 def opdef_for_opspec(opspec: Optional[str], cwd: Optional[str] = None):
@@ -16,7 +16,7 @@ def opdef_for_opspec(opspec: Optional[str], cwd: Optional[str] = None):
     return util.find_apply(
         [
             _try_project_opdef,
-            _try_plugin_opdef,
+            #_try_plugin_opdef,
             _try_builtin_opdef,
             _opdef_not_found,
         ],
@@ -29,8 +29,8 @@ def _try_project_opdef(opspec: Optional[str], cwd: str):
     return None
 
 
-def _try_plugin_opdef(opspec: Optional[str], cwd: str):
-    return plugin_opdef_for_opspec(opspec, cwd)
+# def _try_plugin_opdef(opspec: Optional[str], cwd: str):
+#     return plugin_opdef_for_opspec(opspec, cwd)
 
 
 def _try_builtin_opdef(opspec: Optional[str], cwd: str):

@@ -94,7 +94,7 @@ class ConsoleLogHandler(logging.StreamHandler):
 def init_logging(level: Optional[int] = None, formats: Optional[Dict[str, str]] = None):
     level = _log_level_for_arg(level)
     console_handler = {
-        "class": "vml._internal.log.ConsoleLogHandler",
+        "class": "gage._internal.log.ConsoleLogHandler",
         "formats": formats,
     }
     logging.config.dictConfig(

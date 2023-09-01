@@ -1,13 +1,13 @@
 import math
 import random
 
-__vistaml__ = """
+__gage__ = """
 flags: [x]
 requires: [data.txt]
 scalars: [loss]
 """
 
-__vistaml_v2__ = """
+__gage_v2__ = """
 flags:
   x:
     bind: x

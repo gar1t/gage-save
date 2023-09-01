@@ -20,7 +20,7 @@ from .runs import runs
 @click.group(cls=click_util.Group)
 @click.version_option(
     version=__version__,
-    prog_name="vml",
+    prog_name="gage",
     message="%(prog)s %(version)s",
 )
 @click.option(

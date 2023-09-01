@@ -19,7 +19,7 @@ def active_shell_supports_directives():
 def _active_shell():
     from .. import util
 
-    return os.getenv("VML_SHELL") or util.active_shell()
+    return os.getenv("gage_SHELL") or util.active_shell()
 
 
 _PathFilter = Callable[[Path], bool]

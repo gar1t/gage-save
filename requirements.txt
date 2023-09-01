@@ -1,4 +1,0 @@
-chardet
-natsort
-psutil
-pyyaml

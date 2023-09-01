@@ -4,8 +4,8 @@ test-options: +wildcard
 
 # `operations` command
 
-    >>> run("vml operations --help")
-    Usage: vml operations [OPTIONS] [FILTER]...
+    >>> run("gage operations --help")
+    Usage: gage operations [OPTIONS] [FILTER]...
     ⤶
       Show available operations.
     ⤶
@@ -18,8 +18,8 @@ test-options: +wildcard
 
 The alias `ops` may also be used.
 
-    >>> run("vml ops --help")
-    Usage: vml ops [OPTIONS] [FILTER]...
+    >>> run("gage ops --help")
+    Usage: gage ops [OPTIONS] [FILTER]...
     ⤶
       Show available operations.
     ⤶

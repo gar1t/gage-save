@@ -21,7 +21,7 @@ def set_cwd(cwd: Optional[str]):
     it's specified by the user (or a user proxy) as a command-specific
     current directory.
 
-    Vista maintains the distinction between `cwd` and the process
+    gage maintains the distinction between `cwd` and the process
     current directory to provide meaningful user messages. If changes to
     the configured current directory were applied as `os.chdir()`,
     messages to users would no longer reflect the user-facing current
@@ -29,10 +29,10 @@ def set_cwd(cwd: Optional[str]):
 
     Consider this command:
 
-        $ vml -C my-project run train
+        $ gage -C my-project run train
 
-    To the user, this is equivalent to `cd my-project; vml run train`.
-    However, Vista can't use this technique internally to run the
+    To the user, this is equivalent to `cd my-project; gage run train`.
+    However, gage can't use this technique internally to run the
     command because it needs to preserve the user-facing cwd for
     messages.
     """
@@ -67,7 +67,7 @@ class SetCwd:
 
 
 def var_home():
-    return __var_home or os.path.expanduser("~/.vistaml")
+    return __var_home or os.path.expanduser("~/.gage")
 
 
 def set_var_home(path: str):

@@ -3,7 +3,8 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "python.analysis.ignore": [
-    "vml/_vendor",
+
+    "gage/_vendor",
     "tests"
   ],
   "python.analysis.typeCheckingMode": "basic",
@@ -20,8 +21,11 @@
   ],
   "json.schemas": [
     {
-      "fileMatch": ["vistml.json"],
-      "url": "./vml/schema/project.json"
+      "fileMatch": ["gage.json"],
+      "url": "./gagefile.schema.json"
     }
-  ]
+  ],
+  "files.associations": {
+    "gage.json": "jsonc"
+  }
 }

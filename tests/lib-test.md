@@ -2,7 +2,7 @@
 test-options: +parse
 ---
 
-# Vista test support
+# gage test support
 
 ## Example pattern matching
 
@@ -23,7 +23,12 @@ Failure cases:
 Paths can be matched with the `path` type.
 
     >>> "/usr/bin/git"
-    '{:abspath}'
+    '{:path}'
+
+Paths must be absolute to match.
+
+    >>> "bin/git"  # +fails
+    '{:path}'
 
 ### Any value
 

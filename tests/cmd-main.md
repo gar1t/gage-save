@@ -1,7 +1,7 @@
-# Main `vml` command
+# Main `gage` command
 
-    >>> run("vml --version")
-    vml 0.1.0
+    >>> run("gage --version")
+    gage 0.1.0
     <exit 0>
 
 TODO:

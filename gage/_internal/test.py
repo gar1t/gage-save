@@ -31,7 +31,7 @@ import threading
 
 # import yaml
 
-import vml
+import gage
 
 # from . import ansi_util
 # from . import cli
@@ -50,9 +50,9 @@ __all__ = [
     "findl",
     "mkdtemp",
     "normlf",
-    "parse_abspath",
+    "parse_path",
     "parse_any",
-    "parse_semver",
+    "parse_ver",
     "path",
     "quiet",
     "run",
@@ -82,24 +82,24 @@ def parse_any(s: str):
 
 
 # Simplified https://regex101.com/r/Ly7O1x/3/
-SEMVER_PATTERN = (
+VER_PATTERN = (
     r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))?"
 )
 
-__semver_pattern_compiled = re.compile(SEMVER_PATTERN)
+__ver_pattern_compiled = re.compile(VER_PATTERN)
 
 
-@parse_type("ver", SEMVER_PATTERN, 3)
-def parse_semver(s: str):
-    m = __semver_pattern_compiled.match(s)
+@parse_type("ver", VER_PATTERN, 3)
+def parse_ver(s: str):
+    m = __ver_pattern_compiled.match(s)
     if not m:
         return None
     return m.groups()
 
 
-@parse_type("abspath", r"/.*")
-def parse_abspath(s: str):
+@parse_type("path", r"/.*")
+def parse_path(s: str):
     return s
 
 
@@ -155,7 +155,7 @@ def parse_abspath(s: str):
 
 
 def tests_dir():
-    return os.path.join(vml.__pkgdir__, "tests")
+    return os.path.join(gage.__pkgdir__, "tests")
 
 
 # def _test_name_for_path(path: str):
@@ -311,7 +311,7 @@ def tests_dir():
 
 
 # def _running_under_ci():
-#     return os.getenv("VISTAML_CI") == "1"
+#     return os.getenv("gage_CI") == "1"
 
 
 # def _skip_timing_critical(options: _Options):
@@ -336,7 +336,7 @@ def tests_dir():
 # # def _skip_git_ls_files_target(options):
 # #     """Skips test if system Git does not support ls-files target behavior.
 
-# #     Earlier versions of Git do no support a behavior that Vista relies
+# #     Earlier versions of Git do no support a behavior that gage relies
 # #     on for source code detection optimization. Tests that exerise this
 # #     behavior can use the option `GIT_LS_FILES_TARGET` to skip tests
 # #     that don't apply to the current version of Git.
@@ -417,7 +417,7 @@ def tests_dir():
 
 
 # class Checker(doctest.OutputChecker):
-#     """Vista ML test checker
+#     """gage ML test checker
 
 #     Transforms got and want for tests based:
 
@@ -833,7 +833,6 @@ symlink = os.symlink
 touch = util.touch
 
 
-
 def sample(*parts: str):
     return os.path.join(*(samples_dir(),) + parts)
 
@@ -842,7 +841,7 @@ def samples_dir():
     return os.path.join(tests_dir(), "samples")
 
 
-def mkdtemp(prefix: str = "vistaml-test-"):
+def mkdtemp(prefix: str = "gage-test-"):
     return tempfile.mkdtemp(prefix=prefix)
 
 
@@ -903,7 +902,7 @@ def _standarize_paths(paths: List[str]):
 #     try:
 #         return os.environ["EXAMPLES"]
 #     except KeyError:
-#         return os.path.join(vml.__pkgdir__, "examples")
+#         return os.path.join(gage.__pkgdir__, "examples")
 
 
 # def cat(*parts: str):
@@ -1520,11 +1519,11 @@ def use_project(project_name: str, var_home: Optional[str] = None):
 #     test_name: str, fail_fast: Optional[bool], force: Optional[bool]
 # ):
 #     env = dict(os.environ)
-#     env["PYTHONPATH"] = vml.__pkgdir__
+#     env["PYTHONPATH"] = gage.__pkgdir__
 #     cmd = [
 #         sys.executable,
 #         "-m",
-#         "vml.__main__",
+#         "gage.__main__",
 #         "check",
 #         "--no-chrome",  # just print test results
 #         "-t",

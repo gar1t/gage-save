@@ -1,12 +1,12 @@
 # Run utils
 
-General run utilities are provided by `vml._internal.run_util`.
+General run utilities are provided by `gage._internal.run_util`.
 
 ## Run output
 
 Run output can be read using util.RunOutputReader.
 
-    >>> from vml._internal.run_util import RunOutputReader
+    >>> from gage._internal.run_util import RunOutputReader
 
 For these tests, we'll use a sample run:
 

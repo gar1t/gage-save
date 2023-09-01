@@ -6,7 +6,7 @@ test-options: +wildcard
 
 ## Matching filters
 
-    >>> from vml._internal.util import match_filters
+    >>> from gage._internal.util import match_filters
 
 Empty case:
 
@@ -67,7 +67,7 @@ Two filters matching both vals (alternate order);
 
 Use `resolve_refs` to resolve references in a string.
 
-    >>> from vml._internal.util import resolve_refs
+    >>> from gage._internal.util import resolve_refs
 
 Empty string:
 
@@ -78,11 +78,11 @@ Missing ref generates an error:
 
     >>> resolve_refs("${a}", {})
     Traceback (most recent call last):
-    vml._internal.util.UndefinedReferenceError: a
+    gage._internal.util.UndefinedReferenceError: a
 
     >>> resolve_refs("foo ${bar} baz", {})
     Traceback (most recent call last):
-    vml._internal.util.UndefinedReferenceError: bar
+    gage._internal.util.UndefinedReferenceError: bar
 
 A default may be provided to use for missing values:
 
@@ -153,7 +153,7 @@ Escaped references aren't resolved:
 A map of vals may contain references to other vals. Use
 `resolve_all_refs` to resolve all references in the map.
 
-    >>> from vml._internal.util import resolve_all_refs
+    >>> from gage._internal.util import resolve_all_refs
 
 No references:
 
@@ -167,7 +167,7 @@ Reference to undefined value:
 
     >>> resolve_all_refs({"a": "${b}"})
     Traceback (most recent call last):
-    vml._internal.util.UndefinedReferenceError: b
+    gage._internal.util.UndefinedReferenceError: b
 
     >>> resolve_all_refs({"a": "${b}"}, undefined="foo")
     {'a': 'foo'}
@@ -198,7 +198,7 @@ Reference cycle:
 
     >>> resolve_all_refs({"a": "${b}", "b": "${a}"})
     Traceback (most recent call last):
-    vml._internal.util.ReferenceCycleError: ['b', 'a', 'b']
+    gage._internal.util.ReferenceCycleError: ['b', 'a', 'b']
 
 Resolving non string values:
 
@@ -222,7 +222,7 @@ A reference can be escaped:
 Use `is_text_file` to test if a file is text or binary. This is used
 to provide a file viewer for text files.
 
-    >>> from vml._internal.util import is_text_file
+    >>> from gage._internal.util import is_text_file
 
 The test uses known file extensions as an optimization. To test the
 file content itself, we need to ignore extensions:
@@ -276,7 +276,7 @@ directory in the root.
 
 The function `_top_level_dir` is used for this test.
 
-    >>> from vml._internal.util import _top_level_dir
+    >>> from gage._internal.util import _top_level_dir
 
 Tests:
 
@@ -296,7 +296,7 @@ Tests:
 
 ## Shlex quote
 
-    >>> from vml._internal.util import shlex_quote as quote
+    >>> from gage._internal.util import shlex_quote as quote
 
     >>> quote(None)
     "''"
@@ -342,7 +342,7 @@ Tests:
 
 ## Shlex split
 
-    >>> from vml._internal.util import shlex_split as split
+    >>> from gage._internal.util import shlex_split as split
 
     >>> split(None)
     []
@@ -382,12 +382,12 @@ using dots to denote levels in the decoded dict.
 
 ### Decoding nested config
 
-The decoding function is `vml._internal.util.nested_config`. It takes a flag
+The decoding function is `gage._internal.util.nested_config`. It takes a flag
 map of dot-delimeted names to values.
 
 
     >>> def nc(kv, config=None):
-    ...     from vml._internal.util import apply_nested_config
+    ...     from gage._internal.util import apply_nested_config
     ...     from pprint import pprint
     ...
     ...     config = config or {}
@@ -514,7 +514,7 @@ Tests for `_iter_dot_name_trials` - shows search order of dot names to
 when applying key values to config in `nested_config()`.
 
     >>> def dot_name_trials(s):
-    ...     from vml._internal.util import _iter_dot_name_trials
+    ...     from gage._internal.util import _iter_dot_name_trials
     ...     for trial in _iter_dot_name_trials(s):
     ...         print(trial)
 
@@ -532,10 +532,10 @@ when applying key values to config in `nested_config()`.
 
 ### Encoding nested config
 
-The function `vml._internal.util.encode_nested_config` is used to encode a
+The function `gage._internal.util.encode_nested_config` is used to encode a
 deep dict to a flat dict with dot-delimited names.
 
-    >>> from vml._internal.util import encode_nested_config as enc
+    >>> from gage._internal.util import encode_nested_config as enc
 
     >>> enc({})
     {}
@@ -561,7 +561,7 @@ The function `util.shorten_path()` is used to shorten directories by
 removing path segments and replacing them with an ellipsis ('...') as
 needed to keep them under a specified length.
 
-    >>> from vml._internal.util import shorten_path
+    >>> from gage._internal.util import shorten_path
     >>> shorten = lambda s, max_len: shorten_path(s, max_len, sep="/")
 
 Any paths under the specified length are returned unmodified:
@@ -636,7 +636,7 @@ The shorten dir algorithm uses `util._shorten_path_split_path`, which
 handles cases of leading and repeating path separators by appending
 them to the next respective part.
 
-    >>> from vml._internal.util import _shorten_path_split_path
+    >>> from gage._internal.util import _shorten_path_split_path
     >>> ds_split = lambda s: _shorten_path_split_path(s, "/")
 
 Examples:
@@ -670,8 +670,8 @@ Examples:
 The functions `safe_list_remove` and `safe_list_remove_all` are used
 to safely remove items from lists.
 
-    >>> from vml._internal.util import safe_list_remove
-    >>> from vml._internal.util import safe_list_remove_all
+    >>> from gage._internal.util import safe_list_remove
+    >>> from gage._internal.util import safe_list_remove_all
 
 Helper functions:
 
@@ -705,7 +705,7 @@ Examples:
 
 ## Testing subdirectories
 
-    >>> from vml._internal.util import subpath
+    >>> from gage._internal.util import subpath
 
     >>> subpath("/foo/bar", "/foo", "/")
     'bar'
@@ -734,7 +734,7 @@ Examples:
 When writing files the `safe_filename` function is used to ensure the
 file name is valid for a platform.
 
-    >>> from vml._internal.util import safe_filename
+    >>> from gage._internal.util import safe_filename
 
 On Windows, the function replaces colons with underscores.
 
@@ -749,7 +749,7 @@ with underscore.
 
 ## File hashes
 
-    >>> from vml._internal.util import file_sha1, file_sha256
+    >>> from gage._internal.util import file_sha1, file_sha256
 
     >>> file_sha1(sample("textorbinary", "lena.jpg"))
     'af17f9c0a80505922933edb713bf30ec25916fbf'
@@ -762,13 +762,13 @@ with underscore.
 The active shell is provided as a shell string using
 `util.active_shell()`.
 
-    >>> from vml._internal.util import active_shell
+    >>> from gage._internal.util import active_shell
 
     >>> shell = active_shell()
 
     >>> if shell is None:
     ...     import psutil
-    ...     from vml._internal.util import shlex_quote as _quote, _KNOWN_SHELLS
+    ...     from gage._internal.util import shlex_quote as _quote, _KNOWN_SHELLS
     ...     proc_path = []
     ...     p = psutil.Process().parent()
     ...     while p:
@@ -782,7 +782,7 @@ The active shell is provided as a shell string using
 The `util` module caches the active shell to avoid rereading the
 environment. The cached value is `util._cached_active_shell`.
 
-    >>> from vml._internal import util
+    >>> from gage._internal import util
     >>> util._cached_active_shell == shell, (util._cached_active_shell, shell)
     (True, ...)
 
@@ -825,29 +825,29 @@ Force a re-read of the environment for active shell.
 
 ## Check Guild version
 
-Guild `util` module provides a function to validate the current Vista
+Guild `util` module provides a function to validate the current gage
 ML version given a package requirement spec.
 
-    >>> from vml._internal.util import check_vml_version
-    >>> from vml import __version__ as current_vml_version
+    >>> from gage._internal.util import check_gage_version
+    >>> from gage import __version__ as current_gage_version
 
 Test some version assertions that we know are true.
 
-    >>> check_vml_version(">0.0.0")
+    >>> check_gage_version(">0.0.0")
     True
 
-    >>> check_vml_version("<9999")
+    >>> check_gage_version("<9999")
     True
 
 Provide an invalid spec (error message varies across Python versions).
 
-    >>> check_vml_version("not a valid spec")
+    >>> check_gage_version("not a valid spec")
     Traceback (most recent call last):
     ValueError: invalid version spec 'not a valid spec': ...
 
 ## Format duration
 
-    >>> from vml._internal.util import format_duration as fd
+    >>> from gage._internal.util import format_duration as fd
 
     >>> fd(0, 0)
     '0:00:00'
@@ -869,7 +869,7 @@ Provide an invalid spec (error message varies across Python versions).
 
 ## Split lines
 
-    >>> from vml._internal.util import split_lines
+    >>> from gage._internal.util import split_lines
 
     >>> split_lines("")
     []
@@ -912,7 +912,7 @@ Provide an invalid spec (error message varies across Python versions).
 Use `dict_to_camel_case` to convert pascal case dict keys to camel case. This
 can be used when interfacing with JavaScript applications.
 
-    >>> from vml._internal.util import dict_to_camel_case
+    >>> from gage._internal.util import dict_to_camel_case
 
     >>> dict_to_camel_case({})
     {}
@@ -952,7 +952,7 @@ can be used when interfacing with JavaScript applications.
 
 ## Flatten list
 
-    >>> from vml._internal.util import flatten
+    >>> from gage._internal.util import flatten
 
     >>> flatten([])
     []
@@ -989,7 +989,7 @@ CFG/INI decoding is provided by the function `decode_cfg_val`. This
 function implements the behavior outlined in Python's `configparser`
 support for [data types](https://docs.python.org/library/configparser.html#supported-datatypes).
 
-    >>> from vml._internal.util import decode_cfg_val
+    >>> from gage._internal.util import decode_cfg_val
 
 Ints:
 
@@ -1040,7 +1040,7 @@ Strings:
 
 CFG/INI encoding is simply the application of `str` to a value.
 
-    >>> from vml._internal.util import encode_cfg_val
+    >>> from gage._internal.util import encode_cfg_val
 
     >>> encode_cfg_val(123)
     '123'
@@ -1069,7 +1069,7 @@ These two functions evaluate a series of functions and return True or
 False depending on the function and the truthiness of the applied
 results.
 
-    >>> from vml._internal.util import any_apply, all_apply
+    >>> from gage._internal.util import any_apply, all_apply
 
 Create functions that evaluate True and False, printing that they're
 called.
@@ -1151,7 +1151,7 @@ returns True.
 `util.pop_find` removes and returns the first element in a list
 matching a filter call.
 
-    >>> from vml._internal.util import pop_find
+    >>> from gage._internal.util import pop_find
 
     >>> l = [1,2,3]
     >>> pop_find(l, lambda x: x >=2)

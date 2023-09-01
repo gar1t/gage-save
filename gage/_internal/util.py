@@ -348,7 +348,7 @@ def try_cached_sha(for_file: str):
 
 def _cached_sha_filename(for_file: str):
     parent, name = os.path.split(for_file)
-    return os.path.join(parent, f".vistaml-cache-{name}.sha")
+    return os.path.join(parent, f".gage-cache-{name}.sha")
 
 
 def write_cached_sha(sha: str, for_file: str):
@@ -369,7 +369,7 @@ def parse_url(url: str):
 
 
 class TempBase:
-    def __init__(self, prefix: str = "vistaml-", suffix: str = "", keep: bool = False):
+    def __init__(self, prefix: str = "gage-", suffix: str = "", keep: bool = False):
         self._prefix = prefix
         self._suffix = suffix
         self._keep = keep
@@ -1266,12 +1266,12 @@ def _platform_psutil_info() -> Dict[str, Any]:
         }
 
 
-def vistaml_user_agent():
+def gage_user_agent():
     import platform
-    import vml
+    import gage
 
     system, _node, release, _ver, machine, _proc = platform.uname()
-    return f"python-vistaml/{vml.__version__} ({system}; {machine}; {release})"
+    return f"python-gage/{gage.__version__} ({system}; {machine}; {release})"
 
 
 def apply_nested_config(kv: Dict[str, Any], config: Dict[str, Any]):
@@ -1444,7 +1444,7 @@ class HTTPConnectionError(Exception):
 
 def http_post(url: str, data: Dict[str, Any], timeout: Optional[float] = None):
     headers = {
-        "User-Agent": vistaml_user_agent(),
+        "User-Agent": gage_user_agent(),
         "Content-type": "application/x-www-form-urlencoded",
     }
     return _http_request(url, headers, data, "POST", timeout)
@@ -1855,11 +1855,11 @@ class StdoutCapture:
         return "".join(self._captured)
 
 
-def check_vml_version(req: str):
-    import vml
+def check_gage_version(req: str):
+    import gage
     from . import python_util
 
-    return python_util.check_package_version(vml.__version__, req)
+    return python_util.check_package_version(gage.__version__, req)
 
 
 def split_lines(s: str):

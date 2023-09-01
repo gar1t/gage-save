@@ -1,9 +1,9 @@
-# Vista `var` support
+# gage `var` support
 
 The `var` module provides system wide data related services. It's primary
 feature is to read Runs from a runs location.
 
-    >>> from vml._internal import var
+    >>> from gage._internal import var
 
     >>> var_home = mkdtemp()
 
@@ -14,9 +14,9 @@ feature is to read Runs from a runs location.
 
 Generate one run.
 
-    >>> import vml
+    >>> import gage
 
-    >>> run = vml.run(sample("hello"))
+    >>> run = gage.run(sample("hello"))
 
     >>> run.run_dir
     'yyy.run'

@@ -32,7 +32,7 @@ from .runs_tag import tag_runs
 def runs(ctx: click.Context, **kw: Any):
     """Show or manage runs.
 
-    If `COMMAND` is omitted, lists runs. Refer to ``vml runs list --help`` for
+    If `COMMAND` is omitted, lists runs. Refer to ``gage runs list --help`` for
     more information on the `list` command.
     """
     if not ctx.invoked_subcommand:

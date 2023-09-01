@@ -11,9 +11,9 @@ and related facility.
 
     >>> import logging
 
-The module `vml._internal.log` is used to initialize this facility.
+The module `gage._internal.log` is used to initialize this facility.
 
-    >>> from vml._internal import log as loglib
+    >>> from gage._internal import log as loglib
 
 For our tests, we'll create a function that logs various messages
 using a logger named `test`.
@@ -44,7 +44,7 @@ Let's initialize logging with the default settings:
 
 Debug is not logged by default:
 
-    >>> from vml._internal.util import LogCapture
+    >>> from gage._internal.util import LogCapture
 
     >>> log_capture = LogCapture(use_root_handler=True)
 
@@ -128,4 +128,4 @@ Define the WARN and ERROR formats.
 
 Rrestore logging to its defaults.
 
-    >> vml._internal.log.init_logging(**original_log_settings)
+    >> gage._internal.log.init_logging(**original_log_settings)

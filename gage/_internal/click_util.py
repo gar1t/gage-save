@@ -12,7 +12,7 @@ import json
 # import os
 import re
 
-import vml
+import gage
 
 from .._vendor import click
 
@@ -187,7 +187,7 @@ class JSONHelpFormatter(click.HelpFormatter):
     _finalized: object = object()
 
     def __init__(self):
-        self._val: Dict[str, Any] = {"version": vml.__version__}
+        self._val: Dict[str, Any] = {"version": gage.__version__}
         self._help_text: Union[None, List[str], object] = None
         self._cur_dl: Union[None, _DLDictItems] = None
         self.width = 999999999

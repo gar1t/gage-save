@@ -2,13 +2,13 @@
 
     >>> import importlib
     >>> import os
-    >>> import vml
+    >>> import gage
 
     >>> SKIP_DIRS = ["tests", "_vendor"]
     >>> SKIP_MODS = []
 
     >>> def iter_mods():
-    ...     proj_root = os.path.dirname(vml.__file__)
+    ...     proj_root = os.path.dirname(gage.__file__)
     ...     for root, dirs, files in os.walk(proj_root, topdown=True):
     ...         for name in SKIP_DIRS:
     ...             if name in dirs: dirs.remove(name)
@@ -17,63 +17,66 @@
     ...             mod_path = os.path.join(root, name)
     ...             mod_relpath = os.path.relpath(mod_path, proj_root)
     ...             mod_name = (
-    ...                 "vml."
+    ...                 "gage."
     ...                 + mod_relpath.replace(os.path.sep, ".")[:-3])
     ...             if mod_name in SKIP_MODS: continue
     ...             yield importlib.import_module(mod_name)
 
     >>> for name in sorted([m.__name__ for m in iter_mods()]):
     ...     print(name)  # +diff
-    vml.__init__
-    vml.__main__
-    vml._internal.ansi_util
-    vml._internal.cli
-    vml._internal.click_util
-    vml._internal.commands.ac_support
-    vml._internal.commands.check
-    vml._internal.commands.check_impl
-    vml._internal.commands.help
-    vml._internal.commands.impl_support
-    vml._internal.commands.main
-    vml._internal.commands.main_impl
-    vml._internal.commands.operations
-    vml._internal.commands.operations_impl
-    vml._internal.commands.run
-    vml._internal.commands.run_impl
-    vml._internal.commands.runs
-    vml._internal.commands.runs_archive
-    vml._internal.commands.runs_comment
-    vml._internal.commands.runs_delete
-    vml._internal.commands.runs_export
-    vml._internal.commands.runs_import
-    vml._internal.commands.runs_info
-    vml._internal.commands.runs_label
-    vml._internal.commands.runs_list
-    vml._internal.commands.runs_list_impl
-    vml._internal.commands.runs_mark
-    vml._internal.commands.runs_merge
-    vml._internal.commands.runs_publish
-    vml._internal.commands.runs_purge
-    vml._internal.commands.runs_restore
-    vml._internal.commands.runs_stop
-    vml._internal.commands.runs_support
-    vml._internal.commands.runs_tag
-    vml._internal.config
-    vml._internal.exit
-    vml._internal.file_util
-    vml._internal.log
-    vml._internal.op
-    vml._internal.opdef
-    vml._internal.opdef_util
-    vml._internal.plugin
-    vml._internal.project
-    vml._internal.python_util
-    vml._internal.run
-    vml._internal.run_manifest
-    vml._internal.run_util
-    vml._internal.test
-    vml._internal.util
-    vml._internal.var
-    vml._internal.vcs_util
-    vml._internal.yaml_util
-    vml.api
+    gage.__init__
+    gage.__main__
+    gage._internal.__init__
+    gage._internal.ansi_util
+    gage._internal.cli
+    gage._internal.click_util
+    gage._internal.commands.ac_support
+    gage._internal.commands.check
+    gage._internal.commands.check_impl
+    gage._internal.commands.help
+    gage._internal.commands.impl_support
+    gage._internal.commands.main
+    gage._internal.commands.main_impl
+    gage._internal.commands.operations
+    gage._internal.commands.operations_impl
+    gage._internal.commands.run
+    gage._internal.commands.run_impl
+    gage._internal.commands.runs
+    gage._internal.commands.runs_archive
+    gage._internal.commands.runs_comment
+    gage._internal.commands.runs_delete
+    gage._internal.commands.runs_export
+    gage._internal.commands.runs_import
+    gage._internal.commands.runs_info
+    gage._internal.commands.runs_label
+    gage._internal.commands.runs_list
+    gage._internal.commands.runs_list_impl
+    gage._internal.commands.runs_mark
+    gage._internal.commands.runs_merge
+    gage._internal.commands.runs_publish
+    gage._internal.commands.runs_purge
+    gage._internal.commands.runs_restore
+    gage._internal.commands.runs_stop
+    gage._internal.commands.runs_support
+    gage._internal.commands.runs_tag
+    gage._internal.config
+    gage._internal.exit
+    gage._internal.file_util
+    gage._internal.gagefile
+    gage._internal.log
+    gage._internal.op
+    gage._internal.opdef
+    gage._internal.opdef_util
+    gage._internal.plugin
+    gage._internal.plugins.python.__init__
+    gage._internal.project
+    gage._internal.python_util
+    gage._internal.run
+    gage._internal.run_manifest
+    gage._internal.run_util
+    gage._internal.test
+    gage._internal.util
+    gage._internal.var
+    gage._internal.vcs_util
+    gage._internal.yaml_util
+    gage.api

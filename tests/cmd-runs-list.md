@@ -2,17 +2,17 @@
 
 ## Incompatible options
 
-    >>> run("vml runs --json --verbose")
-    vml: --json and --verbose cannot both be specified
-    Try 'vml runs list --help' for more information.
+    >>> run("gage runs --json --verbose")
+    gage: --json and --verbose cannot both be specified
+    Try 'gage runs list --help' for more information.
     <exit 1>
 
-    >>> run("vml runs --archive X --deleted")
-    vml: --archive and --deleted cannot both be specified
-    Try 'vml runs list --help' for more information.
+    >>> run("gage runs --archive X --deleted")
+    gage: --archive and --deleted cannot both be specified
+    Try 'gage runs list --help' for more information.
     <exit 1>
 
-    >>> run("vml runs list --all --limit 5")
-    vml: --all and --limit cannot both be specified
-    Try 'vml runs list --help' for more information.
+    >>> run("gage runs list --all --limit 5")
+    gage: --all and --limit cannot both be specified
+    Try 'gage runs list --help' for more information.
     <exit 1>

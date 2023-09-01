@@ -1,6 +1,6 @@
 [project]
 
-name = "vistaml"
+name = "gage"
 version = "0.1.0"
 authors = [
   { name="Garrett Smith", email="garrett@placeon.earth" },
@@ -14,14 +14,25 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = [
+    "chardet",
+    "natsort",
+    "psutil",
+    "pyyaml"
+]
+
 [project.scripts]
 
-vml = "vml.__main__:main"
+gage = "gage.__main__:main"
 
 [project.urls]
 
-"Homepage" = "https://github.com/vistaml/vistaml"
-"Bug Tracker" = "https://github.com/vistaml/vistaml/issues"
+"Homepage" = "https://github.com/gageml/gage"
+"Bug Tracker" = "https://github.com/gageml/gage/issues"
+
+[tool.setuptools]
+
+packages = ["gage"]
 
 [tool.black]
 
@@ -31,5 +42,5 @@ extend-exclude = "/tests/"
 [tool.groktest]
 
 include = "tests/*.md"
-python.init = "from vml._internal.test import *"
-parse.functions = "vml._internal.test"
+python.init = "from gage._internal.test import *"
+parse.functions = "gage._internal.test"

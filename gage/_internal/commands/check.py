@@ -12,23 +12,15 @@ from .. import click_util
 
 
 @click.command()
-@click.option("--env", help="Limit check to environment info.", is_flag=True)
-# @click.option("--tensorflow", help="Check TensorFlow status.", is_flag=True)
-# @click.option("--pytorch", help="Check PyTorch status.", is_flag=True)
-# @click.option("--r-script", help="Check Rscript status", is_flag=True)
 @click.option("-v", "--verbose", help="Show more information.", is_flag=True)
 @click.option("--space", help="Show disk space usage for Guild files.", is_flag=True)
-@click.option("-V", "--version", metavar="SPEC", help="Check the installed version.")
-@click.option(
-    "--notify", is_flag=True, help="Send system notification when check is complete."
-)
+@click.option("--version", metavar="SPEC", help="Check the installed version.")
 @click.option(
     "--offline/--no-offline",
     default=None,
     help="Don't check guild.ai for latest versions.",
     is_flag=True,
 )
-@click.option("--check-url", hidden=True, default="http://api.guild.ai/check")
 @click.option("--external", hidden=True)
 @click.option("--no-chrome", hidden=True, is_flag=True)
 @click_util.use_args

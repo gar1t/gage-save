@@ -4,10 +4,10 @@ test-options: +wildcard
 
 # Python utils
 
-The module `vml._internal.python_util` provides tools when working with Python
+The module `gage._internal.python_util` provides tools when working with Python
 scripts and modules.
 
-    >>> from vml._internal import python_util
+    >>> from gage._internal import python_util
 
 ## Enumerating Python scripts
 
@@ -45,7 +45,7 @@ Scripts can be inspected for various declarations. Let's example the
 The script source can be read using the `src` attribute:
 
     >>> mnist_mlp.src  # +parse
-    '{:abspath}/samples/scripts/mnist_mlp.py'
+    '{:path}/samples/scripts/mnist_mlp.py'
 
 A script name is the base name (without extension) of the script
 source:
@@ -193,7 +193,7 @@ Let's patch `say`:
     ...   say("I've wrapped '%s'" % msg)
 
     >>> python_util.listen_method(Hello, "say", wrap_say)
-    <vml._internal.python_util.MethodWrapper ...>
+    <gage._internal.python_util.MethodWrapper ...>
 
 When we call `hello` on an object:
 
@@ -229,7 +229,7 @@ its own value by raising `python_util.Result`:
     ...   raise python_util.Result(None)
 
     >>> python_util.listen_method(Hello, "say", wrap_and_prevent)
-    <vml._internal.python_util.MethodWrapper ...>
+    <gage._internal.python_util.MethodWrapper ...>
 
     >>> hello.say("Hello once more!")
     I've wrapped 'Hello once more!'
@@ -245,7 +245,7 @@ by creating a wrapper that generates an error:
 Let's add this function and call `say`:
 
     >>> python_util.listen_method(Hello, "say", wrap_error)
-    <vml._internal.python_util.MethodWrapper ...>
+    <gage._internal.python_util.MethodWrapper ...>
 
     >>> hello.say("And again!")
     Traceback (most recent call last):
@@ -288,7 +288,7 @@ And a wrapper that modifies the bound `self` for a wrapped function:
     ...     self.msg = "Hello Two!"
 
     >>> python_util.listen_method(Hello2, "say", wrap_say2)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <gage._internal.python_util.MethodWrapper object at ...>
 
     >>> Hello2().say()
     Hello Two!
@@ -319,7 +319,7 @@ we're replacing it altogether.
 We wrap the original:
 
     >>> python_util.listen_method(Calc, "incr", incr2)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <gage._internal.python_util.MethodWrapper object at ...>
 
 And here's our new behavior:
 
@@ -359,10 +359,10 @@ Here are two listeners, both of which provide results:
 Let's add both as listeners:
 
     >>> python_util.listen_method(Calc, "incr", incr_by_2)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <gage._internal.python_util.MethodWrapper object at ...>
 
     >>> python_util.listen_method(Calc, "incr", incr_by_3)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <gage._internal.python_util.MethodWrapper object at ...>
 
 And test our method:
 
@@ -379,7 +379,7 @@ Let re-order our listeners to confirm:
     >>> python_util.remove_method_listeners(Calc.incr)
 
     >>> python_util.listen_method(Calc, "incr", incr_by_3)
-    <vml._internal.python_util.MethodWrapper object at ...>
+    <gage._internal.python_util.MethodWrapper object at ...>
 
     >>> wrapper = python_util.listen_method(Calc, "incr", incr_by_2)
 
@@ -509,7 +509,7 @@ Here's a helper to execute a sample script:
     ...     assert globals["__file__"] == script, (globals, script)
     ...     print((globals["__package__"], globals["__name__"]))
 
-    >>> from vml._internal.python_util import exec_script
+    >>> from gage._internal.python_util import exec_script
 
 Simple hello script:
 
@@ -555,7 +555,7 @@ can execute the script.
     ('pkg', 'hello2')
 
 ## Test Package Version
-    >>> from vml._internal.python_util import check_package_version
+    >>> from gage._internal.python_util import check_package_version
 
     >>> check_package_version("1", "1")
     True
@@ -598,7 +598,7 @@ pre-releases:
 The function `next_breakable_line` returns the next nearest breakable
 line in a Python module.
 
-    >>> from vml._internal.python_util import next_breakable_line
+    >>> from gage._internal.python_util import next_breakable_line
 
 We use the sample script `breakable_lines.py`:
 
