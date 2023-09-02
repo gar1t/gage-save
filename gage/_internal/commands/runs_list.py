@@ -22,7 +22,7 @@ def runs_list_options(fn: Callable[..., Any]):
             ),
             click.Option(
                 ("-m", "--more"),
-                help=("Show 20 more runs. Maybe used multiple times."),
+                help="Show 20 more runs. Maybe used multiple times.",
                 count=True,
             ),
             click.Option(

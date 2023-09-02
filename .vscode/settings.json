@@ -2,11 +2,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.analysis.ignore": [
-
-    "gage/_vendor",
-    "tests"
-  ],
+  "python.analysis.ignore": ["gage/_vendor", "tests"],
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportUntypedFunctionDecorator": "none",
@@ -16,9 +12,7 @@
     "reportMissingParameterType": "warning",
     "reportWildcardImportFromLibrary": "none"
   },
-  "black-formatter.args": [
-    "--skip-string-normalization"
-  ],
+  "black-formatter.args": ["--skip-string-normalization"],
   "json.schemas": [
     {
       "fileMatch": ["gage.json"],
@@ -27,5 +21,61 @@
   ],
   "files.associations": {
     "gage.json": "jsonc"
-  }
+  },
+  "cSpell.enabled": true,
+  "cSpell.words": [
+    "autoprint",
+    "chardet",
+    "CPUS",
+    "creationflags",
+    "dvcfile",
+    "ECONNREFUSED",
+    "EEXIST",
+    "endswith",
+    "ENOENT",
+    "ESRCH",
+    "findl",
+    "followlinks",
+    "funs",
+    "gagefile",
+    "gaierror",
+    "gethostname",
+    "getpgid",
+    "importlib",
+    "indexlib",
+    "jschon",
+    "killpg",
+    "libcublas",
+    "lineterm",
+    "loglib",
+    "mklink",
+    "mktempdir",
+    "natsort",
+    "natsorted",
+    "normlf",
+    "opdef",
+    "oplib",
+    "opref",
+    "opspec",
+    "pkgdir",
+    "preexec",
+    "printl",
+    "procs",
+    "psutil",
+    "pwsh",
+    "relpath",
+    "repls",
+    "rmtempdir",
+    "runfiles",
+    "setsid",
+    "SIGKILL",
+    "SIGTERM",
+    "skopt",
+    "sourcecode",
+    "subschema",
+    "topdown",
+    "unmerge",
+    "utcformat",
+    "xonsh"
+  ]
 }

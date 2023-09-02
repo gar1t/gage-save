@@ -10,6 +10,8 @@ import os
 import jschon
 import yaml
 
+from .types import GageFile
+
 __schema: Optional[jschon.JSONSchema] = None
 
 
@@ -64,6 +66,11 @@ def _load_schema():
 
 
 def load(filename: str):
+    data = _data_for_file(filename)
+    return GageFile(filename, data)
+
+
+def _data_for_file(filename: str):
     ext = os.path.splitext(filename)[1].lower()
     if ext == ".json":
         return _load_json(filename)
@@ -97,7 +104,3 @@ def for_dir(path: str):
             continue
         return load(path)
     raise FileNotFoundError(paths[-1])
-
-
-def operations(gf: Any):
-    return sorted(gf.items())

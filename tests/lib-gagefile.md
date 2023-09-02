@@ -93,6 +93,27 @@ An operation def doesn't require any attributes.
 
 Supported top-level attributes:
 
+- `description` - optional description of the operation
+
+    >>> validate({"test": {"description": "An example, naturally"}})
+    ok
+
+    >>> validate({"test": {"description": 123}})
+    Properties ['test'] are invalid
+    Properties ['description'] are invalid
+    The instance must be of type "string"
+
+- `default` - boolean indicating whether the operation is the default
+  for the project
+
+    >>> validate({"test": {"default": True}})
+    ok
+
+    >>> validate({"test": {"default": 123}})
+    Properties ['test'] are invalid
+    Properties ['default'] are invalid
+    The instance must be of type "boolean"
+
 - `exec` - must be a non-empty string or a non-empty list of non-empty
   strings.
 

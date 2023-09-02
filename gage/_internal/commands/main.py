@@ -27,7 +27,7 @@ from .runs import runs
     "-C",
     "cwd",
     metavar="PATH",
-    help=("Use PATH as current directory for a command."),
+    help="Use PATH as current directory for a command.",
     default=None,
     shell_complete=ac_support.ac_dir(),
 )

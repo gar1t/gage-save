@@ -50,9 +50,7 @@ def tag_params(fn: Callable[..., Any]):
             ),
             click.Option(
                 ("-s", "--sync-labels"),
-                help=(
-                    "Update run label by adding and deleting corresponding tag parts."
-                ),
+                help="Update run label by adding and deleting corresponding tag parts.",
                 is_flag=True,
             ),
             click.Option(

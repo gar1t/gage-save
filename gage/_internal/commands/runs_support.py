@@ -233,14 +233,13 @@ def common_filters(fn: Callable[..., Any]):
                 ("-Fs", "--started", "filter_started"),
                 metavar="RANGE",
                 help=(
-                    "Filter runs started within RANGE. See above "
-                    "for valid time ranges."
+                    "Filter runs started within RANGE. See above for valid time ranges."
                 ),
             ),
             click.Option(
                 ("-Fd", "--digest", "filter_digest"),
                 metavar="VAL",
-                help=("Filter runs with a matching source code digest."),
+                help="Filter runs with a matching source code digest.",
                 # shell_complete=ac_digest,
             ),
         ],

@@ -12,6 +12,9 @@
         "description": {
           "type": "string"
         },
+        "default": {
+          "type": "boolean"
+        },
         "exec": {
           "title": "Exec spec",
           "oneOf": [

@@ -38,7 +38,7 @@ packages = ["gage"]
 [tool.black]
 
 skip-string-normalization = true
-extend-exclude = "/tests/"
+extend-exclude = "/tests/|/gage/_vendor/"
 
 [tool.groktest]
 

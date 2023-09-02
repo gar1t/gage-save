@@ -93,15 +93,24 @@ def _print_op_help(S: State):
 
 
 def _test_opdef(S: State):
-    pass
+    assert S.user_op and S.user_op.opdef
+    opdef = S.user_op.opdef
+    print(
+        f"TODO: show how def for {opdef.name} is generated "
+        "(tbh not sure what this means)"
+    )
 
 
 def _test_sourcecode(S: State):
-    pass
+    assert S.user_op and S.user_op.opdef
+    opdef = S.user_op.opdef
+    print(f"TODO: show source code copy for {opdef.name}")
 
 
 def _test_output(S: State):
-    pass
+    assert S.user_op and S.user_op.opdef
+    opdef = S.user_op.opdef
+    print(f"TODO: how output is handed for {opdef.name}")
 
 
 def _test_prompt(S: State):
@@ -213,7 +222,7 @@ def _preview_batch_suffix(S: State):
 #         parts.append(_preview_trials_count(S))
 #     elif batch_op._max_trials:
 #         parts.append(f"{batch_op._max_trials} trials")
-#     if _is_likey_optimizer(batch_op) and batch_op._objective:
+#     if _is_likely_optimizer(batch_op) and batch_op._objective:
 #         parts.append(_objective_preview_part(batch_op._objective))
 #     if not parts:
 #         return ""
@@ -245,7 +254,7 @@ def _preview_batch_suffix(S: State):
 #     return batch_util.expand_flags(op._op_flag_vals, op._random_seed)
 
 
-# def _is_likey_optimizer(op):
+# def _is_likely_optimizer(op):
 #     """Return True if op is likely an optimizer.
 
 #     All operations are considered likely except those known to NOT be

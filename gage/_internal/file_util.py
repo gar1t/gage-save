@@ -95,7 +95,7 @@ class FileSelectRule:
         compiled = [re.compile(p) for p in patterns]
 
         def f(path: str):
-            return any((p.match(util.stdpath(path)) for p in compiled))
+            return any((p.match(util.standardize_path(path)) for p in compiled))
 
         return f
 

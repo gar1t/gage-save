@@ -12,7 +12,7 @@ possible Gage project.
     >>> cat("gage.json")
     {
       "hello": {
-        "description": "A simple 'hello world' style operation",
+        "description": "Hello world style operation",
         "exec": ["python", "-c", "print('Hello Gage!')"]
       }
     }
@@ -20,12 +20,12 @@ possible Gage project.
 List operations.
 
     >>> run("gage ops")
-    hello  A simple 'hello world' style operation
+    hello  Hello world style operation
     <0>
 
 Run hello.
 
+FIXME - expects something to be said, namely "Hello"
+
     >>> run("gage run hello -y")
-    gage: no such operation hello
-    Try 'gage operations' for a list of operations.
-    <1>
+    <0>

@@ -4,24 +4,11 @@ from __future__ import annotations
 
 from typing import *
 
+from .types import OpDef
+
 
 class OpDefNotFound(Exception):
     pass
-
-
-class OpDef:
-    def __init__(self, name: str):
-        self.name = name
-
-
-class Flag:
-    pass
-
-
-class Dependency:
-    def __init__(self, type: str):
-        self.type = type
-        # TODO: select, name, etc. from Guild
 
 
 r""" Dependency notes
@@ -63,7 +50,7 @@ r""" Dependency notes
   DvC at that point.
 
 - Drop use of pip download support! If we continue to support downloads
-  use anyting else. Might just drop download support for 1.0 though.
+  use anything else. Might just drop download support for 1.0 though.
 
 """
 

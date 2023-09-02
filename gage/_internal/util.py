@@ -286,7 +286,7 @@ class LoopingThread(threading.Thread):
         self._stopped_event.wait(self._stop_timeout)
 
 
-def safe_osenv():
+def safe_os_environ():
     return {
         name: val for name, val in os.environ.items() if name not in UNSAFE_OS_ENVIRON
     }
@@ -1049,7 +1049,7 @@ def copytree(src: str, dest: str, preserve_links: bool = True):
 # def select_copytree(src: str, dest: str, config, copy_filter=None):
 #     """Copies files from src to dest using select configuration.
 
-#     `config` is an instance of `guild.guildfile.FileSelectDef`. If the
+#     `config` is an instance of `xxx.FileSelectDef`. If the
 #     files spec is empty, all files are selected. Otherwise, the select
 #     rules are applied to each file to determine if it's copied.
 
@@ -1086,7 +1086,7 @@ def copytree(src: str, dest: str, preserve_links: bool = True):
 #             rel_path = os.path.relpath(path, src_dir)
 #             log.debug("considering file to copy %s", path)
 #             if _select_to_copy(path, rel_path, config, copy_filter):
-#                 log.debug("seleted file to copy %s", path)
+#                 log.debug("selected file to copy %s", path)
 #                 to_copy.append((path, rel_path))
 #     # Sort before notifying copy_filter to have deterministic result
 #     to_copy.sort()
@@ -1297,7 +1297,7 @@ def _nested_config_dest(
     `config`. If neither a dot-named entry nor a nested entry exists
     in `config`, implicitly creates a nested entry.
 
-    For examples, see *Applying values to existing configuation* in
+    For examples, see *Applying values to existing configuration* in
     `guild/tests/util.md`.
     """
     assert isinstance(config, dict), config
@@ -1629,7 +1629,7 @@ def _strip_windows_prefix(path: str):
     return path
 
 
-def stdpath(path: str):
+def standardize_path(path: str):
     return path.replace(os.path.sep, "/")
 
 

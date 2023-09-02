@@ -383,9 +383,9 @@ class Context:
 
         #: An optional normalization function for tokens.  This is
         #: options, choices, commands etc.
-        self.token_normalize_func: t.Optional[
-            t.Callable[[str], str]
-        ] = token_normalize_func
+        self.token_normalize_func: t.Optional[t.Callable[[str], str]] = (
+            token_normalize_func
+        )
 
         #: Indicates if resilient parsing is enabled.  In that case Click
         #: will do its best to not cause any failures and default values
@@ -1532,8 +1532,7 @@ class MultiCommand(Command):
             for param in self.params:
                 if isinstance(param, Argument) and not param.required:
                     raise RuntimeError(
-                        "Multi commands in chain mode cannot have"
-                        " optional arguments."
+                        "Multi commands in chain mode cannot have optional arguments."
                     )
 
     def to_info_dict(self, ctx: Context) -> t.Dict[str, t.Any]:
@@ -3027,8 +3026,7 @@ class Argument(Parameter):
             name = name.replace("-", "_").lower()
         else:
             raise TypeError(
-                "Arguments take exactly one parameter declaration, got"
-                f" {len(decls)}."
+                f"Arguments take exactly one parameter declaration, got {len(decls)}."
             )
         return name, [arg], []
 

@@ -14,7 +14,7 @@ def main(args: Any):
         cli.error("No operations defined for the current project")
     else:
         data = [
-            {"name": name, "desc": opdef.get("description", "")}
-            for name, opdef in gagefile.operations(gf)
+            {"name": name, "desc": opdef.description}
+            for name, opdef in sorted(gf.operations.items())
         ]
         cli.table(data, ["name", "desc"])

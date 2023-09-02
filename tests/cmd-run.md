@@ -20,16 +20,16 @@
 
 ## Op help
 
-    >>> use_project("hello-project")
+    >> use_project("hello-project")
 
-    >>> run("gage run hello --help-op")
+    >> run("gage run hello --help-op")
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
     <1>
 
 ## Python scripts
 
-    >>> run("gage run hello --test-prompt")  # FIXME
+    >> run("gage run hello --test-prompt")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
     <1>
@@ -39,14 +39,14 @@ Output should be:
     You are about to run hello
     Continue?
 
-    >>> run("gage run hello -y")  # FIXME
+    >> run("gage run hello -y")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
     <1>
 
 ## Staging
 
-    >>> run("gage run hello --stage --test-prompt")  # FIXME
+    >> run("gage run hello --stage --test-prompt")  # FIXME
     gage: no such operation hello
     Try 'gage operations' for a list of operations.
     <1>

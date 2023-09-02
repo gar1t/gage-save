@@ -15,8 +15,8 @@ def check_incompatible_args(incompatible: List[Tuple[ArgSpec, ArgSpec]], args: A
         arg1_name, opt1, arg2_name, opt2 = _incompatible_arg_items(val)
         if getattr(args, arg1_name, None) and getattr(args, arg2_name):
             cli.error(
-                f"{opt1} and {opt2} cannot both be specified\n"
-                f"Try '{click_util.context().command_path} --help' for more information."
+                f"{opt1} and {opt2} cannot both be specified\nTry"
+                f" '{click_util.context().command_path} --help' for more information."
             )
 
 

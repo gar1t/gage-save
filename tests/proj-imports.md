@@ -75,6 +75,7 @@
     gage._internal.run_manifest
     gage._internal.run_util
     gage._internal.test
+    gage._internal.types
     gage._internal.util
     gage._internal.var
     gage._internal.vcs_util
