@@ -23,6 +23,11 @@ Runs are created and updated using life-cycle functions provided by
 
     >>> from gage._internal.run_util import make_run
 
+The `var` module is used to list available runs. A run only appears in a
+listing when it reaches a certain stage in its life cycle.
+
+    >>> from gage._internal.var import list_runs
+
 ## Initial run status
 
 A run is created with an ID and a run directory. Runs are always local
@@ -75,6 +80,16 @@ It's attributes cannot be read.
     FileNotFoundError: {x}.meta/attrs
 
     >>> assert x == run_dir
+
+The run doesn't show up in a run listing.
+
+    >>> list_runs(runs_home)
+    []
+
+
+
+
+
 
 
 ---------------------------------------

@@ -85,6 +85,8 @@
     "SIGTERM",
     "skopt",
     "sourcecode",
+    "struct",
+    "subdir",
     "subschema",
     "textorbinary",
     "topdown",

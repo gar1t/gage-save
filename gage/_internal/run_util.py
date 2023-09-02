@@ -52,3 +52,16 @@ def run_attr(run: Run, name: str):
         return getattr(run, name)
     except AttributeError:
         assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
+
+def init_run_meta(run: Run):
+    assert False, """
+TODO: Init run meta dir
+
+- Create meta dir
+- Write `__schema__` version (e.g. `1`)
+- Write `id` (run.id)
+- Write op ref (need as arg)
+- Write op def (need as arg)
+
+- Write `initialized` with timestamp
+"""

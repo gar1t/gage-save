@@ -15,7 +15,7 @@ from . import run_util
 RunFilter = Callable[[Run], bool]
 
 
-def runs(
+def list_runs(
     root: Optional[str] = None,
     sort: Optional[str] = None,
     filter: Optional[RunFilter] = None,

@@ -16,3 +16,7 @@ class Manifest:
 
     def __exit__(*exc: Any):
         pass
+
+
+# TODO: make sure we're using `sha256` and noting somewhere this scheme
+# (perhaps this is implied in the `__schema__` written to the meta dir)
