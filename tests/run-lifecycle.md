@@ -49,8 +49,8 @@ We know three things about this run:
 
 1. It has a unique ID
 
-    >>> run.id  # +parse
-    '{run_id:run_id}'
+        >>> run.id  # +parse
+        '{run_id:run_id}'
 
 2. It has a corresponding run directory under `runs_home`
 
