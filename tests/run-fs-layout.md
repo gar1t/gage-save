@@ -1,6 +1,6 @@
 # Run file system layout
 
-    >>> var_home = mkdtemp()
+    >>> var_home = make_temp_dir()
 
     >>> use_project("hello-project", var_home)
 

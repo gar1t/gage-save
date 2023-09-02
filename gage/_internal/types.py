@@ -7,14 +7,18 @@ from typing import *
 Data = Dict[str, Any]
 
 
+class OpDefNotFound(Exception):
+    pass
+
+
+class OpError(Exception):
+    pass
+
+
 class OpDef:
     def __init__(self, name: str, data: Data):
-        self._name = name
+        self.name = name
         self._data = data
-
-    @property
-    def name(self):
-        return self._name
 
     @property
     def description(self) -> Optional[str]:
@@ -33,3 +37,20 @@ class GageFile:
     @property
     def operations(self):
         return {name: OpDef(name, self._data[name]) for name in self._data}
+
+
+class Run:
+    def __init__(self, run_id: str, run_dir: str):
+        self.id = run_id
+        self.run_dir = run_dir
+
+
+RunStatus = Union[
+    Literal["unknown"],
+    Literal["foobar"],
+]
+
+
+class Op:
+    def __init__(self):
+        self.opdef: Optional[OpDef] = None

@@ -49,10 +49,11 @@ __all__ = [
     "cd",
     "find",
     "findl",
-    "mkdtemp",
+    "make_temp_dir",
     "normlf",
     "parse_path",
     "parse_any",
+    "parse_run_id",
     "parse_ver",
     "path",
     "quiet",
@@ -66,6 +67,15 @@ __all__ = [
     "use_project",
     "write",
 ]
+
+# Pass through
+
+LogCapture = util.LogCapture
+basename = os.path.basename
+findl = file_util.find
+path = os.path
+symlink = os.symlink
+touch = util.touch
 
 
 def parse_type(name: str, pattern: str, group_count: int = 0):
@@ -102,6 +112,11 @@ def parse_ver(s: str):
 
 @parse_type("path", r"/.*")
 def parse_path(s: str):
+    return s
+
+
+@parse_type("run_id", r"[a-f0-9]{32}")
+def parse_run_id(s: str):
     return s
 
 
@@ -426,8 +441,8 @@ def tests_dir():
 #         "join_path": os.path.join,
 #         "json": json,
 #         "make_executable": util.make_executable,
-#         "mkdir": os.mkdir,
-#         "mkdtemp": mkdtemp,
+#         "make_dir": os.mkdir,
+#         "make_temp_dir": make_temp_dir,
 #         # "mktemp_guild_dir": mktemp_guild_dir,
 #         "normlf": _normlf,
 #         "not_used": object(),  # an uncooperative value
@@ -461,15 +476,6 @@ def tests_dir():
 #     }
 
 
-LogCapture = util.LogCapture
-
-basename = os.path.basename
-findl = file_util.find
-path = os.path.join
-symlink = os.symlink
-touch = util.touch
-
-
 def sample(*parts: str):
     return os.path.join(*(samples_dir(),) + parts)
 
@@ -478,12 +484,12 @@ def samples_dir():
     return os.path.join(tests_dir(), "samples")
 
 
-def mkdtemp(prefix: str = "gage-test-"):
+def make_temp_dir(prefix: str = "gage-test-"):
     return tempfile.mkdtemp(prefix=prefix)
 
 
 # # def mktemp_guild_dir():
-# #     guild_dir = mkdtemp()
+# #     guild_dir = make_temp_dir()
 # #     init.init_guild_dir(guild_dir)
 # #     return guild_dir
 
@@ -838,7 +844,7 @@ def set_var_home(path: str):
 #         raise ValueError("d2 must be a tuple of (dir, label)")
 #     d1_path, d1_label = d1
 #     d2_path, d2_label = d2
-#     cmp_dir = mkdtemp()
+#     cmp_dir = make_temp_dir()
 #     d1_link = os.path.join(cmp_dir, d1_label)
 #     os.symlink(os.path.realpath(d1_path), d1_link)
 #     d2_link = os.path.join(cmp_dir, d2_label)
@@ -995,7 +1001,7 @@ def set_var_home(path: str):
 
 
 def use_example(name: str, var_home: Optional[str] = None):
-    var_home = var_home or mkdtemp()
+    var_home = var_home or make_temp_dir()
     cd(_example(name))
     set_var_home(var_home)
 
@@ -1012,6 +1018,6 @@ def _examples_dir():
 
 
 def use_project(project_name: str, var_home: Optional[str] = None):
-    var_home = var_home or mkdtemp()
+    var_home = var_home or make_temp_dir()
     cd(sample("projects", project_name))
     set_var_home(var_home)

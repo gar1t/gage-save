@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import *
 
-from .types import GageFile
+from .types import *
 
 from . import config
 from . import gagefile
-from . import opdef
 from . import util
 
 
@@ -58,4 +57,8 @@ def _default_opdef(gf: GageFile):
 
 
 def _opdef_not_found(opspec: Optional[str], *rest: Any):
-    raise opdef.OpDefNotFound(opspec)
+    raise OpDefNotFound(opspec)
+
+
+def opdef_to_opspec(opdef: OpDef, cwd: Optional[str] = None):
+    return opdef.name

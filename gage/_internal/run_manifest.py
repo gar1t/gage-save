@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import *
 
-from .run import Run
+from .types import *
 
 
 class Manifest:

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import *
 
+from .types import *
+
 import functools
 import os
 
-from .run import Run
-
 from . import config
+from . import run_util
 
 RunFilter = Callable[[Run], bool]
 
@@ -67,16 +68,10 @@ def _run_attr_cmp(a: Run, b: Run, attr: str):
         rev = -1
     else:
         rev = 1
-    x_val = _run_attr(a, attr)
+    x_val = run_util.run_attr(a, attr)
     if x_val is None:
         return -rev
-    y_val = _run_attr(b, attr)
+    y_val = run_util.run_attr(b, attr)
     if y_val is None:
         return rev
     return rev * ((x_val > y_val) - (x_val < y_val))
-
-
-def _run_attr(run: Run, name: str):
-    if name in Run.__properties__:
-        return getattr(run, name)
-    return run.read_attr(name)

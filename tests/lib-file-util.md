@@ -55,8 +55,8 @@ Define a facility for generating a source directory of files to copy.
     >>> def binary(path, size):
     ...     return file_base(path, "b", b"\x01", size)
 
-    >>> def mksrc(specs):
-    ...     src = mkdtemp()
+    >>> def make_src(specs):
+    ...     src = make_temp_dir()
     ...     for spec in specs:
     ...         spec.mk(src)
     ...     return src
@@ -64,7 +64,7 @@ Define a facility for generating a source directory of files to copy.
 Here's a function to copy a directory using `copytree`:
 
     >>> def cp(src, select_rules, select_root=None, handler_cls=None):
-    ...     dest = mkdtemp()
+    ...     dest = make_temp_dir()
     ...     select = file_util.FileSelect(select_root, select_rules)
     ...     file_util.copytree(
     ...         dest, select, src,
@@ -80,7 +80,7 @@ Here are the functions from `file_util` that define rules:
 
 Here's a src containing a single text file:
 
-    >>> src = mksrc([empty("a.txt")])
+    >>> src = make_src([empty("a.txt")])
     >>> find(src)
     a.txt
 
@@ -108,7 +108,7 @@ If we further add another include at the end of our rules list:
 
 Let's create a more complex source directory structure.
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...     empty("a.txt"),
     ...     empty("d1/a.txt"),
     ...     empty("d1/d1_1/b.txt"),
@@ -179,7 +179,7 @@ performance benefit as Guild doesn't have to evaluate files.
 
 Here's a structure with a directory:
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...     empty("d/a.txt"),
     ...     empty("b.txt"),
     ... ])
@@ -197,7 +197,7 @@ binary (i.e. not text).
 Let's create another source directory structure, which includes both a
 text file and a binary file.
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...     text("a.txt", 10),
     ...     binary("a.bin", 10),
     ... ])
@@ -220,10 +220,10 @@ that they should be skipped.
 
 Here's a sample source structure that contains two such
 directories. One is marked with a `.nocopy` sentinel and another
-contains a file `bin/activat` (e.g. as in the case of a virtual
+contains a file `bin/activate` (e.g. as in the case of a virtual
 environment, which uses this file for activation).
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...     empty("skip_dir/.nocopy"),
     ...     empty("skip_dir/a.txt"),
     ...     empty("skip_dir/b.txt"),
@@ -264,7 +264,7 @@ We can exclude files that are larger than a specified size.
 
 Let's create a source directory containing two files:
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...   empty("small.txt"),
     ...   text("large.txt", size=100),
     ... ])
@@ -288,7 +288,7 @@ files.
 
 Here's a source directory containing ten files:
 
-    >>> src = mksrc([empty("%i.txt" % i) for i in range(10)])
+    >>> src = make_src([empty("%i.txt" % i) for i in range(10)])
     >>> find(src)  # +wildcard
     0.txt
     ...
@@ -332,7 +332,7 @@ Let's create a custom handler that simply logs information.
 
 Our source directory:
 
-    >>> src = mksrc([
+    >>> src = make_src([
     ...     empty("a.txt"),
     ...     binary("a.bin", size=1),
     ... ])
@@ -373,9 +373,10 @@ Valid rule types:
 
 Invalid:
 
-    >>> include("*", type="invalid")
+    >>> include("*", type="invalid")  # -space
     Traceback (most recent call last):
-    ValueError: invalid value for type 'invalid': expected one of text, binary, dir
+    ValueError: invalid value for type 'invalid':
+    expected one of text, binary, dir
 
 ## Test for file difference
 
@@ -385,47 +386,56 @@ Use `util.files_differ()` to check whether or not two files differ.
 
 Write some files to test:
 
-    >>> tmp = mkdtemp()
+    >>> tmp = make_temp_dir()
 
-    >>> with open(path(tmp, "a"), "wb") as f:
+    >>> with open(path.join(tmp, "a"), "wb") as f:
     ...     _ = f.write(b"abc123")
 
-    >>> with open(path(tmp, "b"), "wb") as f:
+    >>> with open(path.join(tmp, "b"), "wb") as f:
     ...     _ = f.write(b"abc1234")
 
-    >>> with open(path(tmp, "c"), "wb") as f:
+    >>> with open(path.join(tmp, "c"), "wb") as f:
     ...     _ = f.write(b"abc321")
 
-    >>> with open(path(tmp, "d"), "wb") as f:
+    >>> with open(path.join(tmp, "d"), "wb") as f:
     ...     _ = f.write(b"abc123")
 
 Compare the files:
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "a"))
+    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "a"))
     False
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "b"))
+    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "b"))
     True
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "c"))
+    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "c"))
     True
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "d"))
+    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "d"))
     False
 
 Compare links:
 
-    >>> symlink("a", path(tmp, "link-to-a"))
+    >>> symlink("a", path.join(tmp, "link-to-a"))
 
-    >>> symlink("link-to-a", path(tmp, "link-to-link-to-a"))
+    >>> symlink("link-to-a", path.join(tmp, "link-to-link-to-a"))
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "link-to-a"))
+    >>> files_differ(
+    ...     path.join(tmp, "a"),
+    ...     path.join(tmp, "link-to-a")
+    ... )
     False
 
-    >>> files_differ(path(tmp, "a"), path(tmp, "link-to-link-to-a"))
+    >>> files_differ(
+    ...     path.join(tmp, "a"),
+    ...     path.join(tmp, "link-to-link-to-a")
+    ... )
     False
 
-    >>> files_differ(path(tmp, "link-to-a"), path(tmp, "link-to-link-to-a"))
+    >>> files_differ(
+    ...     path.join(tmp, "link-to-a"),
+    ...     path.join(tmp, "link-to-link-to-a")
+    ... )
     False
 
 ## Files digest
@@ -434,7 +444,7 @@ A single digest is generated for a directory using `files_digest`.
 
 Use `textorbinary` sample files to generate a digest.
 
-    >>> sample_dir = sample("textorbinart")
+    >>> sample_dir = sample("textorbinary")
 
     >>> file_util.files_digest(findl(sample_dir), sample_dir)
-    'd41d8cd98f00b204e9800998ecf8427e'
+    '0c5df8c6437e23df5371bdd1b5db7bc9'

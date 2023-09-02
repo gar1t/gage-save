@@ -5,26 +5,16 @@ from __future__ import annotations
 from typing import *
 from subprocess import Popen
 
-import subprocess
+from .types import *
 
-from .opdef import OpDef
-from .run import Run
+import subprocess
 
 from . import run_manifest
 from . import run_util
 
 
-class OpError(Exception):
-    pass
-
-
-class Op:
-    def __init__(self):
-        self.opdef: Optional[OpDef] = None
-
-
 def init_run(op: Op):
-    return run_util.init_run()
+    return run_util.make_run()
 
 
 def stage_run(run: Run, op: Op):

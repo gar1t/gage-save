@@ -4,16 +4,17 @@ from __future__ import annotations
 
 from typing import *
 
-from ..op import Op
-from ..op import OpError
+from ..types import *
 
-from ..opdef import OpDefNotFound
-from ..opdef import opdef_to_opspec
+from ..op_util import Op
+from ..op_util import OpError
+
+from ..opdef_util import opdef_to_opspec
 from ..opdef_util import opdef_for_opspec
 
 from .. import cli
 from .. import config
-from .. import op as oplib
+from .. import op_util as oplib
 
 ###################################################################
 # State

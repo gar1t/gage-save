@@ -6,7 +6,7 @@ General run utilities are provided by `gage._internal.run_util`.
 
 Run output can be read using util.RunOutputReader.
 
-    >>> from gage._internal.run_util import RunOutputReader
+    >>> from gage._internal.run_output import RunOutputReader
 
 For these tests, we'll use a sample run:
 

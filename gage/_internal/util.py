@@ -82,13 +82,13 @@ def pop_find(l: List[Any], f: Callable[[Any], Any], default: Any = None):
 
 def ensure_dir(d: str):
     try:
-        mkdir(d)
+        make_dir(d)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
 
-def mkdir(d: str):
+def make_dir(d: str):
     os.makedirs(realpath(d))
 
 

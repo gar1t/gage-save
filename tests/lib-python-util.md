@@ -136,7 +136,7 @@ A couple errors are generated when creating a script.
 
 Syntax error:
 
-    >>> script_path = path(mkdtemp(), "test.py")
+    >>> script_path = path.join(make_temp_dir(), "test.py")
     >>> write(script_path, "+++")
 
     >>> python_util.Script(script_path)  # +error-detail
@@ -165,9 +165,9 @@ their path.
 Create some scripts to sort.
 
     >>> to_sort = []
-    >>> tmp = mkdtemp()
+    >>> tmp = make_temp_dir()
     >>> for name in ["c", "d", "a", "b"]:
-    ...     script_path = path(tmp, name)
+    ...     script_path = path.join(tmp, name)
     ...     touch(script_path)
     ...     to_sort.append(python_util.Script(script_path))
 
@@ -178,7 +178,7 @@ Create some scripts to sort.
 
 Plugins routinely patch the environment to perform additional
 actions. One such patch is to listen for method calls on various
-classes. The `listen_method` function can be used to reveive
+classes. The `listen_method` function can be used to receive
 notification when a method is called.
 
 Let's create a class with a method that prints a message:
@@ -475,7 +475,7 @@ Additional listeners still get notified.
 
     >>> python_util.listen_function(howdy, "say", say_again)
 
-In this final test we'll just call the function directoy from our
+In this final test we'll just call the function directory from our
 module without reimporting it.
 
     >>> howdy.say("Bye!")

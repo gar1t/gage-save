@@ -64,15 +64,14 @@
     gage._internal.file_util
     gage._internal.gagefile
     gage._internal.log
-    gage._internal.op
-    gage._internal.opdef
+    gage._internal.op_util
     gage._internal.opdef_util
     gage._internal.plugin
     gage._internal.plugins.python.__init__
     gage._internal.project
     gage._internal.python_util
-    gage._internal.run
     gage._internal.run_manifest
+    gage._internal.run_output
     gage._internal.run_util
     gage._internal.test
     gage._internal.types
@@ -80,4 +79,3 @@
     gage._internal.var
     gage._internal.vcs_util
     gage._internal.yaml_util
-    gage.api
