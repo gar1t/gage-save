@@ -10,18 +10,18 @@ read using various functions provided by the `run_util` module.
 
 - `run_status`
 
-        >>> from gage._internal.run_util import run_status
+      >>> from gage._internal.run_util import run_status
 
 - `run_attrs`
 
-        >>> from gage._internal.run_util import run_attrs
+      >>> from gage._internal.run_util import run_attrs
 
 Runs are created and updated using life-cycle functions provided by
 `run_util`.
 
 - `make_run`
 
-        >>> from gage._internal.run_util import make_run
+      >>> from gage._internal.run_util import make_run
 
 The `var` module is used to list available runs. A run only appears in a
 listing when it reaches a certain stage in its life cycle.
@@ -49,22 +49,22 @@ We know three things about this run:
 
 1. It has a unique ID
 
-        >>> run.id  # +parse
-        '{run_id:run_id}'
+       >>> run.id  # +parse
+       '{run_id:run_id}'
 
 2. It has a corresponding run directory under `runs_home`
 
-        >>> run.run_dir  # +parse
-        '{run_dir:path}'
+       >>> run.run_dir  # +parse
+       '{run_dir:path}'
 
-        >>> assert path.exists(run_dir)
+       >>> assert path.exists(run_dir)
 
-        >>> assert run_dir == path.join(runs_home, run_id)
+       >>> assert run_dir == path.join(runs_home, run_id)
 
 3. It's status is `unknown`
 
-        >>> run_status(run)
-        'unknown'
+       >>> run_status(run)
+       'unknown'
 
 There's nothing more to the run.
 

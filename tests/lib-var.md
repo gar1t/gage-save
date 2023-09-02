@@ -9,5 +9,5 @@ feature is to read Runs from a runs location.
 
     >>> set_var_home(var_home)
 
-    >>> var.runs()
+    >>> var.list_runs()
     []
