@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import *
 
+from jschon import JSONCompatible
+
 Data = Dict[str, Any]
 
 
@@ -15,10 +17,25 @@ class OpError(Exception):
     pass
 
 
+class OpRef:
+    def __init__(self, op_ns: str, op_name: str):
+        self.op_ns = op_ns
+        self.op_name = op_name
+
+
+class OpCmd:
+    def __init__(self, args: List[str], env: Dict[str, str]):
+        self.args = args
+        self.env = env
+
+
 class OpDef:
     def __init__(self, name: str, data: Data):
         self.name = name
         self._data = data
+
+    def as_json(self) -> JSONCompatible:
+        return self._data
 
     @property
     def description(self) -> Optional[str]:

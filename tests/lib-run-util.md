@@ -1,55 +1,32 @@
 # Run utils
 
-General run utilities are provided by `gage._internal.run_util`.
+## Make a run
 
-## Run output
+TODO: move applicable tests from `run-lifecycle.md` here and make life
+cycle tests higher level.
 
-Run output can be read using util.RunOutputReader.
+    >>> from gage._internal.run_util import make_run
 
-    >>> from gage._internal.run_output import RunOutputReader
+## Init run meta
 
-For these tests, we'll use a sample run:
+TODO: move applicable tests from `run-lifecycle.md` here and make life
+cycle tests higher level.
 
-    >>> run_dir = sample("runs/7d145216ae874020b735f001a7bfd27d")
+    >>> from gage._internal.types import OpRef, OpDef, OpCmd
 
-Our reader:
+    >>> from gage._internal.run_util import init_run_meta
 
-    >>> reader = RunOutputReader(run_dir)
+### Errors
 
-We use the `read` method to read output. By default `read` returns all
-available output.
+`init_run_meta` confirms that the opref op name and the op def op name
+as the same.
 
-    >>> reader.read()  # +pprint
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018'),
-     (1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018'),
-     (1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
+    >>> tmp = make_temp_dir()
+    >>> run = make_run(tmp)
 
-We can alternatively read using start and end indices.
+    >>> init_run_meta(run, OpRef("test", "hi"), OpDef("bye", {}), OpCmd([], {}))
+    Traceback (most recent call last):
+    ValueError: mismatched names in opref ('hi') and opdef ('bye')
 
-    >>> reader.read(0, 0)
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018')]
-
-    >>> reader.read(1, 1)
-    [(1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018')]
-
-    >>> reader.read(2, 3)  # +pprint
-    [(1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
-
-If start is omitted, output is read form the start.
-
-    >>> reader.read(end=2)  # +pprint
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018'),
-     (1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018'),
-     (1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018')]
-
-If end is omitted, output is read to the end.
-
-    >>> reader.read(start=2)  # +pprint
-    [(1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
-
-When we're run reading we can close the reader:
-
-    >>> reader.close()
+    >>> find(tmp)
+    <empty>

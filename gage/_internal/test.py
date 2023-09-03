@@ -52,6 +52,7 @@ __all__ = [
     "cd",
     "find",
     "findl",
+    "make_dir",
     "make_temp_dir",
     "normlf",
     "os",
@@ -504,6 +505,10 @@ def sample(*parts: str):
 
 def samples_dir():
     return os.path.join(tests_dir(), "samples")
+
+
+def make_dir(dir: str):
+    os.mkdir(dir)
 
 
 def make_temp_dir(prefix: str = "gage-test-"):

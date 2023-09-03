@@ -242,8 +242,7 @@ On init:
 - [x] Create meta dir
 - [x] Write schema **
 - [x] Create `log` subdir
-- [x] Start logging to `log/runner` (all actions effecting run getting
-  logged!)
+- [x] Start logging to `log/runner` (actions affecting run get logged!)
 - [x] Write id **
 - [ ] Write opref **
 - [ ] Write opdef.json **
@@ -251,7 +250,7 @@ On init:
 - [ ] Write env **
 - [ ] Write user attributes **
 - [ ] Write system attributes **
-- [ ] Write initialized marker **
+- [x] Write initialized marker **
 
 `**` make files read-only
 

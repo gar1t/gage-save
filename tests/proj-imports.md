@@ -65,9 +65,10 @@
     gage._internal.log
     gage._internal.op_util
     gage._internal.opdef_util
+    gage._internal.opref_util
     gage._internal.plugin
     gage._internal.plugins.python.__init__
-    gage._internal.project
+    gage._internal.project_util
     gage._internal.python_util
     gage._internal.run_manifest
     gage._internal.run_output

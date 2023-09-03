@@ -33,7 +33,7 @@ With the `verbose` flag the function returns a detailed report when
 validation fails.
 
     >>> validate("not valid Gage file data", verbose=True)
-    ... # +json +diff -space
+    ... # +diff -space
     {
       "absoluteKeywordLocation":
         "https://gageml.com/gagefile.schema.json#",

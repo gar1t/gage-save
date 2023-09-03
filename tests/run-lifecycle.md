@@ -130,11 +130,19 @@ Initializing a run does not affect the run directory.
 To initialize a run, provide the following:
 
 - Run
-- XXX
+- Op reference
+- Op definition
+- Op command
+
+    >>> from gage._internal.types import OpRef, OpDef, OpCmd
+
+    >>> opref = OpRef("test", "test")
+    >>> opdef = OpDef("test", {})
+    >>> cmd = OpCmd(["true"], {})
 
 Initialize the run by calling `init_run_meta`.
 
-    >>> init_run_meta(run)
+    >>> init_run_meta(run, opref, opdef, cmd)
 
 The following files are created:
 
@@ -144,6 +152,11 @@ The following files are created:
     -r--r--r-- initialized
     drwxrwxr-x log
     -rw-rw-r-- log/runner
+    -r--r--r-- opdef.json
+    -r--r--r-- opref
+    drwxrwxr-x proc
+    -r--r--r-- proc/cmd
+    -r--r--r-- proc/env
 
 Files are read only with the exception of the runner log, which is
 assumed to be writable until the run is finalized (see below).
@@ -154,6 +167,10 @@ The runner log contains log entries for the actions performed.
 
     >>> cat(path_join(meta_dir, "log", "runner"))  # +parse +diff
     {:date} Writing id
+    {:date} Writing opdef.json
+    {:date} Writing proc/cmd
+    {:date} Writing proc/env
+    {:date} Writing opref
     {:date} Writing initialized
 
 Sample runner format:

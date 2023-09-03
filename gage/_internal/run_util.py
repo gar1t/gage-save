@@ -6,6 +6,7 @@ from typing import *
 from .types import *
 from logging import Logger
 
+import json
 import logging
 import os
 import threading
@@ -14,6 +15,8 @@ import uuid
 
 from . import config
 from . import util
+
+from .opref_util import encode_opref
 
 META_SCHEMA = 1
 
@@ -91,12 +94,30 @@ def run_attr(run: Run, name: str):
         assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
 
 
-def init_run_meta(run: Run):
+def init_run_meta(
+    run: Run,
+    opref: OpRef,
+    opdef: OpDef,
+    cmd: OpCmd,
+    user_attrs: Optional[Dict[str, Any]] = None,
+    system_attrs: Optional[Dict[str, Any]] = None,
+):
+    if opref.op_name != opdef.name:
+        raise ValueError(
+            f"mismatched names in opref ('{opref.op_name}') "
+            f"and opdef ('{opdef.name}')"
+        )
     meta_dir = _ensure_run_meta_dir(run)
     _write_schema_file(meta_dir)
     _ensure_meta_log_dir(meta_dir)
     log = _runner_log(run)
     _write_run_id(run, meta_dir, log)
+    _write_opdef(opdef, meta_dir, log)
+    _ensure_meta_proc_dir(meta_dir)
+    _write_cmd_args(cmd, meta_dir, log)
+    _write_cmd_env(cmd, meta_dir, log)
+    # opref is here as it marks the run as discoverable in lists
+    _write_opref(opref, meta_dir, log)
     _write_initialized_timestamp(meta_dir, log)
 
 
@@ -119,6 +140,43 @@ def _write_run_id(run: Run, meta_dir: str, log: Logger):
     log.info("Writing id")
     filename = os.path.join(meta_dir, "id")
     util.write_file(filename, run.id, readonly=True)
+
+
+def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
+    log.info("Writing opdef.json")
+    filename = os.path.join(meta_dir, "opdef.json")
+    encoded = json.dumps(opdef.as_json())
+    util.write_file(filename, encoded, readonly=True)
+
+
+def _ensure_meta_proc_dir(meta_dir: str):
+    util.ensure_dir(os.path.join(meta_dir, "proc"))
+
+
+def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
+    log.info("Writing proc/cmd")
+    filename = os.path.join(meta_dir, "proc", "cmd")
+    util.write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
+
+
+def _encode_cmd_args(args: List[str]):
+    return "".join([arg + "\n" for arg in args])
+
+
+def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
+    log.info("Writing proc/env")
+    filename = os.path.join(meta_dir, "proc", "env")
+    util.write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
+
+
+def _encode_cmd_env(env: Dict[str, str]):
+    return "".join([f"{name}={val}\n" for name, val in sorted(env.items())])
+
+
+def _write_opref(opref: OpRef, meta_dir: str, log: Logger):
+    log.info("Writing opref")
+    filename = os.path.join(meta_dir, "opref")
+    util.write_file(filename, encode_opref(opref), readonly=True)
 
 
 def _write_initialized_timestamp(meta_dir: str, log: Logger):
