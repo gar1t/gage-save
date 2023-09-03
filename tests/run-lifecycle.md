@@ -138,7 +138,7 @@ To initialize a run, provide the following:
 
     >>> opref = OpRef("test", "test")
     >>> opdef = OpDef("test", {})
-    >>> cmd = OpCmd(["true"], {})
+    >>> cmd = OpCmd(["echo", "hello"], {"foo": "123", "bar": "abc"})
 
 Initialize the run by calling `init_run_meta`.
 
@@ -160,6 +160,72 @@ The following files are created:
 
 Files are read only with the exception of the runner log, which is
 assumed to be writable until the run is finalized (see below).
+
+### `__schema__`
+
+`__schema__` contains the schema used for the directory layout and
+contents.
+
+    >>> cat(path_join(meta_dir, "__schema__"))  # +parse
+    {x:d}
+
+The current schema is defined by `META_SCHEMA`.
+
+    >>> from gage._internal.run_util import META_SCHEMA
+
+    >>> assert x == META_SCHEMA
+
+### `id`
+
+`id` is the run ID. This is saved in the meta dir for the contents to
+remain independent of the container name.
+
+    >>> cat(path_join(meta_dir, "id"))  # +parse
+    {x:run_id}
+
+    >>> assert x == run.id
+
+### `opref`
+
+`opref` is an encoded op reference. This is used in run listings to read
+the run name efficiently.
+
+    >>> cat(path_join(meta_dir, "opref"))  # +parse
+    1 test test
+
+### `opdef.json`
+
+`opdef.json` is the JSON encoded operation definition, as provided by
+either the project or otherwise generated for the run (e.g. dynamically
+when running a language script).
+
+This file is used when re-running the run or when using the run as a
+prototype.
+
+    >>> json.load(open(path_join(meta_dir, "opdef.json")))  # +pprint
+    {}
+
+### `proc/cmd` and `proc/env`
+
+`proc/cmd` and `proc/env` contain the run process command args and env
+vars respectively. These are used to start the run process.
+
+    >>> cat(path_join(meta_dir, "proc", "cmd"))
+    echo
+    hello
+
+    >>> cat(path_join(meta_dir, "proc", "env"))
+    bar=abc
+    foo=123
+
+### `initialized`
+
+`initialized` is a run timestamp that indicates when the run meta dir
+was initialized. This is written at the end of the initialization
+process.
+
+    >>> cat(path_join(meta_dir, "initialized"))  # +parse
+    {:timestamp}
 
 ### Runner log
 

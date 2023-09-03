@@ -14,7 +14,7 @@ import fnmatch
 import errno
 
 # import filecmp
-# import json
+import json
 import os
 
 # import platform
@@ -52,6 +52,7 @@ __all__ = [
     "cd",
     "find",
     "findl",
+    "json",
     "make_dir",
     "make_temp_dir",
     "normlf",
@@ -60,6 +61,7 @@ __all__ = [
     "parse_iso8601",
     "parse_path",
     "parse_run_id",
+    "parse_timestamp",
     "parse_ver",
     "path_exists",
     "path_join",
@@ -114,6 +116,10 @@ def parse_ver(s: str):
     if not m:
         return None
     return m.groups()
+
+@parse_type("timestamp", r"1[6-7]\d{14}")
+def parse_timestamp(s: str):
+    return int(s)
 
 
 @parse_type("path", r"/.*")
