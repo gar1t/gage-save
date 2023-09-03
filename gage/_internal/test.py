@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import *
 
 # import codecs
+import datetime
+
 # import doctest
 import fnmatch
 
@@ -22,6 +24,7 @@ import re
 
 # import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -51,11 +54,14 @@ __all__ = [
     "findl",
     "make_temp_dir",
     "normlf",
-    "parse_path",
+    "os",
     "parse_any",
+    "parse_iso8601",
+    "parse_path",
     "parse_run_id",
     "parse_ver",
-    "path",
+    "path_exists",
+    "path_join",
     "quiet",
     "run",
     "sample",
@@ -73,7 +79,6 @@ __all__ = [
 LogCapture = util.LogCapture
 basename = os.path.basename
 findl = file_util.find
-path = os.path
 symlink = os.symlink
 touch = util.touch
 
@@ -118,6 +123,23 @@ def parse_path(s: str):
 @parse_type("run_id", r"[a-f0-9]{32}")
 def parse_run_id(s: str):
     return s
+
+
+@parse_type("iso8601", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
+def parse_iso8601(s: str):
+    return datetime.datetime.fromisoformat(_format_tz(s))
+
+
+def _format_tz(s: str):
+    # Add ':' to tz component for parsing by `fromisoformat`
+    tz = s[19:]
+    if not tz:
+        return s
+    if len(tz) == 5:
+        return s[:19] + tz[:3] + ":" + tz[3:]
+    else:
+        assert len(tz) == 7, s
+        return s[:19] + tz[:3] + ":" + tz[3:5] + ":" + tz[5:]
 
 
 # PLATFORM = platform.system()
@@ -501,6 +523,7 @@ def find(
     follow_links: bool = False,
     include_dirs: bool = False,
     ignore: Optional[FindIgnore] = None,
+    permissions: bool = False,
 ):
     import natsort
 
@@ -513,7 +536,11 @@ def find(
         print("<empty>")
     else:
         for path in paths:
-            print(path)
+            if permissions:
+                path_perm = stat.filemode(os.stat(os.path.join(root, path)).st_mode)
+                print(f"{path_perm} {path}")
+            else:
+                print(path)
 
 
 def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
@@ -577,10 +604,7 @@ def cat(*parts: str):
 
 
 def write(filename: str, contents: str, append: bool = False):
-    encoded = contents.encode()
-    opts = "ab" if append else "wb"
-    with open(filename, opts) as f:
-        f.write(encoded)
+    util.write_file(filename, contents, append=append)
 
 
 class SysPath:
@@ -1021,3 +1045,11 @@ def use_project(project_name: str, var_home: Optional[str] = None):
     var_home = var_home or make_temp_dir()
     cd(sample("projects", project_name))
     set_var_home(var_home)
+
+
+def path_join(*path: str):
+    return os.path.join(*path)
+
+
+def path_exists(path: str):
+    return os.path.exists(path)

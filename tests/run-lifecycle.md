@@ -1,3 +1,9 @@
+---
+parse-types:
+  # ISO 8601 format
+  date: '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?'
+---
+
 # Run lifecycle
 
 Runs are represented by the `Run` types.
@@ -28,7 +34,7 @@ listing when it reaches a certain stage in its life cycle.
 
     >>> from gage._internal.var import list_runs
 
-## Initial run status
+## Initial run (`make_run`)
 
 A run is created with an ID and a run directory. Runs are always local
 to a system.
@@ -57,9 +63,9 @@ We know three things about this run:
        >>> run.run_dir  # +parse
        '{run_dir:path}'
 
-       >>> assert path.exists(run_dir)
+       >>> assert path_exists(run_dir)
 
-       >>> assert run_dir == path.join(runs_home, run_id)
+       >>> assert run_dir == path_join(runs_home, run_id)
 
 3. It's status is `unknown`
 
@@ -86,22 +92,74 @@ The run doesn't show up in a run listing.
     >>> list_runs(runs_home)
     []
 
+## Initialized run (`init_run_meta`)
 
+`init_run_meta` initializes a run meta directory in preparation for
+either staging or running.
 
+    >>> from gage._internal.run_util import init_run_meta
 
+The run meta directory is a side-car directory (i.e. located along side
+the run directory) with the same name but ending in `.meta.`
 
+`run_meta_dir` returns the meta directory path for a run.
 
+    >>> from gage._internal.run_util import run_meta_dir
 
----------------------------------------
+    >>> meta_dir = run_meta_dir(run)
 
-Gage is creating the run but it's otherwise undefined
-  - Inferred by existence of meta dir containing PENDING marker
-  - Meta dir under way, exists with PENDING marker
-  - Run dir under way, may or may not exist
+    >>> assert meta_dir == run_dir + ".meta"
 
+The meta directory does not exist initially.
 
-A Gage run is made up of a number of parts:
+    >>> assert not path_exists(meta_dir)
 
-- A `.meta` directory, which is represented by `.meta.zip` after the run
-  is finalized
-- A `.run` directory
+The meta directory contains all run-related information that is not part
+of the run directory itself. Specifically excluded from the meta
+directory:
+
+- Source code
+- Dependencies
+- User generated files
+
+A run must be initialized before it can be staged or run. Once
+initialized, the run appears in a run listing.
+
+Initializing a run does not affect the run directory.
+
+To initialize a run, provide the following:
+
+- Run
+- XXX
+
+Initialize the run by calling `init_run_meta`.
+
+    >>> init_run_meta(run)
+
+The following files are created:
+
+    >>> find(meta_dir, include_dirs=True, permissions=True)  # +diff
+    -r--r--r-- __schema__
+    -r--r--r-- id
+    -r--r--r-- initialized
+    drwxrwxr-x log
+    -rw-rw-r-- log/runner
+
+Files are read only with the exception of the runner log, which is
+assumed to be writable until the run is finalized (see below).
+
+### Runner log
+
+The runner log contains log entries for the actions performed.
+
+    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse +diff
+    {:date} Writing id
+    {:date} Writing initialized
+
+Sample runner format:
+
+    2023-09-03T11:59:00-0500 Writing id
+
+- Date is ISO 8016
+- No error level - all messages are equivalent
+- Messages start with a capital letter

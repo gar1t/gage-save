@@ -48,7 +48,7 @@ Two filters for one matching where match_any is False (default):
     >>> match_filters(["a", "b"], ["a"])
     False
 
-Two filters for one matching valwhere match_any is True:
+Two filters for one matching val where match_any is True:
 
     >>> match_filters(["a", "b"], ["a"], match_any=True)
     True
@@ -280,15 +280,13 @@ The function `_top_level_dir` is used for this test.
 
 Tests:
 
-    >>> import os
-
     >>> _top_level_dir(os.path.sep)
     True
 
-    >>> _top_level_dir(os.path.join(os.path.sep, "foo"))
+    >>> _top_level_dir(path_join(os.path.sep, "foo"))
     True
 
-    >>> _top_level_dir(os.path.join(os.path.sep, "foo", "bar"))
+    >>> _top_level_dir(path_join(os.path.sep, "foo", "bar"))
     False
 
     >>> _top_level_dir(".")
@@ -383,7 +381,7 @@ using dots to denote levels in the decoded dict.
 ### Decoding nested config
 
 The decoding function is `gage._internal.util.nested_config`. It takes a flag
-map of dot-delimeted names to values.
+map of dot-delimited names to values.
 
 
     >>> def nc(kv, config=None):
@@ -421,7 +419,7 @@ An explicit dict is okay:
     >>> nc({"1.2": {}, "1.1.1": 111, "1.2.1": 121})
     {'1': {'1': {'1': 111}, '2': {'1': 121}}}
 
-### Applying values to existing configuation
+### Applying values to existing configuration
 
 `apply_nested_config()` can be used to apply config to existing
 values. If the specified data structure contains sections with
@@ -494,7 +492,7 @@ Dot-name applied to empty matches:
     >>> nc({"a.b.c.d": 1}, {"a": {"b": {"c": {"d": {}}}}})
     {'a': {'b': {'c': {'d': 1}}}}
 
-Dot-name applied to match and additional configuation:
+Dot-name applied to match and additional configuration:
 
     >>> nc({"a.b.c.d": 1}, {"a.b.c": {"d": 2, "e": 3}})
     {'a.b.c': {'d': 1, 'e': 3}}
@@ -775,7 +773,7 @@ The active shell is provided as a shell string using
     ...         proc_path.append(_quote(p.name()))
     ...         p = p.parent()
     ...     print(f"Unknown active shell (proc path: {' > '.join(reversed(proc_path))})")
-    ...     print(f"Expexted one of: {', '.join(_KNOWN_SHELLS)}")
+    ...     print(f"Expected one of: {', '.join(_KNOWN_SHELLS)}")
 
 ### Active shell caching
 

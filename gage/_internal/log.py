@@ -9,17 +9,12 @@ import logging.config
 import os
 import sys
 
-from . import ansi_util  # lightweight
+from . import ansi_util
 
 __last_init_kw = {}
 
 _isatty = sys.stderr.isatty()
 _shell = os.getenv("SHELL")
-
-NOISY_LOGGERS = (
-    "chardet",
-    "matplotlib",
-)
 
 
 class _FakeTTY:
@@ -115,17 +110,6 @@ def _log_level_for_arg(arg: Optional[int]):
         return int(os.environ["LOG_LEVEL"])
     except (KeyError, TypeError):
         return logging.INFO
-
-
-def disable_noisy_loggers(level: int = logging.INFO):
-    if level <= logging.DEBUG:
-        _set_logger_level(NOISY_LOGGERS, logging.INFO)
-
-
-def _set_logger_level(pkgs: Sequence[str], level: int):
-    for pkg in pkgs:
-        log = logging.getLogger(pkg)
-        log.setLevel(level)
 
 
 def current_settings() -> Dict[str, Any]:

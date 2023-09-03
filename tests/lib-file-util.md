@@ -30,7 +30,6 @@ a destination directory.
 
 Define a facility for generating a source directory of files to copy.
 
-    >>> import os
     >>> from gage._internal import util
 
     >>> class file_base(object):
@@ -41,7 +40,7 @@ Define a facility for generating a source directory of files to copy.
     ...         self.size = size
     ...
     ...     def mk(self, root):
-    ...         path = os.path.join(root, self.path)
+    ...         path = path_join(root, self.path)
     ...         util.ensure_dir(os.path.dirname(path))
     ...         with open(path, "w" + self.write_mode) as f:
     ...             f.write(self.base_char * self.size)
@@ -388,53 +387,53 @@ Write some files to test:
 
     >>> tmp = make_temp_dir()
 
-    >>> with open(path.join(tmp, "a"), "wb") as f:
+    >>> with open(path_join(tmp, "a"), "wb") as f:
     ...     _ = f.write(b"abc123")
 
-    >>> with open(path.join(tmp, "b"), "wb") as f:
+    >>> with open(path_join(tmp, "b"), "wb") as f:
     ...     _ = f.write(b"abc1234")
 
-    >>> with open(path.join(tmp, "c"), "wb") as f:
+    >>> with open(path_join(tmp, "c"), "wb") as f:
     ...     _ = f.write(b"abc321")
 
-    >>> with open(path.join(tmp, "d"), "wb") as f:
+    >>> with open(path_join(tmp, "d"), "wb") as f:
     ...     _ = f.write(b"abc123")
 
 Compare the files:
 
-    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "a"))
+    >>> files_differ(path_join(tmp, "a"), path_join(tmp, "a"))
     False
 
-    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "b"))
+    >>> files_differ(path_join(tmp, "a"), path_join(tmp, "b"))
     True
 
-    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "c"))
+    >>> files_differ(path_join(tmp, "a"), path_join(tmp, "c"))
     True
 
-    >>> files_differ(path.join(tmp, "a"), path.join(tmp, "d"))
+    >>> files_differ(path_join(tmp, "a"), path_join(tmp, "d"))
     False
 
 Compare links:
 
-    >>> symlink("a", path.join(tmp, "link-to-a"))
+    >>> symlink("a", path_join(tmp, "link-to-a"))
 
-    >>> symlink("link-to-a", path.join(tmp, "link-to-link-to-a"))
+    >>> symlink("link-to-a", path_join(tmp, "link-to-link-to-a"))
 
     >>> files_differ(
-    ...     path.join(tmp, "a"),
-    ...     path.join(tmp, "link-to-a")
+    ...     path_join(tmp, "a"),
+    ...     path_join(tmp, "link-to-a")
     ... )
     False
 
     >>> files_differ(
-    ...     path.join(tmp, "a"),
-    ...     path.join(tmp, "link-to-link-to-a")
+    ...     path_join(tmp, "a"),
+    ...     path_join(tmp, "link-to-link-to-a")
     ... )
     False
 
     >>> files_differ(
-    ...     path.join(tmp, "link-to-a"),
-    ...     path.join(tmp, "link-to-link-to-a")
+    ...     path_join(tmp, "link-to-a"),
+    ...     path_join(tmp, "link-to-link-to-a")
     ... )
     False
 

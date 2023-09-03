@@ -13,6 +13,7 @@ import os
 import re
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -1926,3 +1927,22 @@ def _cfg_bool(s: str):
 
 def encode_cfg_val(x: Any):
     return str(x)
+
+
+def write_file(
+    filename: str, contents: str, append: bool = False, readonly: bool = False
+):
+    opts = "a" if append else "w"
+    with open(filename, opts) as f:
+        f.write(contents)
+    if readonly:
+        set_readonly(filename)
+
+
+def set_readonly(filename: str, readonly: bool = True):
+    mode = (
+        stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH
+        if readonly
+        else stat.S_IWUSR | stat.S_IREAD
+    )
+    os.chmod(filename, mode)

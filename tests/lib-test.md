@@ -4,7 +4,7 @@ test-options: +parse
 
 # gage test support
 
-## Example pattern matching
+## Pattern matching
 
 ### Semantic versions
 
@@ -32,7 +32,7 @@ Paths must be absolute to match.
 
 ### Any value
 
-`any` is used to match anthing within the same line. This is an
+`any` is used to match anything within the same line. This is an
 important distinction from `{}`, which matches across lines. It's
 important to avoid `{}` when it might consume output that would
 otherwise negate a successful test.
@@ -50,3 +50,24 @@ The example should use `any`.
     ...
     ... ERROR: I was joking earlier""")  # +fails
     SUCCESS: {:any}
+
+### ISO 8601 dates
+
+Common formats:
+
+    >>> print("2023-09-03T11:21:33-0500")
+    {:iso8601}
+
+    >>> print("2023-09-03T11:21:33+0500")
+    {:iso8601}
+
+    >>> print("2023-09-03T11:21:33+050030")
+    {:iso8601}
+
+Valid formats but not supported:
+
+    >>> print("2023-09-03T11:21:33-05:00")  # +fails
+    {:iso8601}
+
+    >>> print("2023-09-03T11:21:33-05:00:30")  # +fails
+    {:iso8601}

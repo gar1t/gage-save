@@ -3,14 +3,51 @@
 from __future__ import annotations
 
 from typing import *
-
 from .types import *
+from logging import Logger
 
+import logging
 import os
+import threading
+import time
 import uuid
 
 from . import config
 from . import util
+
+META_SCHEMA = 1
+
+__last_ts = None
+__last_ts_lock = threading.Lock()
+
+
+def run_timestamp():
+    """Returns an integer use for run timestamps.
+
+    Ensures that subsequent calls return increasing values.
+    """
+    ts = time.time_ns() // 1000
+    with __last_ts_lock:
+        if __last_ts is not None and __last_ts >= ts:
+            ts = __last_ts + 1
+        globals()["__last_ts"] = ts
+    return ts
+
+
+def _runner_log(run: Run):
+    filename = _runner_log_filename(run)
+    filename_parent = os.path.dirname(filename)
+    assert os.path.exists(filename_parent), filename_parent
+    log = logging.Logger("runner")
+    handler = logging.FileHandler(filename)
+    log.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
+    handler.setFormatter(formatter)
+    return log
+
+
+def _runner_log_filename(run: Run):
+    return run_meta_path(run, "log", "runner")
 
 
 def make_run(location: Optional[str] = None):
@@ -53,11 +90,47 @@ def run_attr(run: Run, name: str):
     except AttributeError:
         assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
 
+
 def init_run_meta(run: Run):
-    assert False, """
+    meta_dir = _ensure_run_meta_dir(run)
+    _write_schema_file(meta_dir)
+    _ensure_meta_log_dir(meta_dir)
+    log = _runner_log(run)
+    _write_run_id(run, meta_dir, log)
+    _write_initialized_timestamp(meta_dir, log)
+
+
+def _ensure_run_meta_dir(run: Run):
+    meta_dir = run_meta_dir(run)
+    util.ensure_dir(meta_dir)
+    return meta_dir
+
+
+def _write_schema_file(meta_dir: str):
+    filename = os.path.join(meta_dir, "__schema__")
+    util.write_file(filename, str(META_SCHEMA), readonly=True)
+
+
+def _ensure_meta_log_dir(meta_dir: str):
+    util.ensure_dir(os.path.join(meta_dir, "log"))
+
+
+def _write_run_id(run: Run, meta_dir: str, log: Logger):
+    log.info("Writing id")
+    filename = os.path.join(meta_dir, "id")
+    util.write_file(filename, run.id, readonly=True)
+
+
+def _write_initialized_timestamp(meta_dir: str, log: Logger):
+    log.info("Writing initialized")
+    filename = os.path.join(meta_dir, "initialized")
+    timestamp = run_timestamp()
+    util.write_file(filename, str(timestamp), readonly=True)
+
+
+"""
 TODO: Init run meta dir
 
-- Create meta dir
 - Write `__schema__` version (e.g. `1`)
 - Write `id` (run.id)
 - Write op ref (need as arg)

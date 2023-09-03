@@ -1,5 +1,10 @@
 # Run file system layout
 
+These tests illustrate run file layout at a high level. For lower level
+tests, see [`run-lifecycle.md`](run-lifecycle.md).
+
+TODO: run various samples to show files after various run commands.
+
     >>> var_home = make_temp_dir()
 
     >>> use_project("hello-project", var_home)
@@ -234,19 +239,19 @@ Notes on status:
 
 On init:
 
-- Create meta dir
-- Create `log` subdir
-- Start logging to `log/runner` (all actions effecting run getting
+- [x] Create meta dir
+- [x] Write schema **
+- [x] Create `log` subdir
+- [x] Start logging to `log/runner` (all actions effecting run getting
   logged!)
-- Write schema **
-- Write id **
-- Write opref **
-- Write opdef.json **
-- Write cmd **
-- Write env **
-- Write user attributes **
-- Write system attributes **
-- Write initialized marker **
+- [x] Write id **
+- [ ] Write opref **
+- [ ] Write opdef.json **
+- [ ] Write cmd **
+- [ ] Write env **
+- [ ] Write user attributes **
+- [ ] Write system attributes **
+- [ ] Write initialized marker **
 
 `**` make files read-only
 

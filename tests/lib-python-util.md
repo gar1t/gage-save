@@ -136,7 +136,7 @@ A couple errors are generated when creating a script.
 
 Syntax error:
 
-    >>> script_path = path.join(make_temp_dir(), "test.py")
+    >>> script_path = path_join(make_temp_dir(), "test.py")
     >>> write(script_path, "+++")
 
     >>> python_util.Script(script_path)  # +error-detail
@@ -167,7 +167,7 @@ Create some scripts to sort.
     >>> to_sort = []
     >>> tmp = make_temp_dir()
     >>> for name in ["c", "d", "a", "b"]:
-    ...     script_path = path.join(tmp, name)
+    ...     script_path = path_join(tmp, name)
     ...     touch(script_path)
     ...     to_sort.append(python_util.Script(script_path))
 

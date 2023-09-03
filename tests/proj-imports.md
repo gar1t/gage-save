@@ -1,7 +1,6 @@
 # Imports
 
     >>> import importlib
-    >>> import os
     >>> import gage
 
     >>> SKIP_DIRS = ["tests", "_vendor"]
@@ -14,7 +13,7 @@
     ...             if name in dirs: dirs.remove(name)
     ...         for name in files:
     ...             if not name.endswith(".py"): continue
-    ...             mod_path = os.path.join(root, name)
+    ...             mod_path = path_join(root, name)
     ...             mod_relpath = os.path.relpath(mod_path, proj_root)
     ...             mod_name = (
     ...                 "gage."
