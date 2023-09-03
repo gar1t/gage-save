@@ -113,10 +113,13 @@ def init_run_meta(
     log = _runner_log(run)
     _write_run_id(run, meta_dir, log)
     _write_opdef(opdef, meta_dir, log)
-    _ensure_meta_proc_dir(meta_dir)
     _write_cmd_args(cmd, meta_dir, log)
     _write_cmd_env(cmd, meta_dir, log)
-    # opref is here as it marks the run as discoverable in lists
+    if user_attrs:
+        _write_user_attrs(user_attrs, meta_dir, log)
+    if system_attrs:
+        _write_system_attrs(system_attrs, meta_dir, log)
+    # opref marks run as discoverable in lists - should appear last
     _write_opref(opref, meta_dir, log)
     _write_initialized_timestamp(meta_dir, log)
 
@@ -149,12 +152,9 @@ def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
     util.write_file(filename, encoded, readonly=True)
 
 
-def _ensure_meta_proc_dir(meta_dir: str):
-    util.ensure_dir(os.path.join(meta_dir, "proc"))
-
-
 def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
     log.info("Writing proc/cmd")
+    util.ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "cmd")
     util.write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
 
@@ -165,12 +165,30 @@ def _encode_cmd_args(args: List[str]):
 
 def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
     log.info("Writing proc/env")
+    util.ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "env")
     util.write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
 
 
 def _encode_cmd_env(env: Dict[str, str]):
     return "".join([f"{name}={val}\n" for name, val in sorted(env.items())])
+
+
+def _write_user_attrs(attrs: Dict[str, Any], meta_dir: str, log: Logger):
+    _gen_write_attrs("user", attrs, meta_dir, log)
+
+
+def _write_system_attrs(attrs: Dict[str, Any], meta_dir: str, log: Logger):
+    _gen_write_attrs("sys", attrs, meta_dir, log)
+
+
+def _gen_write_attrs(dir: str, attrs: Dict[str, Any], meta_dir: str, log: Logger):
+    util.ensure_dir(os.path.join(meta_dir, dir))
+    for name in attrs:
+        log.info("Writing %s/%s", dir, name)
+        filename = os.path.join(meta_dir, dir, name)
+        encoded = json.dumps(attrs[name])
+        util.write_file(filename, encoded, readonly=True)
 
 
 def _write_opref(opref: OpRef, meta_dir: str, log: Logger):
@@ -184,15 +202,3 @@ def _write_initialized_timestamp(meta_dir: str, log: Logger):
     filename = os.path.join(meta_dir, "initialized")
     timestamp = run_timestamp()
     util.write_file(filename, str(timestamp), readonly=True)
-
-
-"""
-TODO: Init run meta dir
-
-- Write `__schema__` version (e.g. `1`)
-- Write `id` (run.id)
-- Write op ref (need as arg)
-- Write op def (need as arg)
-
-- Write `initialized` with timestamp
-"""

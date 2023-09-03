@@ -244,12 +244,12 @@ On init:
 - [x] Create `log` subdir
 - [x] Start logging to `log/runner` (actions affecting run get logged!)
 - [x] Write id **
-- [ ] Write opref **
-- [ ] Write opdef.json **
-- [ ] Write cmd **
-- [ ] Write env **
-- [ ] Write user attributes **
-- [ ] Write system attributes **
+- [x] Write opref **
+- [x] Write opdef.json **
+- [x] Write cmd **
+- [x] Write env **
+- [x] Write user attributes **
+- [x] Write system attributes **
 - [x] Write initialized marker **
 
 `**` make files read-only

@@ -2,9 +2,19 @@
 
 ## Run layout
 
-- Init run by creating `.meta`
-- Copy source code to `.run`
-- As copying source code, update manifest in `.meta`
+- Init run by creating `.meta` (done)
+- Implement runs list using `.meta`
+- Implement `stage_run` function
+  - Copy source code to `.run` + update manifest
+  - Resolve deps + update manifest
+- Implement `start_run`
+  - Start process
+  - Launch output summaries
+  - Pipe output to output + output.index
+  - Handle process exit
+    - Write process exits, delete locks, etc
+    - Finalize manifest
+    - Mark run files as readonly
 
 
 ## Lifting by `guild check`

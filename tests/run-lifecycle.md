@@ -133,16 +133,34 @@ To initialize a run, provide the following:
 - Op reference
 - Op definition
 - Op command
+- User attributes
+- System attributes
+
+Define inputs to the init function.
 
     >>> from gage._internal.types import OpRef, OpDef, OpCmd
 
     >>> opref = OpRef("test", "test")
+
     >>> opdef = OpDef("test", {})
-    >>> cmd = OpCmd(["echo", "hello"], {"foo": "123", "bar": "abc"})
+
+    >>> cmd = OpCmd(
+    ...     ["echo", "hello"],
+    ...     {"foo": "123", "bar": "abc"}
+    ... )
+
+    >>> user_attrs = {
+    ...     "label": "A test run",
+    ...     "params": {"x": 1.1, "y": True},
+    ... }
+
+    >>> system_attrs = {
+    ...     "platform": "test 123"
+    ... }
 
 Initialize the run by calling `init_run_meta`.
 
-    >>> init_run_meta(run, opref, opdef, cmd)
+    >>> init_run_meta(run, opref, opdef, cmd, user_attrs, system_attrs)
 
 The following files are created:
 
@@ -157,6 +175,11 @@ The following files are created:
     drwxrwxr-x proc
     -r--r--r-- proc/cmd
     -r--r--r-- proc/env
+    drwxrwxr-x sys
+    -r--r--r-- sys/platform
+    drwxrwxr-x user
+    -r--r--r-- user/label
+    -r--r--r-- user/params
 
 Files are read only with the exception of the runner log, which is
 assumed to be writable until the run is finalized (see below).
@@ -236,6 +259,9 @@ The runner log contains log entries for the actions performed.
     {:date} Writing opdef.json
     {:date} Writing proc/cmd
     {:date} Writing proc/env
+    {:date} Writing user/label
+    {:date} Writing user/params
+    {:date} Writing sys/platform
     {:date} Writing opref
     {:date} Writing initialized
 
