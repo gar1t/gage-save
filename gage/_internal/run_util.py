@@ -18,51 +18,27 @@ from . import util
 
 from .opref_util import encode_opref
 
+__all__ = [
+    "META_SCHEMA",
+    "run_status",
+    "run_meta_dir",
+    "run_attrs",
+    "run_attr",
+    "make_run",
+    "unique_run_id",
+    "run_timestamp",
+    "init_run_meta",
+    "stage_run_dir",
+]
+
 META_SCHEMA = 1
 
 __last_ts = None
 __last_ts_lock = threading.Lock()
 
-
-def run_timestamp():
-    """Returns an integer use for run timestamps.
-
-    Ensures that subsequent calls return increasing values.
-    """
-    ts = time.time_ns() // 1000
-    with __last_ts_lock:
-        if __last_ts is not None and __last_ts >= ts:
-            ts = __last_ts + 1
-        globals()["__last_ts"] = ts
-    return ts
-
-
-def _runner_log(run: Run):
-    filename = _runner_log_filename(run)
-    filename_parent = os.path.dirname(filename)
-    assert os.path.exists(filename_parent), filename_parent
-    log = logging.Logger("runner")
-    handler = logging.FileHandler(filename)
-    log.addHandler(handler)
-    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
-    handler.setFormatter(formatter)
-    return log
-
-
-def _runner_log_filename(run: Run):
-    return run_meta_path(run, "log", "runner")
-
-
-def make_run(location: Optional[str] = None):
-    run_id = unique_run_id()
-    location = location or config.runs_home()
-    run_dir = os.path.join(location, run_id)
-    util.make_dir(run_dir)
-    return Run(run_id, run_dir)
-
-
-def unique_run_id():
-    return uuid.uuid4().hex
+# =================================================================
+# Run attributes
+# =================================================================
 
 
 def run_status(run: Run) -> RunStatus:
@@ -92,6 +68,41 @@ def run_attr(run: Run, name: str):
         return getattr(run, name)
     except AttributeError:
         assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
+
+
+# =================================================================
+# Make run
+# =================================================================
+
+
+def make_run(location: Optional[str] = None):
+    run_id = unique_run_id()
+    location = location or config.runs_home()
+    run_dir = os.path.join(location, run_id)
+    util.make_dir(run_dir)
+    return Run(run_id, run_dir)
+
+
+def unique_run_id():
+    return uuid.uuid4().hex
+
+
+def run_timestamp():
+    """Returns an integer use for run timestamps.
+
+    Ensures that subsequent calls return increasing values.
+    """
+    ts = time.time_ns() // 1000
+    with __last_ts_lock:
+        if __last_ts is not None and __last_ts >= ts:
+            ts = __last_ts + 1
+        globals()["__last_ts"] = ts
+    return ts
+
+
+# =================================================================
+# Meta dir init
+# =================================================================
 
 
 def init_run_meta(
@@ -202,3 +213,46 @@ def _write_initialized_timestamp(meta_dir: str, log: Logger):
     filename = os.path.join(meta_dir, "initialized")
     timestamp = run_timestamp()
     util.write_file(filename, str(timestamp), readonly=True)
+
+
+# =================================================================
+# Run dir init
+# =================================================================
+
+
+def stage_run_dir(run: Run):
+    if not os.path.exists(run.run_dir):
+        raise FileNotFoundError(f"Run dir does not exist: {run.run_dir}")
+    meta_dir = run_meta_dir(run)
+    if not os.path.exists(meta_dir):
+        raise FileNotFoundError(f"Run meta dir does not exist: {meta_dir}")
+    log = _runner_log(run)
+    _write_staged_timestamp(meta_dir, log)
+
+
+def _write_staged_timestamp(meta_dir: str, log: Logger):
+    log.info("Writing initialized")
+    filename = os.path.join(meta_dir, "initialized")
+    timestamp = run_timestamp()
+    util.write_file(filename, str(timestamp), readonly=True)
+
+
+# =================================================================
+# Runner log
+# =================================================================
+
+
+def _runner_log(run: Run):
+    filename = _runner_log_filename(run)
+    filename_parent = os.path.dirname(filename)
+    assert os.path.exists(filename_parent), filename_parent
+    log = logging.Logger("runner")
+    handler = logging.FileHandler(filename)
+    log.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
+    handler.setFormatter(formatter)
+    return log
+
+
+def _runner_log_filename(run: Run):
+    return run_meta_path(run, "log", "runner")

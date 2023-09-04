@@ -51,23 +51,23 @@ The example should use `any`.
     ... ERROR: I was joking earlier""")  # +fails
     SUCCESS: {:any}
 
-### ISO 8601 dates
+### Dates
 
-Common formats:
+ISO 8601 formats:
 
     >>> print("2023-09-03T11:21:33-0500")
-    {:iso8601}
+    {:date}
 
     >>> print("2023-09-03T11:21:33+0500")
-    {:iso8601}
+    {:date}
 
     >>> print("2023-09-03T11:21:33+050030")
-    {:iso8601}
+    {:date}
 
 Valid formats but not supported:
 
     >>> print("2023-09-03T11:21:33-05:00")  # +fails
-    {:iso8601}
+    {:date}
 
     >>> print("2023-09-03T11:21:33-05:00:30")  # +fails
-    {:iso8601}
+    {:date}

@@ -58,7 +58,7 @@ __all__ = [
     "normlf",
     "os",
     "parse_any",
-    "parse_iso8601",
+    "parse_date",
     "parse_path",
     "parse_run_id",
     "parse_timestamp",
@@ -117,6 +117,7 @@ def parse_ver(s: str):
         return None
     return m.groups()
 
+
 @parse_type("timestamp", r"1[6-7]\d{14}")
 def parse_timestamp(s: str):
     return int(s)
@@ -132,8 +133,8 @@ def parse_run_id(s: str):
     return s
 
 
-@parse_type("iso8601", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
-def parse_iso8601(s: str):
+@parse_type("date", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
+def parse_date(s: str):
     return datetime.datetime.fromisoformat(_format_tz(s))
 
 
