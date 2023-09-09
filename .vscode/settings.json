@@ -52,6 +52,7 @@
     "gaierror",
     "gethostname",
     "getpgid",
+    "guildignore",
     "hola",
     "importlib",
     "includedirs",
@@ -60,6 +61,7 @@
     "jschon",
     "keras",
     "killpg",
+    "lastindex",
     "levelname",
     "levelno",
     "libcublas",
@@ -108,6 +110,7 @@
     "utcformat",
     "vals",
     "venv",
+    "virtualenv",
     "xonsh"
   ]
 }

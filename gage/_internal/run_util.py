@@ -28,13 +28,34 @@ __all__ = [
     "unique_run_id",
     "run_timestamp",
     "init_run_meta",
-    "stage_run_dir",
+    "stage_run",
 ]
 
 META_SCHEMA = 1
 
 __last_ts = None
 __last_ts_lock = threading.Lock()
+
+# =================================================================
+# Runner log
+# =================================================================
+
+
+def _runner_log(run: Run):
+    filename = _runner_log_filename(run)
+    filename_parent = os.path.dirname(filename)
+    assert os.path.exists(filename_parent), filename_parent
+    log = logging.Logger("runner")
+    handler = logging.FileHandler(filename)
+    log.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
+    handler.setFormatter(formatter)
+    return log
+
+
+def _runner_log_filename(run: Run):
+    return run_meta_path(run, "log", "runner")
+
 
 # =================================================================
 # Run attributes
@@ -216,11 +237,11 @@ def _write_initialized_timestamp(meta_dir: str, log: Logger):
 
 
 # =================================================================
-# Run dir init
+# Stage run
 # =================================================================
 
 
-def stage_run_dir(run: Run):
+def stage_run(run: Run):
     if not os.path.exists(run.run_dir):
         raise FileNotFoundError(f"Run dir does not exist: {run.run_dir}")
     meta_dir = run_meta_dir(run)
@@ -235,24 +256,3 @@ def _write_staged_timestamp(meta_dir: str, log: Logger):
     filename = os.path.join(meta_dir, "initialized")
     timestamp = run_timestamp()
     util.write_file(filename, str(timestamp), readonly=True)
-
-
-# =================================================================
-# Runner log
-# =================================================================
-
-
-def _runner_log(run: Run):
-    filename = _runner_log_filename(run)
-    filename_parent = os.path.dirname(filename)
-    assert os.path.exists(filename_parent), filename_parent
-    log = logging.Logger("runner")
-    handler = logging.FileHandler(filename)
-    log.addHandler(handler)
-    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
-    handler.setFormatter(formatter)
-    return log
-
-
-def _runner_log_filename(run: Run):
-    return run_meta_path(run, "log", "runner")

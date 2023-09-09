@@ -1,7 +1,4 @@
-# Make run
-
-    >>> from gage._internal.run_util import *
-    >>> from gage._internal.var import list_runs
+# Making a run
 
 A run is created with an ID and a run directory. Runs are always local
 to a system.
@@ -9,6 +6,9 @@ to a system.
 A run is typically created using `make_run`. This function generates a
 unique ID and creates a corresponding run directory in a given parent
 directory.
+
+    >>> from gage._internal.run_util import *
+    >>> from gage._internal.var import list_runs
 
 Create a parent directory.
 

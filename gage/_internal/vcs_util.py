@@ -484,23 +484,25 @@ def check_git_ls_files():
 
         git ls-files -ioc --exclude-standard --directory
 
-    includes directories that should be ignored when all of their contained
-    files are ignored. This appears to be an optimization in the generated
-    output for this command. Guild takes advantage of this by excluding these
-    directories from its source code copy rules so as not to travse their files.
+    includes directories that should be ignored when all of their
+    contained files are ignored. This appears to be an optimization in
+    the generated output for this command. Guild takes advantage of this
+    by excluding these directories from its source code copy rules so as
+    not to traverse their files.
 
     Older versions of Git, however, behave differently -- they omit such
-    directories *and the ignored files in them* from the command output. If
-    relied on, this behavior results in Guild missing ignored files in its
-    inferred source code select rules.
+    directories *and the ignored files in them* from the command output.
+    If relied on, this behavior results in Guild missing ignored files
+    in its inferred source code select rules.
 
-    This function is used to explicitly test the behavior Git on the system. It
-    relies on the system PATH to locate the `git` executable by default. User
-    can provide an explicit Git executable in user config under
-    `git.executable`.
+    This function is used to explicitly test the behavior Git on the
+    system. It relies on the system PATH to locate the `git` executable
+    by default. User can provide an explicit Git executable in user
+    config under `git.executable`.
 
-    Returns an instance of `GitCheckResult`. If the expected behavior of Git is
-    incorrect, the result error is specified in the `error` attribute.
+    Returns an instance of `GitCheckResult`. If the expected behavior of
+    Git is incorrect, the result error is specified in the `error`
+    attribute.
     """
     git_exe = _git_exe()
     project_dir = _init_git_ls_files_sample_project()
@@ -554,4 +556,4 @@ def git_version():
     else:
         m = re.search(r"([0-9]+)\.([0-9]+)\.([0-9]+)", out)
         assert m and m.lastindex == 3, out
-        return tuple(int(x) for x in m.groups())
+        return cast(Tuple[int, int, int], tuple(int(x) for x in m.groups()))

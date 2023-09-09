@@ -1,8 +1,5 @@
 # Initialing run meta
 
-    >>> from gage._internal.run_util import *
-    >>> from gage._internal.types import *
-
 Run metadata ("meta") is information about the run that is independent
 of the run directory and its contents. Meta is located in a side-car
 directory (i.e. located along side the run directory) with the same name
@@ -21,6 +18,9 @@ Initializing a run does not affect the run directory.
 
 Run meta init is performed by `init_run_meta`. Meta must be initialized
 before a run is staged or started.
+
+    >>> from gage._internal.run_util import *
+    >>> from gage._internal.types import *
 
 Runs must exist before their meta directory is initialized.
 

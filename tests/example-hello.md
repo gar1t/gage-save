@@ -27,5 +27,5 @@ Run hello.
 
 FIXME - expects something to be said, namely "Hello"
 
-    >>> run("gage run hello -y")
+    >> run("gage run hello -y")
     <0>
