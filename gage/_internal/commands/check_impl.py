@@ -11,7 +11,7 @@ import sys
 
 import gage
 
-from ..._vendor import click
+import click
 
 from .. import cli
 from .. import util

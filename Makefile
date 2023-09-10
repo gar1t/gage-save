@@ -6,3 +6,9 @@ install-dev:
 
 uninstall:
 	python -m pip uninstall -y gage
+
+clean:
+	rm -rf dist build
+
+build-dist:
+	pyinstaller main.py --name gage

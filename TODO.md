@@ -1,5 +1,7 @@
 # Gage To Do
 
+- Replace annotations using latest support from Python 3.11
+
 ## Run layout
 
 - Init run by creating `.meta` (done)

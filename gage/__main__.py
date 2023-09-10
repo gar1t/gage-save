@@ -10,7 +10,7 @@ import sys
 from ._internal import click_util
 from ._internal import exit
 
-from ._vendor import click
+import click
 
 from ._internal.commands import main as main_cmd
 

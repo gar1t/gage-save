@@ -14,12 +14,13 @@ import re
 
 import gage
 
-from .._vendor import click
+import click
 
 # from click import shell_completion
 
 # import guild
 # from guild import python_util
+from gage._internal import ansi_util
 
 CMD_SPLIT_P = re.compile(r", ?")
 # PARAM_HELP_EXTRA_P = re.compile(r"  \[.+\]$")
@@ -125,8 +126,9 @@ class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
             if not second:
                 self.write("\n")
                 continue
-            if click.formatting.term_len(first) <= first_col - col_spacing:
-                self.write(" " * (first_col - click.formatting.term_len(first)))
+            first_term_len = len(ansi_util.strip_ansi(first))
+            if first_term_len <= first_col - col_spacing:
+                self.write(" " * (first_col - first_term_len))
             else:
                 self.write("\n")
                 self.write(" " * (first_col + self.current_indent))

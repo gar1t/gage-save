@@ -783,7 +783,7 @@ def _apply_venv_bin_path(env: Dict[str, str]):
     python_bin_dir = os.path.dirname(sys.executable)
     path = env.get("PATH") or ""
     if python_bin_dir not in path:
-        env["PATH"] = f"{python_bin_dir}{os.path.pathsep}${path}"
+        env["PATH"] = f"{python_bin_dir}{os.path.pathsep}{path}"
 
 
 def _popen(cmd: str, env: Env, cwd: Optional[str]):

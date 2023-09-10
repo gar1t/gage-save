@@ -11,7 +11,7 @@ import os
 import sys
 import shutil
 
-from .._vendor import click
+import click
 
 from . import ansi_util
 
@@ -220,7 +220,7 @@ def _table_item_out(
         val = formatted_item[col]
         last_col = i == len(cols) - 1
         val = _pad_col_val(val, col, col_info) if not last_col else val
-        val_display_len = len(ansi_util.strip_ansi_format(val))
+        val_display_len = len(ansi_util.strip_ansi(val))
         line_pos = line_pos + val_display_len
         if max_col_width is not None:
             display_val = val[: -(line_pos - max_col_width)]

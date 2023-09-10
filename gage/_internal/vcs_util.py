@@ -177,7 +177,10 @@ def _apply_scheme(
     log.debug("vcs scheme cmd for repo %s: %s", repo_dir, cmd)
     try:
         out = subprocess.check_output(
-            cmd, cwd=repo_dir, env=os.environ, stderr=subprocess.STDOUT
+            cmd,
+            cwd=repo_dir,
+            env=os.environ,
+            stderr=subprocess.STDOUT,
         )
     except OSError as e:
         if e.errno == 2:

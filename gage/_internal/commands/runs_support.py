@@ -6,7 +6,7 @@ from typing import *
 
 import logging
 
-from ..._vendor import click
+import click
 
 from .. import click_util
 

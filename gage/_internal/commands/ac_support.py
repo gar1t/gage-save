@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import *
 from pathlib import Path
 
-from ..._vendor import click
+import click
 
 import os
 

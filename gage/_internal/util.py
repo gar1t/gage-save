@@ -519,7 +519,7 @@ class LogCapture(logging.Filter):
     def _format_record(self, r: logging.LogRecord):
         msg = self._handler().format(r)
         if self._strip_ansi_format:
-            msg = ansi_util.strip_ansi_format(msg)
+            msg = ansi_util.strip_ansi(msg)
         return msg
 
     def print_all(self):
@@ -1639,7 +1639,7 @@ def bind_method(obj: Any, method_name: str, function: Any):
 
 
 def edit(s: str, extension: str = ".txt", strip_comment_lines: bool = False):
-    from .._vendor import click
+    import click
 
     try:
         edited = click.edit(s, _try_editor(), extension=extension)

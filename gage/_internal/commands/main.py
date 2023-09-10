@@ -4,7 +4,7 @@ from typing import *
 
 from .. import click_util
 
-from ..._vendor import click
+import click
 
 from ...__init__ import __version__
 

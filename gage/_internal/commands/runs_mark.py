@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import *
 
-from ..._vendor import click
+import click
 
 from .. import click_util
 

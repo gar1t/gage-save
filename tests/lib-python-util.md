@@ -144,7 +144,7 @@ Syntax error:
       ...
       File "<unknown>", line 1
         +++
-          ^
+           ^
     SyntaxError: invalid syntax
 
 The other error is when the file can't be read:
@@ -336,7 +336,7 @@ function:
     2
     >>> calc.incr(1, 2)
     Traceback (most recent call last):
-    TypeError: incr() takes 2 positional arguments but 3 were given
+    TypeError: Calc.incr() takes 2 positional arguments but 3 were given
 
 What happens when we add two listeners that both provide results? The
 behavior is as follows:

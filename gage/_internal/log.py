@@ -64,7 +64,7 @@ class Formatter(logging.Formatter):
     def _maybe_strip_ansi(s: str):
         if _isatty:
             return s
-        return ansi_util.strip_ansi_format(s)
+        return ansi_util.strip_ansi(s)
 
 
 class ConsoleLogHandler(logging.StreamHandler):
