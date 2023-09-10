@@ -63,7 +63,6 @@
     gage._internal.file_util
     gage._internal.gagefile
     gage._internal.log
-    gage._internal.nu
     gage._internal.op_util
     gage._internal.opdef_util
     gage._internal.opref_util

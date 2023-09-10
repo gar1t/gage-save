@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 
 import click
@@ -21,7 +19,7 @@ def runs_stop_params(fn: Callable[..., Any]):
             click.Option(
                 ("--force",),
                 help=(
-                    "Forceably stop the runs after a period of time (specified by "
+                    "Forcibly stop the runs after a period of time (specified by "
                     "'--timeout')."
                 ),
                 is_flag=True,

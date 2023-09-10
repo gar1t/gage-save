@@ -1,15 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 from pathlib import Path
 
 import click
 
 import os
-
-# Avoid expensive or one-off imports
 
 
 def active_shell_supports_directives():
@@ -86,7 +82,7 @@ def _split_path_incomplete(incomplete: str):
 def _filter_path(
     path: Path,
     filters: Optional[list[_PathFilter]],
-    normlized_extensions: list[str],
+    normalized_extensions: list[str],
     incomplete: str,
 ):
     if filters and not _apply_path_filters(filters, path):
@@ -95,7 +91,7 @@ def _filter_path(
         return False
     if path.is_dir():
         return True
-    if normlized_extensions and not path.suffix.lower() in normlized_extensions:
+    if normalized_extensions and not path.suffix.lower() in normalized_extensions:
         return False
     return True
 
@@ -233,7 +229,7 @@ def _compgen_filenames(type: str, ext: list[str]):
 #     implemented them for that shell) uses `/bin/sh` to list commands available
 #     on `PATH`. This is a platform-specific approach that relies on `/bin/sh`.
 #     When `/bin/sh` is used to find executables, `regex_filter` if specified is
-#     used to filter results. `regex_filter` is not used when the actve shell
+#     used to filter results. `regex_filter` is not used when the active shell
 #     supports directives. If `regex_filter` is not specified, the list of
 #     commands not further filtered beyond commands starting with `incomplete`.
 

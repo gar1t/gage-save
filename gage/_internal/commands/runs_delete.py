@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 
 import click
@@ -19,7 +17,7 @@ from . import runs_support
 @click.option(
     "-p",
     "--permanent",
-    help="Permanentaly delete runs so they cannot be recovered.",
+    help="Permanently delete runs so they cannot be recovered.",
     is_flag=True,
 )
 @click.pass_context
@@ -47,7 +45,7 @@ def delete_runs(ctx: click.Context, args: Any):
 
     If you want to permanently delete runs, use the ``--permanent`` option.
 
-    **WARNING**: Permanentaly deleted runs cannot be restored.
+    **WARNING**: Permanently deleted runs cannot be restored.
 
     {{ runs_support.runs_arg }}
 

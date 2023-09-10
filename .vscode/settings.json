@@ -27,8 +27,10 @@
   "cSpell.words": [
     "astype",
     "autoprint",
+    "batchfile",
     "Bools",
     "chardet",
+    "compgen",
     "configparser",
     "cookiecutter",
     "copyfiles",
@@ -79,6 +81,7 @@
     "natsorted",
     "nocopy",
     "normlf",
+    "nowarn",
     "opdef",
     "oplib",
     "opref",
@@ -90,6 +93,8 @@
     "procs",
     "psutil",
     "pwsh",
+    "pycache",
+    "rcetps",
     "readlines",
     "relpath",
     "relroot",
@@ -110,11 +115,13 @@
     "textorbinary",
     "topdown",
     "Traceback",
+    "unmark",
     "unmerge",
     "utcformat",
     "vals",
     "venv",
     "virtualenv",
+    "wordbreak",
     "xonsh"
   ]
 }

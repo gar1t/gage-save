@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
-from typing import Pattern
 
 from .file_util import FileSelectRule
 

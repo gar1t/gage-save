@@ -31,11 +31,10 @@ from .runs import runs
     default=None,
     shell_complete=ac_support.ac_dir(),
 )
-@click_util.use_args
-def main(args: Any):
+def main(**params: Any):
     from . import main_impl
 
-    main_impl.main(args)
+    main_impl.main(**params)
 
 
 main.add_command(check)

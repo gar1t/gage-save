@@ -8,9 +8,9 @@ from .. import config
 from .. import cli
 
 
-def main(args: Any):
-    if args.cwd:
-        _apply_cwd(args.cwd)
+def main(cwd: str | None):
+    if cwd:
+        _apply_cwd(cwd)
 
 
 def _apply_cwd(cwd: str):

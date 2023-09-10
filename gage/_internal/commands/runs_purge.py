@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 
 import click
@@ -19,7 +17,7 @@ from . import runs_support
 @click_util.use_args
 @click_util.render_doc
 def purge_runs(ctx: click.Context, args: Any):
-    """Permanentaly delete one or more deleted runs.
+    """Permanently delete one or more deleted runs.
 
     **WARNING**: Purged runs cannot be recovered!
 

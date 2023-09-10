@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 
 import click
@@ -9,18 +7,6 @@ import click
 from .. import click_util
 
 from . import runs_support
-
-
-# def _ac_comment_index(ctx, incomplete, **_kw):
-#     from . import runs_impl
-#     args = click_util.Args(**ctx.params)
-#     args.runs = ctx.args
-#     runs = runs_impl.runs_op_selected(args, ctx, runs_impl.LATEST_RUN_ARG)
-#     indexes = set()
-#     for run in runs:
-#         for i in range(len(run.get("comments") or [])):
-#             indexes.add(str(i + 1))
-#     return [i for i in sorted(indexes) if i.startswith(incomplete)]
 
 
 def comment_params(fn: Callable[..., Any]):

@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 
 import click
@@ -69,15 +67,15 @@ def archive_params(fn: Callable[..., Any]):
 def archive_runs(ctx: click.Context, args: Any):
     """Archive one or more runs.
 
-    `NAME` must refer to an exlisting archive unless `--create` is used, in
+    `NAME` must refer to an existing archive unless `--create` is used, in
     which case a new archive is created.
 
     By default, run are moved to the archive. To copy runs, use `--copy`.
 
-    By default, resources are NOT copied with each archiveed run, but their
+    By default, resources are NOT copied with each archived run, but their
     links are maintained. To copy resources, use `--copy-resources`.
 
-    **WARNING**: Use `--copy-resources` with care as each archiveed run will
+    **WARNING**: Use `--copy-resources` with care as each archived run will
     contain a separate copy of each resource!
 
     {{ runs_support.runs_arg }}
