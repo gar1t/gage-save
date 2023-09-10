@@ -7,10 +7,10 @@ from typing import *
 from .. import cli
 from .. import click_util
 
-ArgSpec = Union[str, Tuple[str, str]]
+ArgSpec = str | tuple[str, str]
 
 
-def check_incompatible_args(incompatible: List[Tuple[ArgSpec, ArgSpec]], args: Any):
+def check_incompatible_args(incompatible: list[tuple[ArgSpec, ArgSpec]], args: Any):
     for val in incompatible:
         arg1_name, opt1, arg2_name, opt2 = _incompatible_arg_items(val)
         if getattr(args, arg1_name, None) and getattr(args, arg2_name):
@@ -20,7 +20,7 @@ def check_incompatible_args(incompatible: List[Tuple[ArgSpec, ArgSpec]], args: A
             )
 
 
-def _incompatible_arg_items(val: Tuple[ArgSpec, ArgSpec]):
+def _incompatible_arg_items(val: tuple[ArgSpec, ArgSpec]):
     arg1, arg2 = val
     arg1, opt1 = _arg_parts(arg1)
     arg2, opt2 = _arg_parts(arg2)

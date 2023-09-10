@@ -43,9 +43,9 @@ class Script:
         self.mod_package = mod_package
         self.sys_path = sys_path
         self._parsed = False
-        self._imports: List[str] = []
-        self._calls: List[Call] = []
-        self._params: Dict[str, Any] = {}
+        self._imports: list[str] = []
+        self._calls: list[Call] = []
+        self._params: dict[str, Any] = {}
         self._parse()
 
     def __lt__(self, x: Any):
@@ -106,7 +106,7 @@ class Script:
         if node.names:
             self._apply_import(node)
 
-    def _apply_import(self, node: Union[ast.Import, ast.ImportFrom]):
+    def _apply_import(self, node: ast.Import | ast.ImportFrom):
         for name in node.names:
             if isinstance(name, ast.alias):
                 self._imports.append(name.name)
@@ -184,7 +184,7 @@ def _namespace_val(val: ast.Call):
     return types.SimpleNamespace(**kw)
 
 
-def _namespace_kw(val: ast.Call) -> Dict[str, Any]:
+def _namespace_kw(val: ast.Call) -> dict[str, Any]:
     return {kw.arg: ast_param_val(kw.value) for kw in val.keywords if kw.arg}
 
 
@@ -193,7 +193,7 @@ class Call:
         self.node = node
         self.name = self._func_name(node.func)
 
-    def _func_name(self, func: ast.expr) -> Union[str, None]:
+    def _func_name(self, func: ast.expr) -> str | None:
         if isinstance(func, ast.Name):
             return func.id
         if isinstance(func, ast.Attribute):
@@ -382,7 +382,7 @@ def remove_function_listeners(function: _Func):
         wrapper.unwrap()
 
 
-def scripts_for_dir(dir: str, exclude: Optional[List[str]] = None):
+def scripts_for_dir(dir: str, exclude: Optional[list[str]] = None):
     import glob
     import fnmatch
 
@@ -394,7 +394,7 @@ def scripts_for_dir(dir: str, exclude: Optional[List[str]] = None):
     ]
 
 
-_Globals = Dict[str, Any]
+_Globals = dict[str, Any]
 
 
 def exec_script(
@@ -450,7 +450,7 @@ def _ensure_parent_mod_loaded(parent_mod_name: str):
 def _node_filter_for_globals(globals: _Globals):
     """Filters ast nodes in support of setting globals for exec.
 
-    Removes initial assigns of any variables occuring in
+    Removes initial assigns of any variables occurring in
     `globals`. This is to allow globals to provide the initial
     value. Subsequent assigns are not removed under the assumption
     that are re-defining the initial variable value.
@@ -496,8 +496,8 @@ def _filter_nodes(root: ast.AST, node_filter: _NodeFilter):
     return root
 
 
-_Attrs = Dict[str, Any]
-_RefSpec = Tuple[str, Type[Any], _Attrs]
+_Attrs = dict[str, Any]
+_RefSpec = tuple[str, Type[Any], _Attrs]
 
 
 def update_refs(
@@ -542,10 +542,10 @@ def safe_module_name(s: str):
     return re.sub("-", "_", s)
 
 
-__modules: Dict[Any, Tuple[str, str]] = {}
+__modules: dict[Any, tuple[str, str]] = {}
 
 
-def find_module(main_mod: _Module, model_paths: List[str]):
+def find_module(main_mod: _Module, model_paths: list[str]):
     cache_key = (main_mod, tuple(model_paths))
     try:
         return __modules[cache_key]
@@ -554,7 +554,7 @@ def find_module(main_mod: _Module, model_paths: List[str]):
         return result
 
 
-def _find_module(main_mod: _Module, model_paths: List[str]):
+def _find_module(main_mod: _Module, model_paths: list[str]):
     for model_path in model_paths:
         main_mod_sys_path, module = _split_module(main_mod, model_path)
         # Copied from guild.op_main
@@ -684,7 +684,6 @@ except AttributeError:
 
 
 def _is_node_breakable(node: Any):
-    # pylint: disable=unidiomatic-typecheck
     return type(node) not in NON_BREAKABLE_NODE_TYPES
 
 
@@ -698,7 +697,7 @@ def _is_node_breakable(node: Any):
 #     return python_interps[matching_ver], matching_ver
 
 
-# def python_interpreters() -> List[Tuple[str, str]]:
+# def python_interpreters() -> list[tuple[str, str]]:
 #     import glob
 #     from guild import config
 

@@ -28,7 +28,7 @@ def archive_params(fn: Callable[..., Any]):
             ),
             click.Option(
                 ("-l", "--list"),
-                help="List archives.",
+                help="list archives.",
                 is_flag=True,
             ),
             click.Option(

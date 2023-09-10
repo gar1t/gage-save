@@ -55,7 +55,7 @@ def tag_params(fn: Callable[..., Any]):
             ),
             click.Option(
                 ("--list-all",),
-                help="List all tags used for the specified runs.",
+                help="list all tags used for the specified runs.",
                 is_flag=True,
             ),
             runs_support.all_filters,

@@ -6,7 +6,7 @@ from typing import *
 
 from jschon import JSONCompatible
 
-Data = Dict[str, Any]
+Data = dict[str, Any]
 
 
 class OpDefNotFound(Exception):
@@ -24,7 +24,7 @@ class OpRef:
 
 
 class OpCmd:
-    def __init__(self, args: List[str], env: Dict[str, str]):
+    def __init__(self, args: list[str], env: dict[str, str]):
         self.args = args
         self.env = env
 
@@ -62,10 +62,7 @@ class Run:
         self.run_dir = run_dir
 
 
-RunStatus = Union[
-    Literal["unknown"],
-    Literal["foobar"],
-]
+RunStatus = Literal["unknown", "foobar"]  # TODO!
 
 
 class Op:

@@ -178,11 +178,11 @@ def _format_tz(s: str):
 
 # DEFAULT_TIMING_MIN_CPUS = 4
 
-# _Options = Dict[int, bool]
+# _Options = dict[int, bool]
 
 
 # def run_all_tests(
-#     skip: Optional[List[str]] = None,
+#     skip: Optional[list[str]] = None,
 #     fail_fast: bool = False,
 #     force: bool = False,
 #     concurrency: Optional[int] = None,
@@ -211,8 +211,8 @@ def tests_dir():
 
 
 # def run_tests(
-#     tests: List[str],
-#     skip: Optional[List[str]] = None,
+#     tests: list[str],
+#     skip: Optional[list[str]] = None,
 #     fail_fast: bool = False,
 #     force: bool = False,
 #     concurrency: Optional[int] = None,
@@ -223,8 +223,8 @@ def tests_dir():
 
 
 # def _run_tests(
-#     tests: List[str],
-#     skip: Optional[List[str]],
+#     tests: list[str],
+#     skip: Optional[list[str]],
 #     fail_fast: bool,
 #     force: bool,
 # ):
@@ -426,7 +426,7 @@ def tests_dir():
 #     sys.stdout.write(cli.style(f"ERROR ({error})\n", fg="red"))
 #     sys.stdout.flush()
 
-# def test_globals() -> Dict[str, Any]:
+# def test_globals() -> dict[str, Any]:
 #     return {
 #         "_dir": _py_dir,
 #         "_bash_env": {},
@@ -527,7 +527,7 @@ def make_temp_dir(prefix: str = "gage-test-"):
 # #     init.init_guild_dir(guild_dir)
 # #     return guild_dir
 
-FindIgnore = Union[str, List[str]]
+FindIgnore = str | list[str]
 
 
 def find(
@@ -555,7 +555,7 @@ def find(
                 print(path)
 
 
-def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
+def _filter_ignored(paths: list[str], ignore: str | list[str]):
     if isinstance(ignore, str):
         ignore = [ignore]
     return [
@@ -563,7 +563,7 @@ def _filter_ignored(paths: List[str], ignore: Union[str, List[str]]):
     ]
 
 
-def _standardize_paths(paths: List[str]):
+def _standardize_paths(paths: list[str]):
     return [util.standardize_path(path) for path in paths]
 
 
@@ -597,7 +597,7 @@ def cat(*parts: str):
 # _py_dir = dir
 
 
-# def dir(path: str = ".", ignore: Optional[List[str]] = None):
+# def dir(path: str = ".", ignore: Optional[list[str]] = None):
 #     return sorted(
 #         [
 #             name
@@ -624,9 +624,9 @@ class SysPath:
 
     def __init__(
         self,
-        path: Optional[List[str]] = None,
-        prepend: Optional[List[str]] = None,
-        append: Optional[List[str]] = None,
+        path: Optional[list[str]] = None,
+        prepend: Optional[list[str]] = None,
+        append: Optional[list[str]] = None,
     ):
         path = path if path is not None else sys.path
         if prepend:
@@ -716,7 +716,7 @@ def normlf(s: str):
     return s.replace("\r", "")
 
 
-# def _printl(l: List[Any]):
+# def _printl(l: list[Any]):
 #     for x in l:
 #         print(x)
 
@@ -731,7 +731,7 @@ def normlf(s: str):
 #     return _run_cmd(*args, _capture=True, **kw)
 
 
-Env = Dict[str, str]
+Env = dict[str, str]
 
 
 def quiet(cmd: str, **kw: Any):
@@ -741,7 +741,7 @@ def quiet(cmd: str, **kw: Any):
 def run(
     cmd: str,
     quiet: bool = False,
-    ignore: Optional[Union[str, List[str]]] = None,
+    ignore: str | list[str] | None = None,
     timeout: int = 3600,
     cwd: Optional[str] = None,
     env: Optional[Env] = None,
@@ -779,7 +779,7 @@ def run(
     return None
 
 
-def _apply_venv_bin_path(env: Dict[str, str]):
+def _apply_venv_bin_path(env: dict[str, str]):
     python_bin_dir = os.path.dirname(sys.executable)
     path = env.get("PATH") or ""
     if python_bin_dir not in path:
@@ -854,7 +854,7 @@ class _kill_after:
         self._timer.cancel()
 
 
-def _strip_lines(out: str, patterns: Union[str, List[str]]):
+def _strip_lines(out: str, patterns: str | list[str]):
     if isinstance(patterns, str):
         patterns = [patterns]
     stripped_lines = [
@@ -1012,7 +1012,7 @@ def set_var_home(path: str):
 
 
 # class _Ignore(util.StdoutCapture):
-#     def __init__(self, ignore_patterns: List[str]):
+#     def __init__(self, ignore_patterns: list[str]):
 #         self.ignore_patterns = _compile_ignore_patterns(ignore_patterns)
 
 #     def __exit__(self, *args: Any):
@@ -1020,19 +1020,19 @@ def set_var_home(path: str):
 #         sys.stdout.write(_strip_ignored_lines(self._captured, self.ignore_patterns))
 
 
-# def _compile_ignore_patterns(patterns: List[str]):
+# def _compile_ignore_patterns(patterns: list[str]):
 #     if not isinstance(patterns, list):
 #         patterns = [patterns]
 #     return [re.compile(p) for p in patterns]
 
 
-# def _strip_ignored_lines(captured: List[str], ignore_patterns: List[Pattern[str]]):
+# def _strip_ignored_lines(captured: list[str], ignore_patterns: list[Pattern[str]]):
 #     lines = "".join(captured).split("\n")
 #     filtered = [line for line in lines if not _capture_ignored(line, ignore_patterns)]
 #     return "\n".join(filtered)
 
 
-# def _capture_ignored(s: str, ignore_patterns: List[Pattern[str]]):
+# def _capture_ignored(s: str, ignore_patterns: list[Pattern[str]]):
 #     return any(p.search(s) for p in ignore_patterns)
 
 

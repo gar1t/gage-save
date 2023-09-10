@@ -32,19 +32,19 @@ class GitNotInstalled(Exception):
     pass
 
 
-_Arg = Union[str, Callable[[], str]]
+_Arg = str | Callable[[], str]
 
 
 class Scheme:
     def __init__(
         self,
         name: str,
-        commit_cmd: List[_Arg],
+        commit_cmd: list[_Arg],
         commit_pattern: Pattern[str],
-        commit_ok_errors: List[int],
-        status_cmd: List[_Arg],
+        commit_ok_errors: list[int],
+        status_cmd: list[_Arg],
         status_pattern: Pattern[str],
-        status_ok_errors: List[int],
+        status_ok_errors: list[int],
     ):
         self.name = name
         self.commit_cmd = commit_cmd
@@ -162,9 +162,9 @@ def _resolve_arg(val: _Arg):
 
 def _apply_scheme(
     repo_dir: str,
-    cmd_template: List[_Arg],
+    cmd_template: list[_Arg],
     pattern: Pattern[str],
-    ok_errors: List[int],
+    ok_errors: list[int],
 ):
     """Returns status str for scheme if status cmd succeeds.
 
@@ -301,7 +301,7 @@ def project_select_rules(project_dir: str):
     return git_project_select_rules(project_dir)
 
 
-def git_project_select_rules(project_dir: str) -> List[FileSelectRule]:
+def git_project_select_rules(project_dir: str) -> list[FileSelectRule]:
     git_ignored = _git_ls_ignored(project_dir, extended_patterns_file=".guildignore")
     ignored_dirs = _dirs_for_git_ignored(git_ignored, project_dir)
     return [
@@ -392,7 +392,7 @@ def _git_ls_ignored_cmd(extended_patterns_file: str, directory_flag: bool):
 
     If `directory_flag` is True, includes `--directory` option.
     """
-    cmd: List[str] = [_git_exe.read(), "ls-files", "-ioc", "--exclude-standard"]
+    cmd: list[str] = [_git_exe.read(), "ls-files", "-ioc", "--exclude-standard"]
     if directory_flag:
         cmd.append("--directory")
     if extended_patterns_file:
@@ -408,7 +408,7 @@ def _exclude_args_for_patterns_file(patterns_file: str):
     ]
 
 
-def _exclude_patterns_file_entries(src: str) -> List[str]:
+def _exclude_patterns_file_entries(src: str) -> list[str]:
     try:
         f = open(src)
     except FileNotFoundError:
@@ -419,7 +419,7 @@ def _exclude_patterns_file_entries(src: str) -> List[str]:
         return [line for line in lines if line and not line.startswith("#")]
 
 
-def _dirs_for_git_ignored(ignored: List[str], root_dir: str):
+def _dirs_for_git_ignored(ignored: list[str], root_dir: str):
     return [
         _strip_trailing_slash(path)
         for path in ignored
@@ -439,7 +439,7 @@ class _GitignoreSelectRule(FileSelectRule):
     ignored files are not selected.
     """
 
-    def __init__(self, ignored: List[str]):
+    def __init__(self, ignored: list[str]):
         super().__init__(True, [])
         self.ignored = set(_normalize_paths(ignored))
 
@@ -457,14 +457,14 @@ class _GitignoreSelectRule(FileSelectRule):
         return None, None
 
 
-def _normalize_paths(paths: List[str]):
+def _normalize_paths(paths: list[str]):
     return [os.path.normpath(path) for path in paths]
 
 
 class GitCheckResult:
     def __init__(
         self,
-        git_version: Tuple[int, int, int],
+        git_version: tuple[int, int, int],
         git_exe: str,
         out: str,
         error: Optional[str] = None,
@@ -559,4 +559,4 @@ def git_version():
     else:
         m = re.search(r"([0-9]+)\.([0-9]+)\.([0-9]+)", out)
         assert m and m.lastindex == 3, out
-        return cast(Tuple[int, int, int], tuple(int(x) for x in m.groups()))
+        return cast(tuple[int, int, int], tuple(int(x) for x in m.groups()))

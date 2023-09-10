@@ -15,15 +15,7 @@ from .types import GageFile
 __schema: Optional[jschon.JSONSchema] = None
 
 
-JSONCompatible = Union[
-    None,
-    bool,
-    int,
-    float,
-    str,
-    Sequence[Any],
-    Mapping[str, Any],
-]
+JSONCompatible = None | bool | int | float | str | Sequence[Any] | Mapping[str, Any]
 
 
 class ValidationError(Exception):

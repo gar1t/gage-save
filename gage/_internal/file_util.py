@@ -16,9 +16,9 @@ from . import util
 
 log = logging.getLogger()
 
-FileSelectRuleType = Union[Literal["text"], Literal["binary"], Literal["dir"]]
+FileSelectRuleType = Literal["text", "binary", "dir"]
 
-_TestFunc = Callable[..., Union[bool, None]]
+_TestFunc = Callable[..., bool | None]
 
 
 class FileSelectTest:
@@ -31,14 +31,14 @@ class FileSelectTest:
         return self.test_f(*self.test_args)
 
 
-FileSelectTestResult = Tuple[Optional[bool], Optional[FileSelectTest]]
+FileSelectTestResult = tuple[Optional[bool], Optional[FileSelectTest]]
 
 
 class FileSelectRule:
     def __init__(
         self,
         result: bool,
-        patterns: List[str],
+        patterns: list[str],
         type: Optional[FileSelectRuleType] = None,
         regex: bool = False,  # treat patterns as regex otherwise globs
         sentinel: Optional[str] = None,
@@ -85,13 +85,13 @@ class FileSelectRule:
             parts.append(f"max match {self.max_matches}")
         return ", ".join(parts)
 
-    def _patterns_match_f(self, patterns: List[str], regex: bool):
+    def _patterns_match_f(self, patterns: list[str], regex: bool):
         if regex:
             return self._regex_match_f(patterns)
         return self._fnmatch_f(patterns)
 
     @staticmethod
-    def _regex_match_f(patterns: List[str]):
+    def _regex_match_f(patterns: list[str]):
         compiled = [re.compile(p) for p in patterns]
 
         def f(path: str):
@@ -100,7 +100,7 @@ class FileSelectRule:
         return f
 
     @staticmethod
-    def _fnmatch_f(patterns: List[str]):
+    def _fnmatch_f(patterns: list[str]):
         def f(path: str):
             return any((_fnmatch(path, p) for p in patterns))
 
@@ -186,11 +186,11 @@ class FileSelectRule:
         return False
 
 
-FileSelectResults = List[Tuple[FileSelectTestResult, FileSelectRule]]
+FileSelectResults = list[tuple[FileSelectTestResult, FileSelectRule]]
 
 
 class FileSelect:
-    def __init__(self, root: Optional[str], rules: List[FileSelectRule]):
+    def __init__(self, root: Optional[str], rules: list[FileSelectRule]):
         self.root = root
         self.rules = rules
         self._disabled = None
@@ -221,7 +221,7 @@ class FileSelect:
 
     def select_file(
         self, src_root: str, relpath: str
-    ) -> Tuple[bool, FileSelectResults]:
+    ) -> tuple[bool, FileSelectResults]:
         """Apply rules to file located under src_root with relpath.
 
         All rules are applied to the file. The last rule to apply
@@ -242,8 +242,8 @@ class FileSelect:
         result, _test = reduce_file_select_results(test_results)
         return result is True, test_results
 
-    def prune_dirs(self, src_root: str, relroot: str, dirs: List[str]):
-        pruned: List[str] = []
+    def prune_dirs(self, src_root: str, relroot: str, dirs: list[str]):
+        pruned: list[str] = []
         for name in sorted(dirs):
             last_rule_result = None
             relpath = os.path.join(relroot, name)
@@ -288,7 +288,7 @@ def _quote_pattern(s: str):
     return util.shlex_quote(s) if " " in s else s
 
 
-def _native_paths(patterns: List[str]):
+def _native_paths(patterns: list[str]):
     return [p.replace("/", os.path.sep) for p in patterns]
 
 
@@ -307,11 +307,11 @@ def _strip_leading_path_sep(pattern: str):
     return pattern
 
 
-def include(patterns: List[str], **kw: Any):
+def include(patterns: list[str], **kw: Any):
     return FileSelectRule(True, patterns, **kw)
 
 
-def exclude(patterns: List[str], **kw: Any):
+def exclude(patterns: list[str], **kw: Any):
     return FileSelectRule(False, patterns, **kw)
 
 
@@ -355,7 +355,7 @@ _CopyHandlerType = Type[FileCopyHandler]
 def copyfiles(
     src: str,
     dest: str,
-    files: List[str],
+    files: list[str],
     handler_cls: Optional[_CopyHandlerType] = None,
 ):
     # Opportunistic use of FileCopyHandler to copy files. `unused_xxx`
@@ -371,7 +371,7 @@ def copytree(
     select: FileSelect,
     root_start: Optional[str] = None,
     followlinks: bool = True,
-    ignore: Optional[List[str]] = None,
+    ignore: Optional[list[str]] = None,
     handler_cls: Optional[_CopyHandlerType] = None,
 ):
     """Copies files to dest for a FileSelect.
@@ -409,7 +409,7 @@ def _copytree_impl(
     src: str,
     select: FileSelect,
     followlinks: bool,
-    ignore: List[str],
+    ignore: list[str],
     copy_handler: FileCopyHandler,
 ):
     if select.disabled:
@@ -430,13 +430,13 @@ def _copytree_impl(
                 copy_handler.ignore(relpath, results)
 
 
-def _select_file_to_copy(src: str, relpath: str, select: FileSelect, ignore: List[str]):
+def _select_file_to_copy(src: str, relpath: str, select: FileSelect, ignore: list[str]):
     if relpath in ignore:
         return _ignored_path_select_result(relpath)
     return select.select_file(src, relpath)
 
 
-def _ignored_path_select_result(path: str) -> Tuple[bool, FileSelectResults]:
+def _ignored_path_select_result(path: str) -> tuple[bool, FileSelectResults]:
     """Proxies a select result.
 
     Returns a tuple of select and a select results. Select is false because
@@ -486,7 +486,7 @@ def find(
     includedirs: bool = False,
     unsorted: bool = False,
 ):
-    paths: List[str] = []
+    paths: list[str] = []
 
     def relpath(path: str, name: str):
         return os.path.relpath(os.path.join(path, name), root)
@@ -549,7 +549,7 @@ def files_differ(path1: str, path2: str):
     return False
 
 
-def files_digest(paths: List[str], root_dir: str):
+def files_digest(paths: list[str], root_dir: str):
     md5 = hashlib.md5()
     for path in paths:
         normpath = _path_for_digest(path)

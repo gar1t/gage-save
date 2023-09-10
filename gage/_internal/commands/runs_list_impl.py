@@ -11,7 +11,7 @@ from . import impl_support
 
 
 def filtered_runs(args: Any):
-    return cast(List[Run], [])
+    return cast(list[Run], [])
 
 
 def list_runs(args: Any):

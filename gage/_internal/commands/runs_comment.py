@@ -30,7 +30,7 @@ def comment_params(fn: Callable[..., Any]):
             runs_support.runs_arg,
             click.Option(
                 ("-l", "--list"),
-                help="List comments for specified runs.",
+                help="list comments for specified runs.",
                 is_flag=True,
             ),
             click.Option(

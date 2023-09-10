@@ -52,7 +52,7 @@ def _handle_click_exception(e: click.exceptions.ClickException):
     _print_error_and_exit(msg, e.exit_code)
 
 
-def _print_error_and_exit(msg: Union[str, None], exit_status: int):
+def _print_error_and_exit(msg: str | None, exit_status: int):
     if msg:
         click.echo(f"gage: {msg}", err=True)
     sys.exit(exit_status)
@@ -63,11 +63,11 @@ def handle_system_exit(e: SystemExit):
     _print_error_and_exit(msg, code)
 
 
-def system_exit_params(e: SystemExit) -> Tuple[Union[str, None], int]:
-    msg: Union[str, None]
+def system_exit_params(e: SystemExit) -> tuple[str | None, int]:
+    msg: str | None
     code: int
     if isinstance(e.code, tuple) and len(e.code) == 2:
-        msg, code = cast(Tuple[str, int], e.code)
+        msg, code = cast(tuple[str, int], e.code)
     elif isinstance(e.code, int):
         msg, code = None, e.code
     else:

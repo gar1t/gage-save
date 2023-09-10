@@ -8,7 +8,7 @@ import click
 
 from .. import click_util
 
-TOPICS: Dict[str, Tuple[str, str]] = {
+TOPICS: dict[str, tuple[str, str]] = {
     "filters": (
         "Help with run filter options.",
         """## gage ML Filter Options

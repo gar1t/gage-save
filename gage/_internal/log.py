@@ -74,7 +74,7 @@ class ConsoleLogHandler(logging.StreamHandler):
         "INFO": "%(message)s",
     }
 
-    def __init__(self, formats: Optional[Dict[str, str]] = None):
+    def __init__(self, formats: Optional[dict[str, str]] = None):
         super().__init__()
         formats = formats or self.DEFAULT_FORMATS
         self._formatters = {level: Formatter(fmt) for level, fmt in formats.items()}
@@ -86,7 +86,7 @@ class ConsoleLogHandler(logging.StreamHandler):
         return super().format(record)
 
 
-def init_logging(level: Optional[int] = None, formats: Optional[Dict[str, str]] = None):
+def init_logging(level: Optional[int] = None, formats: Optional[dict[str, str]] = None):
     level = _log_level_for_arg(level)
     console_handler = {
         "class": "gage._internal.log.ConsoleLogHandler",
@@ -112,7 +112,7 @@ def _log_level_for_arg(arg: Optional[int]):
         return logging.INFO
 
 
-def current_settings() -> Dict[str, Any]:
+def current_settings() -> dict[str, Any]:
     return __last_init_kw
 
 

@@ -50,7 +50,7 @@ def runs_list_options(fn: Callable[..., Any]):
 @click_util.use_args
 @click_util.render_doc
 def list_runs(ctx: click.Context, args: Any):
-    """List runs.
+    """list runs.
 
     Run lists may be filtered using a variety of options. See below for details.
 

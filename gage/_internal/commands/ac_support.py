@@ -27,10 +27,10 @@ _PathFilter = Callable[[Path], bool]
 
 def _list_dir(
     dir: str,
-    filters: Optional[List[_PathFilter]] = None,
-    ext: Optional[List[str]] = None,
+    filters: Optional[list[_PathFilter]] = None,
+    ext: Optional[list[str]] = None,
     incomplete: str = "",
-) -> List[str]:
+) -> list[str]:
     """Python based directory listing for completions.
 
     Returns a list of paths for `dir` to include in completion results.
@@ -70,7 +70,7 @@ def _list_dir(
     return _sort_list_dir_result(results)
 
 
-def _normalize_file_extensions(exts: Optional[List[str]]):
+def _normalize_file_extensions(exts: Optional[list[str]]):
     """Normalizes a list of extensions for use in filtering.
 
     Each extension is returned from `exts` as lower-case and with a
@@ -85,8 +85,8 @@ def _split_path_incomplete(incomplete: str):
 
 def _filter_path(
     path: Path,
-    filters: Optional[List[_PathFilter]],
-    normlized_extensions: List[str],
+    filters: Optional[list[_PathFilter]],
+    normlized_extensions: list[str],
     incomplete: str,
 ):
     if filters and not _apply_path_filters(filters, path):
@@ -100,7 +100,7 @@ def _filter_path(
     return True
 
 
-def _apply_path_filters(filters: List[_PathFilter], path: Path):
+def _apply_path_filters(filters: list[_PathFilter], path: Path):
     return all(f(path) for f in filters)
 
 
@@ -140,7 +140,7 @@ def _list_dir_sort_key(path: str):
     return (1, path) if path[-1:] == os.path.sep else (0, path)
 
 
-def ac_filename(ext: List[str]):
+def ac_filename(ext: list[str]):
     def f(ctx: click.Context, param: click.Parameter, incomplete: str):
         if active_shell_supports_directives():
             return _compgen_filenames("file", ext)
@@ -154,26 +154,26 @@ def ac_filename(ext: List[str]):
     return f
 
 
-def _compgen_filenames(type: str, ext: List[str]):
+def _compgen_filenames(type: str, ext: list[str]):
     if not ext:
         return [f"!!{type}:*"]
     return [f"!!{type}:*.@({'|'.join(ext)})"]
 
 
-# def ac_no_colon_wordbreak(values: List[str], incomplete: str):
+# def ac_no_colon_wordbreak(values: list[str], incomplete: str):
 #     values = _values_for_incomplete(incomplete, values)
 #     if active_shell_supports_directives():
 #         return ["!!no-colon-wordbreak"] + values
 #     return values
 
 
-# def _values_for_incomplete(incomplete: str, values: List[str]):
+# def _values_for_incomplete(incomplete: str, values: list[str]):
 #     if not incomplete:
 #         return values
 #     return [s for s in values if s.startswith(incomplete)]
 
 
-# def ac_nospace(values: List[str], incomplete: str):
+# def ac_nospace(values: list[str], incomplete: str):
 #     values = _values_for_incomplete(incomplete, values)
 #     if _active_shell_supports_nospace():
 #         return ["!!nospace"] + values
@@ -187,7 +187,7 @@ def _compgen_filenames(type: str, ext: List[str]):
 #     return active_shell_supports_directives() or _active_shell() == "zsh"
 
 
-# def ac_batchfile(ext: List[str], incomplete: str):
+# def ac_batchfile(ext: list[str], incomplete: str):
 #     if active_shell_supports_directives():
 #         return _compgen_filenames("batchfile", ext)
 #     batchfile_paths = _list_dir(
@@ -291,7 +291,7 @@ def _compgen_filenames(type: str, ext: List[str]):
 #         return None
 
 
-# def ac_assignments(key: str, values: List[str], value_incomplete: str):
+# def ac_assignments(key: str, values: list[str], value_incomplete: str):
 #     values = _values_for_incomplete(value_incomplete, values)
 #     if not _active_shell_requires_full_assign():
 #         return values
@@ -302,7 +302,7 @@ def _compgen_filenames(type: str, ext: List[str]):
 #     return _active_shell() != "bash"
 
 
-# def quote(l: List[str]):
+# def quote(l: list[str]):
 #     import shlex
 
 #     return [shlex.quote(s) for s in l]

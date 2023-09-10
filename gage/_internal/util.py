@@ -40,7 +40,7 @@ class TryFailed(RuntimeError):
     """Raise to indicate an attempt in try_apply failed."""
 
 
-def find_apply(funs: List[Callable[..., Any]], *args: Any, **kw: Any):
+def find_apply(funs: list[Callable[..., Any]], *args: Any, **kw: Any):
     for f in funs:
         result = f(*args)
         if result is not None:
@@ -64,14 +64,14 @@ def any_apply(funs: Iterable[Callable[..., Any]], *args: Any):
     return False
 
 
-def all_apply(funs: List[Callable[..., Any]], *args: Any):
+def all_apply(funs: list[Callable[..., Any]], *args: Any):
     for f in funs:
         if not f(*args):
             return False
     return True
 
 
-def pop_find(l: List[Any], f: Callable[[Any], Any], default: Any = None):
+def pop_find(l: list[Any], f: Callable[[Any], Any], default: Any = None):
     popped = default
     for x in list(l):
         if f(x):
@@ -107,7 +107,7 @@ _ReadApp = Callable[[str], Any]
 def try_read(
     path: str,
     default: Any = None,
-    apply: Union[_ReadApp, List[_ReadApp], None] = None,
+    apply: _ReadApp | list[_ReadApp] | None = None,
 ):
     try:
         f = open(path, "r")
@@ -293,7 +293,7 @@ def safe_os_environ():
     }
 
 
-def match_filters(filters: List[str], vals: List[str], match_any: bool = False):
+def match_filters(filters: list[str], vals: list[str], match_any: bool = False):
     test_fun = any if match_any else all
     vals_lower = [val.lower() for val in vals]
     filters_lower = [f.lower() for f in filters]
@@ -305,8 +305,8 @@ def split_description(s: str):
     return lines[0], _format_details(lines[1:])
 
 
-def _format_details(details: List[str]):
-    lines: List[str] = []
+def _format_details(details: list[str]):
+    lines: list[str] = []
     for i, line in enumerate(details):
         if i > 0:
             lines.append("")
@@ -464,9 +464,9 @@ class LogCapture(logging.Filter):
         echo_to_stdout: bool = False,
         strip_ansi_format: bool = True,
         log_level: Optional[int] = None,
-        other_loggers: Optional[List[logging.Logger]] = None,
+        other_loggers: Optional[list[logging.Logger]] = None,
     ):
-        self._records: List[logging.LogRecord] = []
+        self._records: list[logging.LogRecord] = []
         self._use_root_handler = use_root_handler
         self._echo_to_stdout = echo_to_stdout
         self._strip_ansi_format = strip_ansi_format
@@ -554,18 +554,18 @@ def utcformat_timestamp(ts: float, fmt: Optional[str] = None):
 _raise_error_marker = object()
 
 
-def resolve_refs(val: Any, kv: Dict[str, Any], undefined: Any = _raise_error_marker):
+def resolve_refs(val: Any, kv: dict[str, Any], undefined: Any = _raise_error_marker):
     return _resolve_refs_recurse(val, kv, undefined, [])
 
 
-def resolve_all_refs(kv: Dict[str, Any], undefined: Any = _raise_error_marker):
+def resolve_all_refs(kv: dict[str, Any], undefined: Any = _raise_error_marker):
     return {
         name: _resolve_refs_recurse(kv[name], kv, undefined, []) for name in sorted(kv)
     }
 
 
 def _resolve_refs_recurse(
-    val: Any, kv: Dict[str, Any], undefined: Any, stack: List[str]
+    val: Any, kv: dict[str, Any], undefined: Any, stack: list[str]
 ) -> str:
     if not isinstance(val, str):
         return val
@@ -584,7 +584,7 @@ def _resolved_part_str(part: Any):
     return yaml_util.encode_yaml(part)
 
 
-def resolve_rel_paths(kv: Dict[str, Any]):
+def resolve_rel_paths(kv: dict[str, Any]):
     return {name: _resolve_rel_path(kv[name]) for name in kv}
 
 
@@ -609,7 +609,7 @@ class UndefinedReferenceError(ReferenceResolutionError):
 
 
 def _iter_resolved_ref_parts(
-    parts: List[str], kv: Dict[str, Any], undefined: Any, stack: List[str]
+    parts: list[str], kv: dict[str, Any], undefined: Any, stack: list[str]
 ):
     for part in parts:
         if part.startswith("${") and part.endswith("}"):
@@ -714,7 +714,7 @@ _text_ext = {
     ".r",
     ".sh",
     ".ts",
-    ".tsx" ".txt",
+    ".tsx.txt",
     ".yaml",
     ".yml",
     "js",
@@ -892,11 +892,11 @@ def safe_mtime(path: str):
         return None
 
 
-def safe_list_remove(x: Any, l: List[Any]):
+def safe_list_remove(x: Any, l: list[Any]):
     safe_list_remove_all([x], l)
 
 
-def safe_list_remove_all(xs: List[Any], l: List[Any]):
+def safe_list_remove_all(xs: list[Any], l: list[Any]):
     for x in xs:
         try:
             l.remove(x)
@@ -942,7 +942,7 @@ def format_user_dir(s: str):
     return s
 
 
-def apply_env(target: Dict[str, str], source: Dict[str, str], names: List[str]):
+def apply_env(target: dict[str, str], source: dict[str, str], names: list[str]):
     for name in names:
         try:
             target[name] = source[name]
@@ -998,7 +998,7 @@ def get_env(name: str, type: Callable[[Any], Any], default: Any = None):
             return default
 
 
-def del_env(names: List[str]):
+def del_env(names: list[str]):
     for name in names:
         try:
             del os.environ[name]
@@ -1028,7 +1028,7 @@ def copytree(src: str, dest: str, preserve_links: bool = True):
 # class CopyFilter:
 #     """Interface of `copy_filter` used with `select_copytree()`."""
 
-#     def delete_excluded_dirs(self, parent: str, dirs: List[str]) -> None:
+#     def delete_excluded_dirs(self, parent: str, dirs: list[str]) -> None:
 #         """Delete excluded dirs prior to copy tree traversal.
 
 #         Use as optimization to avoid traversing into directories that
@@ -1184,7 +1184,7 @@ def shlex_quote(s: str):
     return _simplify_shlex_quote(shlex.quote(s or ""))
 
 
-def shlex_join(args: List[str]):
+def shlex_join(args: list[str]):
     return " ".join([shlex_quote(arg) for arg in args])
 
 
@@ -1256,7 +1256,7 @@ def _platform_base_info():
     }
 
 
-def _platform_psutil_info() -> Dict[str, Any]:
+def _platform_psutil_info() -> dict[str, Any]:
     try:
         import psutil
     except ImportError:
@@ -1275,19 +1275,19 @@ def gage_user_agent():
     return f"python-gage/{gage.__version__} ({system}; {machine}; {release})"
 
 
-def apply_nested_config(kv: Dict[str, Any], config: Dict[str, Any]):
+def apply_nested_config(kv: dict[str, Any], config: dict[str, Any]):
     for name, val in kv.items():
         _apply_nested_config(name, val, config)
 
 
-def _apply_nested_config(name: str, val: Any, config: Dict[str, Any]):
+def _apply_nested_config(name: str, val: Any, config: dict[str, Any]):
     name, parent = _nested_config_dest(name, config)
     parent[name] = val
 
 
 def _nested_config_dest(
-    name: str, config: Dict[str, Any], nested_name_prefix: str = ""
-) -> Tuple[str, Dict[str, Any]]:
+    name: str, config: dict[str, Any], nested_name_prefix: str = ""
+) -> tuple[str, dict[str, Any]]:
     """Returns a tuple of name and dict as dest for a named value.
 
     `name` may contain dots, which are used to locate the destination
@@ -1329,7 +1329,7 @@ def _iter_dot_name_trials(name: str):
         name = parts[0]
 
 
-def _ensure_nested_dest(name: str, data: Dict[str, Any]):
+def _ensure_nested_dest(name: str, data: dict[str, Any]):
     name_parts = name.split(".")
     for i in range(len(name_parts) - 1):
         data = data.setdefault(name_parts[i], {})
@@ -1337,7 +1337,7 @@ def _ensure_nested_dest(name: str, data: Dict[str, Any]):
     return name_parts[-1], data
 
 
-def encode_nested_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def encode_nested_config(config: dict[str, Any]) -> dict[str, Any]:
     encoded = {}
     for name, val in config.items():
         _apply_nested_encoded(name, val, [], encoded)
@@ -1345,7 +1345,7 @@ def encode_nested_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _apply_nested_encoded(
-    name: str, val: Any, parents: List[str], encoded: Dict[str, Any]
+    name: str, val: Any, parents: list[str], encoded: dict[str, Any]
 ):
     key_path = parents + [name]
     if isinstance(val, dict) and val:
@@ -1361,7 +1361,7 @@ def short_digest(s: str):
     return s[:8]
 
 
-def safe_listdir(path: str) -> List[str]:
+def safe_listdir(path: str) -> list[str]:
     try:
         return os.listdir(path)
     except OSError:
@@ -1410,7 +1410,7 @@ def shorten_path(
     return shortened
 
 
-def _shorten_path_split_path(path: str, sep: str) -> List[str]:
+def _shorten_path_split_path(path: str, sep: str) -> list[str]:
     """Splits path into parts.
 
     Leading and repeated '/' chars are prepended to the
@@ -1443,7 +1443,7 @@ class HTTPConnectionError(Exception):
     pass
 
 
-def http_post(url: str, data: Dict[str, Any], timeout: Optional[float] = None):
+def http_post(url: str, data: dict[str, Any], timeout: Optional[float] = None):
     headers = {
         "User-Agent": gage_user_agent(),
         "Content-type": "application/x-www-form-urlencoded",
@@ -1457,8 +1457,8 @@ def http_get(url: str, timeout: Optional[float] = None):
 
 def _http_request(
     url: str,
-    headers: Optional[Dict[str, str]] = None,
-    data: Optional[Dict[str, str]] = None,
+    headers: Optional[dict[str, str]] = None,
+    data: Optional[dict[str, str]] = None,
     method: str = "GET",
     timeout: Optional[float] = None,
 ):
@@ -1500,7 +1500,7 @@ class StdIOContextManager:
         pass
 
 
-def check_env(env: Dict[str, Any]):
+def check_env(env: dict[str, Any]):
     for name, val in env.items():
         if not isinstance(name, str):
             raise ValueError(f"non-string env name {name!r}")
@@ -1509,7 +1509,7 @@ def check_env(env: Dict[str, Any]):
 
 
 class SysArgv:
-    def __init__(self, args: List[str]):
+    def __init__(self, args: list[str]):
         self._args = args
         self._save = None
 
@@ -1525,7 +1525,7 @@ class SysArgv:
 
 
 class Env:
-    def __init__(self, vals: Dict[str, str], replace: bool = False):
+    def __init__(self, vals: dict[str, str], replace: bool = False):
         self._vals = vals
         self._replace = replace
         self._revert_ops = []
@@ -1689,11 +1689,11 @@ def test_windows_symlinks():
         os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
 
 
-PropertyCacheProp = Tuple[str, Any, Callable[..., Any], float]
+PropertyCacheProp = tuple[str, Any, Callable[..., Any], float]
 
 
 class PropertyCache:
-    def __init__(self, properties: List[PropertyCacheProp]):
+    def __init__(self, properties: list[PropertyCacheProp]):
         self._vals = {
             name: default for name, default, _callback, _timeout in properties
         }
@@ -1867,7 +1867,7 @@ def split_lines(s: str):
     return [line for line in re.split(r"\r?\n", s) if line]
 
 
-def dict_to_camel_case(d: Dict[str, Any]):
+def dict_to_camel_case(d: dict[str, Any]):
     return {to_camel_case(k): v for k, v in d.items()}
 
 
@@ -1893,7 +1893,7 @@ def tokenize_snake_case_for_camel_case(s: str):
     return under_split
 
 
-def flatten(l: List[Any]):
+def flatten(l: list[Any]):
     return [item for sublist in l for item in sublist]
 
 
@@ -1907,7 +1907,7 @@ def try_env(name: str, cvt: Optional[Callable[[str], Any]] = None):
         return None
 
 
-def decode_cfg_val(s: str) -> Union[int, float, bool, str]:
+def decode_cfg_val(s: str) -> int | float | bool | str:
     for conv in [int, float, _cfg_bool]:
         try:
             return conv(s)

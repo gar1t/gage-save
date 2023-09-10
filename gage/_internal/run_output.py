@@ -10,7 +10,7 @@ import errno
 import struct
 
 
-RunOutput = Tuple[float, int, str]
+RunOutput = tuple[float, int, str]
 
 
 class RunOutputReader:
@@ -20,7 +20,7 @@ class RunOutputReader:
         self._output: Optional[BinaryIO] = None
         self._index: Optional[BinaryIO] = None
 
-    def read(self, start: int = 0, end: Optional[int] = None) -> List[RunOutput]:
+    def read(self, start: int = 0, end: Optional[int] = None) -> list[RunOutput]:
         """Read run output from start to end.
 
         Both start and end are zero-based indexes to run output lines

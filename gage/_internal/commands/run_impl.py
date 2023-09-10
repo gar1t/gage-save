@@ -52,8 +52,8 @@ def _init_opdef(opspec: Optional[str], args: Any, op: Op):
         opdef = opdef_for_opspec(opspec)
     except OpDefNotFound:
         cli.error(
-            f"no such operation {opspec}\n"  # \
-            "Try 'gage operations' for a list of operations."
+            f"no such operation {opspec}\n"
+            "Try 'gage operations' for a list of operations."  # \
         )
     else:
         op.opdef = opdef

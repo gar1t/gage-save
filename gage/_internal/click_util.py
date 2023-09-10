@@ -35,7 +35,7 @@ CMD_SPLIT_P = re.compile(r", ?")
 #         except ValueError as e:
 #             raise ValueError(f"{s!r} is not a valid number") from e
 
-_ctx_stack: List[click.Context] = []
+_ctx_stack: list[click.Context] = []
 
 
 class Context:
@@ -64,7 +64,7 @@ class Args:
     def __repr__(self):
         return f"<guild.click_util.Args {self.as_kw()}>"
 
-    def as_kw(self) -> Dict[str, Any]:
+    def as_kw(self) -> dict[str, Any]:
         return {name: getattr(self, name) for name in self.__names}
 
     def __setattr__(self, name: str, val: Any):
@@ -98,7 +98,7 @@ def _group_cmd_name(group_command_names: ValuesView[click.Command], default_name
     return default_name
 
 
-_DLItems = Sequence[Tuple[str, str]]
+_DLItems = Sequence[tuple[str, str]]
 
 
 class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
@@ -152,7 +152,7 @@ class ClickBaseHelpFormatter(click.formatting.HelpFormatter):
                 self.write("\n")
 
 
-_HelpFormatSubs = List[Tuple[Pattern[str], Union[str, Callable[[Any], str]]]]
+_HelpFormatSubs = list[tuple[Pattern[str], str | Callable[[Any], str]]]
 
 
 class HelpFormatter(ClickBaseHelpFormatter):
@@ -182,16 +182,18 @@ class HelpFormatter(ClickBaseHelpFormatter):
         super().write_dl(rows, preserve_paragraphs=preserve_paragraphs)
 
 
-_DLDictItems = List[Dict[Union[Literal["term"], Literal["help"]], str]]
+_DLDictItems = list[dict[Literal["term", "help"], str]]
+
+_Finalized = object
 
 
 class JSONHelpFormatter(click.HelpFormatter):
-    _finalized: object = object()
+    _finalized: _Finalized = object()
 
     def __init__(self):
-        self._val: Dict[str, Any] = {"version": gage.__version__}
-        self._help_text: Union[None, List[str], object] = None
-        self._cur_dl: Union[None, _DLDictItems] = None
+        self._val: dict[str, Any] = {"version": gage.__version__}
+        self._help_text: list[str] | _Finalized | None = None
+        self._cur_dl: _DLDictItems | None = None
         self.width = 999999999
 
     def write_usage(self, prog: str, args: str = "", prefix: Optional[str] = None):
@@ -199,7 +201,7 @@ class JSONHelpFormatter(click.HelpFormatter):
 
     def write_paragraph(self):
         if self._help_text is not None and self._help_text is not self._finalized:
-            cast(List[str], self._help_text).append("\n")
+            cast(list[str], self._help_text).append("\n")
 
     @contextlib.contextmanager
     def indentation(self):
@@ -215,13 +217,13 @@ class JSONHelpFormatter(click.HelpFormatter):
 
     def dedent(self):
         if self._help_text is not None and self._help_text is not self._finalized:
-            self._val["help"] = "".join(cast(List[str], self._help_text))
+            self._val["help"] = "".join(cast(list[str], self._help_text))
             self._help_text = self._finalized
 
     def write_text(self, text: str):
         assert self._help_text is not None
         assert self._help_text is not self._finalized
-        cast(List[str], self._help_text).append(text)
+        cast(list[str], self._help_text).append(text)
 
     @contextlib.contextmanager
     def section(self, name: str):
@@ -351,7 +353,7 @@ def render_doc(fn: Callable[..., Any]) -> click.Command:
     return cast(click.Command, fn)
 
 
-def _maybe_render_doc(s: str, vars: Dict[str, Any]):
+def _maybe_render_doc(s: str, vars: dict[str, Any]):
     m = re.match("{{(.+)}}", s)
     if not m:
         return s

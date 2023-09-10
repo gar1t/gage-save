@@ -105,7 +105,7 @@ def _print_guild_info(check: Check):
     _attr("gage_install_location", _safe_apply(check, _gage_install_location))
 
 
-def _attr(name: str, val: Union[int, float, str]):
+def _attr(name: str, val: int | float | str):
     padding = (ATTR_COL_WIDTH - len(name)) * " "
     cli.out(f"{name}:{padding}{val}")
 
@@ -113,7 +113,7 @@ def _attr(name: str, val: Union[int, float, str]):
 def _safe_apply(check: Check, f: Callable[..., Any], *args: Any, **kw: Any):
     """Always return a string for application f(*args, **kw).
 
-    If f(*args, **kw) fails, returns a higlighted error message and
+    If f(*args, **kw) fails, returns a highlighted error message and
     sets error flag on check.
     """
     try:
@@ -158,8 +158,8 @@ def _platform():
 def _notify_newer_version():
     cli.out(
         click.style(
-            "A newer version of Guild AI is available. Run "
-            "'pip install guildai --upgrade' to install it.",
+            "A newer version of Gage ML is available. Run "
+            "'pip install gageml --upgrade' to install it.",
             bold=True,
         ),
         err=True,

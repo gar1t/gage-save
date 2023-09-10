@@ -43,7 +43,7 @@ def runs(ctx: click.Context, **kw: Any):
         )
 
 
-def _params_specified(kw: Dict[str, Any]):
+def _params_specified(kw: dict[str, Any]):
     return any((kw[key] for key in kw))
 
 

@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import annotations
-
 from typing import *
 from typing import BinaryIO
 
@@ -70,25 +68,25 @@ def note_once(msg: str):
         _noted.add(msg)
 
 
-_TableSort = Union[str, List[str]]
+_TableSort = str | list[str]
 
-_TableDataVal = Union[None, int, float, str]
+_TableDataVal = None | int | float | str
 
-_TableDataItem = Dict[str, _TableDataVal]
+_TableDataItem = dict[str, _TableDataVal]
 
-_TableData = List[_TableDataItem]
+_TableData = list[_TableDataItem]
 
-_TableCols = List[str]
+_TableCols = list[str]
 
-_TableFormattedItem = Dict[str, str]
+_TableFormattedItem = dict[str, str]
 
-_TableFormattedData = List[_TableFormattedItem]
+_TableFormattedData = list[_TableFormattedItem]
 
-_TableColInfo = Dict[str, Any]
+_TableColInfo = dict[str, Any]
 
-_TableDetail = List[str]
+_TableDetail = list[str]
 
-_TableDetailCallback = Callable[[Dict[str, Any]], None]
+_TableDetailCallback = Callable[[dict[str, Any]], None]
 
 
 def table(
@@ -126,7 +124,7 @@ def table(
         )
 
 
-def _table_row_sort_key(sort: Union[None, _TableSort]):
+def _table_row_sort_key(sort: _TableSort | None):
     def sort_key(x: _TableDataItem, y: _TableDataItem):
         assert sort
         return _item_cmp(x, y, sort)
@@ -168,7 +166,7 @@ def _coerce_cmp_val(x: _TableDataVal, y: _TableDataVal):
         if y is None:
             return ""
         return type(y)()
-    if type(x) == type(y):  # pylint: disable=unidiomatic-typecheck
+    if type(x) == type(y):
         return x
     if isinstance(x, (int, float)) and isinstance(y, (int, float)):
         return x
@@ -205,12 +203,12 @@ def _table_item_out(
     data_item: _TableDataItem,
     cols: _TableCols,
     col_info: _TableColInfo,
-    detail: Union[_TableDetail, None],
-    detail_cb: Union[_TableDetailCallback, None],
+    detail: _TableDetail | None,
+    detail_cb: _TableDetailCallback | None,
     indent: int,
-    max_col_width: Union[int, None],
+    max_col_width: int | None,
     err: bool,
-    file: Union[BinaryIO, None],
+    file: BinaryIO | None,
     style_kw: Any,
 ):
     indent_padding = " " * indent

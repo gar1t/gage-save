@@ -77,7 +77,7 @@ def run_meta_path(run: Run, *path: str):
     return os.path.join(run_meta_dir(run), *path)
 
 
-def run_attrs(run: Run) -> Dict[str, Any]:
+def run_attrs(run: Run) -> dict[str, Any]:
     attrs_dir = run_meta_path(run, "attrs")
     if not os.path.exists(attrs_dir):
         raise FileNotFoundError(attrs_dir)
@@ -131,13 +131,12 @@ def init_run_meta(
     opref: OpRef,
     opdef: OpDef,
     cmd: OpCmd,
-    user_attrs: Optional[Dict[str, Any]] = None,
-    system_attrs: Optional[Dict[str, Any]] = None,
+    user_attrs: Optional[dict[str, Any]] = None,
+    system_attrs: Optional[dict[str, Any]] = None,
 ):
     if opref.op_name != opdef.name:
         raise ValueError(
-            f"mismatched names in opref ('{opref.op_name}') "
-            f"and opdef ('{opdef.name}')"
+            f"mismatched names in opref ('{opref.op_name}') and opdef ('{opdef.name}')"
         )
     meta_dir = _ensure_run_meta_dir(run)
     _write_schema_file(meta_dir)
@@ -191,7 +190,7 @@ def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
     util.write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
 
 
-def _encode_cmd_args(args: List[str]):
+def _encode_cmd_args(args: list[str]):
     return "".join([arg + "\n" for arg in args])
 
 
@@ -202,19 +201,19 @@ def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
     util.write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
 
 
-def _encode_cmd_env(env: Dict[str, str]):
+def _encode_cmd_env(env: dict[str, str]):
     return "".join([f"{name}={val}\n" for name, val in sorted(env.items())])
 
 
-def _write_user_attrs(attrs: Dict[str, Any], meta_dir: str, log: Logger):
+def _write_user_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
     _gen_write_attrs("user", attrs, meta_dir, log)
 
 
-def _write_system_attrs(attrs: Dict[str, Any], meta_dir: str, log: Logger):
+def _write_system_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
     _gen_write_attrs("sys", attrs, meta_dir, log)
 
 
-def _gen_write_attrs(dir: str, attrs: Dict[str, Any], meta_dir: str, log: Logger):
+def _gen_write_attrs(dir: str, attrs: dict[str, Any], meta_dir: str, log: Logger):
     util.ensure_dir(os.path.join(meta_dir, dir))
     for name in attrs:
         log.info("Writing %s/%s", dir, name)
