@@ -116,6 +116,7 @@
     "subdir",
     "subschema",
     "textorbinary",
+    "tomli",
     "topdown",
     "Traceback",
     "typer",

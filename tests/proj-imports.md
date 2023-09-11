@@ -59,7 +59,7 @@
     gage._internal.commands.runs_support
     gage._internal.commands.runs_tag
     gage._internal.config
-    gage._internal.exit
+    gage._internal.exitcodes
     gage._internal.file_util
     gage._internal.gagefile
     gage._internal.log

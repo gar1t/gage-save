@@ -6,6 +6,7 @@ import os
 
 import rich.box
 import rich.console
+import rich.json
 import rich.style
 import rich.text
 import rich.table
@@ -34,6 +35,9 @@ def err(val: Any, style: str | None = None):
 
 def text(s: str, style: str | rich.style.Style = ""):
     return rich.text.Text(s, style=style)
+
+def json(val: Any):
+    return rich.json.JSON.from_data(val)
 
 
 def label(s: str):

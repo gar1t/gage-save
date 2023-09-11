@@ -2,10 +2,44 @@
 
 ## CLI factor
 
-- Move to typer
-  - Show help on base command rather than an error
-  - Move 'completion' options under `completion` cmd
-- Cleanup ac support
+- Read up on command help formatting
+- Get -H and -C core opts working again
+- Migrate commands to typer - STRIP em down!
+- Drop Click
+
+## Resolve early
+
+- Do tags, label, and comments from the `run` command land in the meta
+  dir or in user? I suspect in meta under `./user` but want to sanity
+  check why.
+
+- Pointer to original project.
+
+- How to identify runs by their project.
+
+- How to re-associate runs with their project? Do we ask users to
+  generate a unique ID for the project?
+
+- Make sure we're using the new uuid formats (with dashes)
+
+
+``` toml
+"$namespace" = "my-project"
+"$project-id" = "24e17ef2-4e6b-49bd-af59-f7ba0ca79349"
+
+[train]
+exec = "python train.py"
+```
+
+``` json
+{
+  "$namespace": "my-project",
+  "$project-id": "24e17ef2-4e6b-49bd-af59-f7ba0ca79349",
+  "train": {
+    "exec": "python train.py"
+  }
+}
+```
 
 ## Run layout
 
@@ -22,7 +56,6 @@
     - Write process exits, delete locks, etc
     - Finalize manifest
     - Mark run files as readonly
-
 
 ## Lifting by `guild check`
 

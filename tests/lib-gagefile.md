@@ -139,3 +139,31 @@ problem for Gage we're living with the behavior.
 
     >>> validate({"test": {"exec": [""]}})
     ok
+
+## Experiments with TOML
+
+    >>> import tomli
+
+    >>> data = tomli.loads("""
+    ... "$project-id" = "50d6fefe-cf66-402d-a507-668f537bed37"
+    ... "$namespace" = "my-project"
+    ... [train]
+    ... exec = "python train.py"
+    ... """)
+
+    >>> data  # +json
+    {
+      "$namespace": "my-project",
+      "$project-id": "50d6fefe-cf66-402d-a507-668f537bed37",
+      "train": {
+        "exec": "python train.py"
+      }
+    }
+
+TODO: To suppose these top level annotations, we need to adjust the
+schema.
+
+    >>> validate(data)
+    Properties ['$project-id', '$namespace'] are invalid
+    The instance must be of type "object"
+    The instance must be of type "object"

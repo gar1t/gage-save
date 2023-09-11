@@ -1,5 +1,23 @@
 # `check` command
 
+Help for `check`:
+
+    >>> run("gage check --help")
+    Usage: gage check [OPTIONS]
+    ⤶
+      Show and validate Gage ML settings.
+    ⤶
+      Use `check` to show Gage ML version, install location, and other configured
+      settings.
+    ⤶
+    Options:
+      --version SPEC  Test Gage version against SPEC.
+      --json          Format check output as JSON.
+      --help          Show this message and exit.
+    <0>
+
+Default output:
+
     >>> run("gage check")  # -space +parse
     gage_version           0.1.0
     gage_install_location  {:path}
@@ -47,9 +65,7 @@ Non matching spec:
     <1>
 
     >>> run("gage check --version ==foobar")  # -space
-    gage: invalid version spec '==foobar': Expected end or semicolon (after name and
+    gage: invalid version spec '==foobar': expected end or semicolon (after name and
     no valid version specifier)
-        fakepkg==foobar
-               ^
     See https://bit.ly/45AerAj for help with version specs.
     <1>
