@@ -123,12 +123,14 @@ class _MarkdownHeading(rich.markdown.Heading):
         options: rich.console.ConsoleOptions,
     ) -> rich.console.RenderResult:
         text = self.text
-        text.justify = "left"
+        text._text = [s.upper() for s in text._text]
         if self.tag == "h1":
-            text.style = "b"
-        if self.tag == "h2":
-            yield rich.text.Text("")
-        yield text
+            text.justify = "center"
+            yield rich.panel.Panel(text)
+        else:
+            if self.tag == "h2":
+                yield Text("")
+            yield text
 
 
 class _TableElement(rich.markdown.TableElement):

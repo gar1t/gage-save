@@ -6,6 +6,7 @@ import json
 import os
 
 import jschon
+import tomli
 import yaml
 
 from .types import GageFile
@@ -62,11 +63,18 @@ def load(filename: str):
 
 def _data_for_file(filename: str):
     ext = os.path.splitext(filename)[1].lower()
+    if ext == ".toml":
+        return _load_toml(filename)
     if ext == ".json":
         return _load_json(filename)
     if ext in (".yaml", ".yml"):
         return _load_yaml(filename)
     raise TypeError(f"unsupported file extension for {filename}")
+
+
+def _load_toml(filename: str):
+    with open(filename, "rb") as f:
+        return tomli.load(f)
 
 
 def _load_json(filename: str):
@@ -85,6 +93,7 @@ def for_dir(path: str):
         os.path.join(path, candidate)
         for candidate in [
             os.path.join(".gage", "settings.json"),
+            "gage.toml",
             "gage.yaml",
             "gage.json",
         ]

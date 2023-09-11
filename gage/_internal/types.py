@@ -50,6 +50,10 @@ class GageFile:
         self._data = data
 
     @property
+    def filename(self):
+        return self._filename
+
+    @property
     def operations(self):
         return {name: OpDef(name, self._data[name]) for name in self._data}
 

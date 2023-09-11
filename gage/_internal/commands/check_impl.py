@@ -8,7 +8,9 @@ import sys
 import gage
 
 from .. import cli
+from .. import gagefile
 from .. import config
+from .. import project_util
 from .. import util
 
 __all__ = ["check"]
@@ -75,9 +77,20 @@ def _core_info_data() -> CheckData:
 def _maybe_verbose_info_data(verbose: bool) -> CheckData:
     if not verbose:
         return []
+    cwd = config.cwd()
+    project_dir = project_util.find_project(cwd)
+    gagefile = _try_gagefile(cwd)
     return [
-        ("command_directory", config.cwd()),
+        ("command_directory", cwd),
+        ("project_directory", project_dir or "<none>"),
+        ("gagefile", gagefile.filename if gagefile  else "<none>"),
     ]
+
+def _try_gagefile(cwd: str):
+    try:
+        return gagefile.for_dir(cwd)
+    except FileNotFoundError:
+        return None
 
 
 def _print_check_info_json(data: CheckData):

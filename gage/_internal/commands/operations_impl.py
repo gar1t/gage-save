@@ -2,21 +2,24 @@
 
 from typing import *
 
+from ..types import GageFile
+
+from .. import cli
 from .. import config
 from .. import gagefile
 
 
 def operations():
-    print("TODO: ops yo")
+    try:
+        gf = gagefile.for_dir(config.cwd())
+    except FileNotFoundError:
+        raise SystemExit("No operations defined for the current project")
+    else:
+        _print_operations(gf)
 
-    # try:
-    #     gf = gagefile.for_dir(config.cwd())
-    # except FileNotFoundError:
-    #     raise SystemExit("No operations defined for the current project")
-    # else:
-    #     data = [
-    #         {"name": name, "desc": opdef.description}
-    #         for name, opdef in sorted(gf.operations.items())
-    #     ]
-    #     assert False, "TODO"
-    #     ##cli.table(data, ["name", "desc"])
+
+def _print_operations(gf: GageFile):
+    table = cli.Table(show_header=False)
+    for name, opdef in sorted(gf.operations.items()):
+        table.add_row(cli.label(name), opdef.description)
+    cli.out(table)

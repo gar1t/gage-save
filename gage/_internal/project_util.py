@@ -16,7 +16,7 @@ PROJECT_MARKERS = [
 ]
 
 
-def find_project(dir: str, stop_dir: Optional[str] = None):
+def find_project(dir: str, stop_dir: str = ""):
     last = None
     while True:
         if _has_project_marker(dir):
