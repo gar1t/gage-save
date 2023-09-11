@@ -4,7 +4,6 @@ from typing import *
 
 import click
 
-from .. import cli
 from .. import click_util
 
 from .runs_archive import archive_runs
@@ -36,7 +35,7 @@ def runs(ctx: click.Context, **kw: Any):
     if not ctx.invoked_subcommand:
         ctx.invoke(list_runs, **kw)
     elif _params_specified(kw):
-        cli.error(
+        raise SystemExit(
             f"options cannot be listed before command ('{ctx.invoked_subcommand}')"
         )
 

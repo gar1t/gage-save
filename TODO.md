@@ -1,6 +1,11 @@
 # Gage To Do
 
-- Replace annotations using latest support from Python 3.11
+## CLI factor
+
+- Move to typer
+  - Show help on base command rather than an error
+  - Move 'completion' options under `completion` cmd
+- Cleanup ac support
 
 ## Run layout
 

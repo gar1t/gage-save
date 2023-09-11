@@ -5,7 +5,6 @@ from typing import *
 import os
 
 from .. import config
-from .. import cli
 
 
 def main(cwd: str | None):
@@ -20,7 +19,7 @@ def _apply_cwd(cwd: str):
 def _validated_dir(path: str):
     path = os.path.expanduser(path)
     if not os.path.exists(path):
-        cli.error(f"directory '{path}' does not exist")
+        raise SystemExit(f"directory '{path}' does not exist")
     if not os.path.isdir(path):
-        cli.error(f"'{path}' is not a directory")
+        raise SystemExit(f"'{path}' is not a directory")
     return path

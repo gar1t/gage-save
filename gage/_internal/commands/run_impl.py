@@ -49,7 +49,7 @@ def _init_opdef(opspec: Optional[str], args: Any, op: Op):
     try:
         opdef = opdef_for_opspec(opspec)
     except OpDefNotFound:
-        cli.error(
+        raise SystemExit(
             f"no such operation {opspec}\n"
             "Try 'gage operations' for a list of operations."  # \
         )
@@ -155,6 +155,7 @@ def _handle_op_error(e: OpError):
 
 
 def _confirm(S: State):
+    assert False, "TODO"
     return cli.confirm(_prompt(S), default=True)
 
 

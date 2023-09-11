@@ -2,7 +2,6 @@
 
 from typing import *
 
-from .. import cli
 from .. import click_util
 
 ArgSpec = str | tuple[str, str]
@@ -12,7 +11,7 @@ def check_incompatible_args(incompatible: list[tuple[ArgSpec, ArgSpec]], args: A
     for val in incompatible:
         arg1_name, opt1, arg2_name, opt2 = _incompatible_arg_items(val)
         if getattr(args, arg1_name, None) and getattr(args, arg2_name):
-            cli.error(
+            raise SystemExit(
                 f"{opt1} and {opt2} cannot both be specified\nTry"
                 f" '{click_util.context().command_path} --help' for more information."
             )

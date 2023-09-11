@@ -2,15 +2,12 @@
 
 from typing import *
 
-import click
 
-
-@click.command()
-def check(**params: Any):
+def check(version: str = ""):
     """Check Gage ML.
 
     Shows version and configuration details.
     """
-    from . import check_impl
+    from .check_impl import check
 
-    check_impl.main(**params)
+    check(version)

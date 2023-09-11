@@ -605,6 +605,11 @@ def _parse_req_for_version_spec(version_spec: str):
     import pkg_resources
 
     version_spec = _maybe_apply_equals(version_spec)
+    if version_spec[:1] not in "=<>":
+        raise ValueError(
+            f"invalid version spec {version_spec!r}: missing comparison "
+            "operator (==, <, >, etc.)"
+        )
     try:
         return pkg_resources.Requirement.parse(f"fakepkg{version_spec}")
     except Exception as e:

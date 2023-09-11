@@ -23,6 +23,7 @@ from . import util
 
 __all__ = [
     "LogCapture",
+    "StderrCapture",
     "SysPath",
     "basename",
     "cat",
@@ -57,6 +58,7 @@ __all__ = [
 # Pass through
 
 LogCapture = util.LogCapture
+StderrCapture = util.StderrCapture
 basename = os.path.basename
 findl = file_util.find
 symlink = os.symlink
@@ -251,7 +253,7 @@ def run(
     _apply_venv_bin_path(proc_env)
     if env:
         proc_env.update(env)
-    proc_env["SYNC_RUN_OUTPUT"] = "1"
+    proc_env["TERM"] = "unknown"
     p = _popen(cmd, proc_env, cwd)
     with _kill_after(p, timeout) as timeout_context:
         try:
