@@ -2,51 +2,53 @@
 
 from typing import *
 
-# from .. import click_util
+from typer import Option
+from typer import Typer
 
-# import click
+from .. import cli
 
-# from ...__init__ import __version__
-
-# from . import ac_support
-
-# from .check import check
-# from .help import help
-# from .operations import operations
-# from .run import run
-# from .runs import runs
+from .check import check
+from .help import help_app
+from .operations import operations
+from .run import run
 
 
-# @click.group(cls=click_util.Group)
-# @click.version_option(
-#     version=__version__,
-#     prog_name="gage",
-#     message="%(prog)s %(version)s",
-# )
-# @click.option(
-#     "-C",
-#     "cwd",
-#     metavar="PATH",
-#     help="Use PATH as current directory for a command.",
-#     default=None,
-#     shell_complete=ac_support.ac_dir(),
-# )
-# def main(**params: Any):
-#     from . import main_impl
+def main(
+    version: Annotated[
+        bool,
+        Option(
+            "--version",
+            help="Print program version and exit.",
+            show_default=False,
+        ),
+    ] = False,
+    cwd: Annotated[
+        str,
+        Option(
+            "-C",
+            help="Change to PATH directory for command.",
+            metavar="PATH",
+        ),
+    ] = "",
+):
+    """Gage ML command line interface."""
 
-#     main_impl.main(**params)
+    from .main_impl import main, Args
+
+    main(Args(version=version, cwd=cwd))
 
 
-# main.add_command(check)
-# main.add_command(help)
-# main.add_command(operations)
-# main.add_command(run)
-# main.add_command(runs)
-
-import typer
-
-app = typer.Typer()
-
-@app.command()
-def check():
-    print("Whoop it's a cool check it is")
+def make_app():
+    app = Typer(
+        cls=cli.AliasGroup,
+        rich_markup_mode="markdown",
+        invoke_without_command=True,
+        no_args_is_help=True,
+        add_completion=False,
+    )
+    app.callback()(main)
+    app.command()(check)
+    app.add_typer(help_app())
+    app.command("operations, ops")(operations)
+    app.command()(run)
+    return app

@@ -65,7 +65,7 @@ def run(
         ),
     ] = ""
 ):
-    """Start an operation.
+    """Start or stage an operation.
 
     **OPERATION** may be a file to run or an operation name defined in a
     project Gage file. To list available options for the current

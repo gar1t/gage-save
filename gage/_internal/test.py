@@ -251,9 +251,9 @@ def run(
 ):
     proc_env = dict(os.environ)
     _apply_venv_bin_path(proc_env)
-    if env:
-        proc_env.update(env)
     proc_env["TERM"] = "unknown"
+    proc_env["COLUMNS"] = "72"
+    proc_env.update(env or {})
     p = _popen(cmd, proc_env, cwd)
     with _kill_after(p, timeout) as timeout_context:
         try:

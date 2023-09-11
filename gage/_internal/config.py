@@ -35,7 +35,7 @@ def set_cwd(cwd: Optional[str]):
     messages.
     """
     with __cwd_lock:
-        globals()["_cwd"] = cwd
+        globals()["__cwd"] = cwd
 
 
 def cwd():

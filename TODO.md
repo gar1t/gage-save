@@ -6,6 +6,7 @@
 - Get -H and -C core opts working again
 - Migrate commands to typer - STRIP em down!
 - Drop Click
+- Add `__all__` to all modules
 
 ## Resolve early
 

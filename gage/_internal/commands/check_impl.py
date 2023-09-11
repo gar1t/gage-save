@@ -8,6 +8,7 @@ import sys
 import gage
 
 from .. import cli
+from .. import config
 from .. import util
 
 __all__ = ["check"]
@@ -15,10 +16,16 @@ __all__ = ["check"]
 CheckData = list[tuple[str, str]]
 
 
-def check(version: str, json: bool):
-    if version:
-        _check_version_and_exit(version)
-    _print_check_info(json)
+class Args(NamedTuple):
+    version: str
+    json: bool
+    verbose: bool
+
+
+def check(args: Args):
+    if args.version:
+        _check_version_and_exit(args.version)
+    _print_check_info(args)
 
 
 def _check_version_and_exit(req: str):
@@ -38,25 +45,38 @@ def _check_version_and_exit(req: str):
         else:
             raise SystemExit(0)
 
+
 def _format_version_check_error(e: ValueError):
     return e.args[0].split("\n")[0].lower()
 
 
-def _print_check_info(json: bool):
-    data = _check_info_data()
-    if json:
+def _print_check_info(args: Args):
+    data = _check_info_data(args)
+    if args.json:
         _print_check_info_json(data)
     else:
         _print_check_info_table(data)
 
 
-def _check_info_data() -> CheckData:
+def _check_info_data(args: Args):
+    return _core_info_data() + _maybe_verbose_info_data(args.verbose)
+
+
+def _core_info_data() -> CheckData:
     return [
         ("gage_version", gage.__version__),
         ("gage_install_location", gage.__pkgdir__),
         ("python_version", sys.version),
         ("python_exe", sys.executable),
         ("platform", platform.platform()),
+    ]
+
+
+def _maybe_verbose_info_data(verbose: bool) -> CheckData:
+    if not verbose:
+        return []
+    return [
+        ("command_directory", config.cwd()),
     ]
 
 

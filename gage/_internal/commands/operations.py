@@ -2,15 +2,20 @@
 
 from typing import *
 
-import click
 
-from .. import click_util
+def operations():
+    """Show available operations.
 
+    Operations are defined in a project Gage file, which may exist in
+    the current directory or parent directories. If a project Gage file
+    doesn't exist, you can still run scripts directly but these will not
+    appear as operations show by this command.
 
-@click.command(name="operations, ops")
-@click_util.use_args
-def operations(args: Any):
-    """Show available operations."""
-    from . import operations_impl
+    For more information on Gage files, run 'gage help gagefile'.
 
-    operations_impl.main(args)
+    To locate the current Gage file, run `gage check -v`.
+    """
+
+    from .operations_impl import operations
+
+    operations()

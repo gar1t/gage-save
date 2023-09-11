@@ -5,16 +5,13 @@ from typing import *
 import os
 
 import typer
-from typer import Option
 
 from .__init__ import __version__
 
 from ._internal import cli
 from ._internal import exitcodes
 
-from ._internal.commands.check import check
-from ._internal.commands.run import run
-
+from ._internal.commands.main import make_app
 
 if os.getenv("TERM") in ("unknown", "dumb"):
     import typer.core
@@ -24,36 +21,11 @@ if os.getenv("TERM") in ("unknown", "dumb"):
 
 
 def main():
-    app = typer.Typer(
-        rich_markup_mode="markdown",
-        invoke_without_command=True,
-        no_args_is_help=True,
-        add_completion=False,
-    )
-    app.callback()(_main)
-    app.command()(check)
-    app.command()(run)
-
+    app = make_app()
     try:
         app()
     except SystemExit as e:
         handle_system_exit(e)
-
-
-def _main(
-    version: Annotated[
-        bool,
-        Option(
-            "--version",
-            help="Print program version and exit.",
-            show_default=False,
-        ),
-    ] = False
-):
-    """Gage ML command line interface."""
-    if version:
-        cli.out(f"gage {__version__}")
-        raise SystemExit(0)
 
 
 def handle_system_exit(e: SystemExit):

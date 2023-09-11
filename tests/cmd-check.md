@@ -2,17 +2,18 @@
 
 Help for `check`:
 
-    >>> run("gage check --help")
+    >>> run("gage check --help")  # +diff
     Usage: gage check [OPTIONS]
     ⤶
-      Show and validate Gage ML settings.
+      Show and validate settings.
     ⤶
-      Use `check` to show Gage ML version, install location, and other configured
-      settings.
+      Use `check` to show Gage ML version, install location, and other
+      configured settings.
     ⤶
     Options:
       --version SPEC  Test Gage version against SPEC.
       --json          Format check output as JSON.
+      -v, --verbose   Show more information.
       --help          Show this message and exit.
     <0>
 
@@ -25,6 +26,16 @@ Default output:
     python_exe             {:path}
     platform               {:any}
     <0>
+
+Verbose output:
+
+    >>> run("gage check -v")  # -space +parse
+    {}
+    platform               {:any}
+    command_directory      {:path}
+    <0>
+
+## Check version
 
 The `--version` option is used to check the Gage version against a
 version spec.

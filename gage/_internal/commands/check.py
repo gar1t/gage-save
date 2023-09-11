@@ -4,11 +4,14 @@ from typing import *
 
 from typer import Option
 
+__all__ = ["check"]
+
 
 def check(
     version: Annotated[
         str,
         Option(
+            "--version",
             help="Test Gage version against SPEC.",
             metavar="SPEC",
         ),
@@ -21,12 +24,27 @@ def check(
             show_default=False,
         ),
     ] = False,
+    verbose: Annotated[
+        bool,
+        Option(
+            "-v",
+            "--verbose",
+            help="Show more information.",
+            show_default=False,
+        ),
+    ] = False,
 ):
-    """Show and validate Gage ML settings.
+    """Show and validate settings.
 
     Use `check` to show Gage ML version, install location, and other
     configured settings.
     """
-    from .check_impl import check
+    from .check_impl import check, Args
 
-    check(version, json)
+    check(
+        Args(
+            version=version,
+            json=json,
+            verbose=verbose,
+        )
+    )

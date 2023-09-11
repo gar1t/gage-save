@@ -76,6 +76,7 @@
     "libcublas",
     "lineterm",
     "loglib",
+    "MANPAGER",
     "mkid",
     "mklink",
     "mktempdir",

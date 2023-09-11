@@ -4,12 +4,22 @@ from typing import *
 
 import os
 
+from ...__init__ import __version__
+
+from .. import cli
 from .. import config
 
+class Args(NamedTuple):
+    version: bool
+    cwd: str
 
-def main(cwd: str | None):
-    if cwd:
-        _apply_cwd(cwd)
+
+def main(args: Args):
+    if args.version:
+        cli.out(f"gage {__version__}")
+        raise SystemExit(0)
+    if args.cwd:
+        _apply_cwd(args.cwd)
 
 
 def _apply_cwd(cwd: str):

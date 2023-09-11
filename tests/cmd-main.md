@@ -1,9 +1,50 @@
-# Main `gage` command
+# `gage` command
+
+## Default command
+
+Running `gage` without arguments shows help.
+
+    >>> run("gage")  # +diff
+    Usage: gage [OPTIONS] COMMAND [ARGS]...
+    ⤶
+      Gage ML command line interface.
+    ⤶
+    Options:
+      --version  Print program version and exit.
+      -C PATH    Change to PATH directory for command.
+      --help     Show this message and exit.
+    ⤶
+    Commands:
+      check  Show and validate Gage ML settings.
+      run    Start an operation.
+    <0>
+
+## Help
+
+Using `--help` shows help explicitly.
+
+    >>> run("gage --help")  # +wildcard
+    Usage: gage [OPTIONS] COMMAND [ARGS]...
+    ⤶
+      Gage ML command line interface.
+    ⤶
+    ...
+
+## Version
 
     >>> run("gage --version")
     gage 0.1.0
     <0>
 
-TODO:
+## Changing cwd
 
-- Test `-C` (change to cwd)
+The `-C` runs the command in the specified directory.
+
+    >>> tmp = make_temp_dir()
+
+    >>> run(f"gage -C {tmp} check -v")  # +parse -space
+    {}
+    command_directory      {x:path}
+    <0>
+
+    >>> assert x == tmp
