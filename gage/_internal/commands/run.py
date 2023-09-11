@@ -67,9 +67,9 @@ def run(
 ):
     """Start an operation.
 
-    OPERATION may be a [file](https://google.com) to run or an operation
-    name defined in a project Gage file. To list available options for
-    the current directory, use 'gage operations'.
+    **OPERATION** may be a file to run or an operation name defined in a
+    project Gage file. To list available options for the current
+    directory, use **gage operations**.
     """
     from .run_impl import run
 

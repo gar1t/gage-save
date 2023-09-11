@@ -343,4 +343,4 @@ from typing import *
 #     _dispatch_cmd(S)
 
 def run(opspec: str):
-    print(f"TODO: run %s")
+    print(f"TODO: run {opspec}")
