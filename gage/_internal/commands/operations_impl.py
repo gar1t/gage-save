@@ -19,7 +19,7 @@ def operations():
 
 
 def _print_operations(gf: GageFile):
-    table = cli.Table(show_header=False)
+    table = cli.Table(header=["operation", "description"])
     for name, opdef in sorted(gf.operations.items()):
         table.add_row(cli.label(name), opdef.description)
     cli.out(table)

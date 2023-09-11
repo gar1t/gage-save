@@ -98,7 +98,7 @@ def _print_check_info_json(data: CheckData):
 
 
 def _print_check_info_table(data: CheckData):
-    table = cli.Table(show_header=False)
+    table = cli.Table()
     for name, val in data:
         table.add_row(cli.label(name), val)
     cli.out(table)

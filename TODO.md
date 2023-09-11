@@ -42,6 +42,11 @@ exec = "python train.py"
 }
 ```
 
+## Low priority
+
+- Fix plain table printing and matching with Groktest (look for `-space`
+  options in tests associated with commands that print a table)
+
 ## Run layout
 
 - Init run by creating `.meta` (done)

@@ -60,6 +60,7 @@
     "gaierror",
     "gethostname",
     "getpgid",
+    "Groktest",
     "guildignore",
     "hola",
     "importlib",

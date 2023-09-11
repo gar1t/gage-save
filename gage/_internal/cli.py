@@ -33,6 +33,10 @@ _err = rich.console.Console(stderr=True, soft_wrap=False)
 
 is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
+TABLE_HEADER_STYLE = "yellow"
+TABLE_BORDER_STYLE = "dim"
+LABEL_STYLE = "bold cyan"
+
 
 def out(val: Any, style: str | None = None, wrap: bool = False, err: bool = False):
     print = _err.print if err else _out.print
@@ -52,7 +56,7 @@ def json(val: Any):
 
 
 def label(s: str):
-    return text(s, style="bold green")
+    return text(s, style=LABEL_STYLE)
 
 
 def markdown(md: str):
@@ -83,11 +87,16 @@ def _pager_supports_styles(pager: str | None):
     return parts[0] == "less" and "-r" in parts[1:]
 
 
-def Table(show_header: bool = False):
-    return rich.table.Table(
-        show_header=show_header,
+def Table(header: list[str] | None = None):
+    t = rich.table.Table(
+        show_header=header is not None,
         box=rich.box.ROUNDED if not is_plain else None,
+        border_style=TABLE_BORDER_STYLE,
+        header_style=TABLE_HEADER_STYLE,
     )
+    for col_name in header or []:
+        t.add_column(col_name)
+    return t
 
 
 class AliasGroup(typer.core.TyperGroup):
