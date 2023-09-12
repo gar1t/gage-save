@@ -14,6 +14,9 @@ import uuid
 from . import config
 from . import util
 
+from .file_util import make_dir
+from .file_util import ensure_dir
+
 from .opref_util import encode_opref
 
 __all__ = [
@@ -98,7 +101,7 @@ def make_run(location: Optional[str] = None):
     run_id = unique_run_id()
     location = location or config.runs_home()
     run_dir = os.path.join(location, run_id)
-    util.make_dir(run_dir)
+    make_dir(run_dir)
     return Run(run_id, run_dir)
 
 
@@ -155,7 +158,7 @@ def init_run_meta(
 
 def _ensure_run_meta_dir(run: Run):
     meta_dir = run_meta_dir(run)
-    util.ensure_dir(meta_dir)
+    ensure_dir(meta_dir)
     return meta_dir
 
 
@@ -165,7 +168,7 @@ def _write_schema_file(meta_dir: str):
 
 
 def _ensure_meta_log_dir(meta_dir: str):
-    util.ensure_dir(os.path.join(meta_dir, "log"))
+    ensure_dir(os.path.join(meta_dir, "log"))
 
 
 def _write_run_id(run: Run, meta_dir: str, log: Logger):
@@ -183,7 +186,7 @@ def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
 
 def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
     log.info("Writing proc/cmd")
-    util.ensure_dir(os.path.join(meta_dir, "proc"))
+    ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "cmd")
     util.write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
 
@@ -194,7 +197,7 @@ def _encode_cmd_args(args: list[str]):
 
 def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
     log.info("Writing proc/env")
-    util.ensure_dir(os.path.join(meta_dir, "proc"))
+    ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "env")
     util.write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
 
@@ -212,7 +215,7 @@ def _write_system_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
 
 
 def _gen_write_attrs(dir: str, attrs: dict[str, Any], meta_dir: str, log: Logger):
-    util.ensure_dir(os.path.join(meta_dir, dir))
+    ensure_dir(os.path.join(meta_dir, dir))
     for name in attrs:
         log.info("Writing %s/%s", dir, name)
         filename = os.path.join(meta_dir, dir, name)

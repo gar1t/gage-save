@@ -8,7 +8,6 @@ import hashlib
 import logging
 import os
 import re
-import shlex
 import shutil
 import stat
 import subprocess
@@ -18,6 +17,7 @@ import threading
 import time
 
 from . import ansi_util
+from . import shlex_util
 from . import log as loglib
 
 # Avoid expensive imports.
@@ -78,16 +78,6 @@ def pop_find(l: list[Any], f: Callable[[Any], Any], default: Any = None):
     return popped
 
 
-def ensure_dir(d: str):
-    try:
-        make_dir(d)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-
-def make_dir(d: str):
-    os.makedirs(realpath(d))
 
 
 def ensure_deleted(path: str):
@@ -449,7 +439,7 @@ def ensure_safe_rmtree(path: str):
 def _top_level_dir(path: str):
     abs_path = os.path.abspath(path)
     parts = [p for p in re.split(r"[/\\]", abs_path) if p]
-    if get_platform() == "Windows":
+    if os.name == "nt":
         return len(parts) <= 2
     return len(parts) <= 1
 
@@ -654,7 +644,7 @@ def subpath(path: str, start: str, sep: Optional[str] = None):
 
 
 def which(cmd: str):
-    which_cmd = "where" if get_platform() == "Windows" else "which"
+    which_cmd = "where" if os.name == "nt" else "which"
     devnull = open(os.devnull, "w")
     try:
         out = subprocess.check_output([which_cmd, cmd], stderr=devnull)
@@ -666,7 +656,7 @@ def which(cmd: str):
 
 
 def symlink(target: str, link: str):
-    if get_platform() == "Windows":
+    if os.name == "nt":
         _windows_symlink(target, link)
     else:
         os.symlink(target, link)
@@ -698,140 +688,6 @@ def _maybe_symlink_error(err_msg: str, err_code: int):
             "https://my.guild.ai/docs/windows#symbolic-links-privileges-in-windows",
             err_code,
         )
-
-
-_text_ext = {
-    ".csv",
-    ".html",
-    ".html",
-    ".json",
-    ".jsx",
-    ".md",
-    ".py",
-    ".r",
-    ".sh",
-    ".ts",
-    ".tsx.txt",
-    ".yaml",
-    ".yml",
-    "js",
-}
-
-_binary_ext = {
-    ".ai",
-    ".bmp",
-    ".gif",
-    ".ico",
-    ".jpeg",
-    ".jpg",
-    ".png",
-    ".ps",
-    ".psd",
-    ".svg",
-    ".tif",
-    ".tiff",
-    ".aif",
-    ".mid",
-    ".midi",
-    ".mpa",
-    ".mp3",
-    ".ogg",
-    ".wav",
-    ".wma",
-    ".avi",
-    ".mov",
-    ".mp4",
-    ".mpeg",
-    ".swf",
-    ".wmv",
-    ".7z",
-    ".deb",
-    ".gz",
-    ".pkg",
-    ".rar",
-    ".rpm",
-    ".tar",
-    ".xz",
-    ".z",
-    ".zip",
-    ".doc",
-    ".docx",
-    ".key",
-    ".pdf",
-    ".ppt",
-    ".pptx",
-    ".xlr",
-    ".xls",
-    ".xlsx",
-    ".bin",
-    ".pickle",
-    ".pkl",
-    ".pyc",
-}
-
-_control_chars = b"\n\r\t\f\b"
-_printable_ascii = _control_chars + bytes(range(32, 127))
-_printable_high_ascii = bytes(range(127, 256))
-
-
-def is_text_file(path: str, ignore_ext: bool = False):
-    import chardet
-
-    # Adapted from https://github.com/audreyr/binaryornot under the
-    # BSD 3-clause License
-    if not os.path.exists(path):
-        raise OSError(f"{path} does not exist")
-    if not os.path.isfile(path):
-        return False
-    if not ignore_ext:
-        ext = os.path.splitext(path)[1].lower()
-        if ext in _text_ext:
-            return True
-        if ext in _binary_ext:
-            return False
-    try:
-        with open(path, "rb") as f:
-            sample = f.read(1024)
-    except IOError:
-        return False
-    if not sample:
-        return True
-    low_chars = sample.translate(None, _printable_ascii)
-    nontext_ratio1 = float(len(low_chars)) / float(len(sample))
-    high_chars = sample.translate(None, _printable_high_ascii)
-    nontext_ratio2 = float(len(high_chars)) / float(len(sample))
-    likely_binary = (nontext_ratio1 > 0.3 and nontext_ratio2 < 0.05) or (
-        nontext_ratio1 > 0.8 and nontext_ratio2 > 0.8
-    )
-    detected_encoding = chardet.detect(sample)
-    decodable_as_unicode = False
-    if (
-        detected_encoding["confidence"] > 0.9
-        and detected_encoding["encoding"] != "ascii"
-    ):
-        try:
-            sample.decode(encoding=detected_encoding["encoding"] or "utf-8")
-        except LookupError:
-            pass
-        except UnicodeDecodeError:
-            pass
-        else:
-            decodable_as_unicode = True
-    if likely_binary:
-        return decodable_as_unicode
-    if decodable_as_unicode:
-        return True
-    if b"\x00" in sample or b"\xff" in sample:
-        return False
-    return True
-
-
-def safe_is_text_file(path: str, ignore_ext: bool = False):
-    try:
-        return is_text_file(path, ignore_ext)
-    except OSError as e:
-        log.warning("could not check for text file %s: %s", path, e)
-        return False
 
 
 def touch(filename: str):
@@ -873,13 +729,6 @@ def kill_process_tree(pid: int, force: bool = False, timeout: Optional[float] = 
     for proc in children:
         send_sig(proc)
     return psutil.wait_procs([root] + children, timeout=timeout)
-
-
-def safe_filesize(path: str):
-    try:
-        return os.path.getsize(path)
-    except OSError:
-        return None
 
 
 def safe_mtime(path: str):
@@ -931,7 +780,7 @@ def format_dir(dir: str):
 
 
 def format_user_dir(s: str):
-    if get_platform() == "Windows":
+    if os.name == "nt":
         return s
     user_dir = os.path.expanduser("~")
     if s.startswith(user_dir):
@@ -948,7 +797,7 @@ def apply_env(target: dict[str, str], source: dict[str, str], names: list[str]):
 
 
 def safe_filename(s: str):
-    if get_platform() == "Windows":
+    if os.name == "nt":
         s = re.sub(r"[:<>?]", "_", s).rstrip()
     return re.sub(r"[/\\]+", "_", s)
 
@@ -1170,37 +1019,6 @@ def user():
     return os.getenv("USER") or ""
 
 
-def shlex_split(s: str):
-    # If s is None, this call will block (see
-    # https://bugs.python.org/issue27775)
-    s = s or ""
-    return shlex.split(s, posix=True)
-
-
-def shlex_quote(s: str):
-    return _simplify_shlex_quote(shlex.quote(s or ""))
-
-
-def shlex_join(args: list[str]):
-    return " ".join([shlex_quote(arg) for arg in args])
-
-
-def _simplify_shlex_quote(s: str):
-    repls = [
-        ("''\"'\"'", "\"'"),
-    ]
-    for pattern_start, repl_start in repls:
-        if not s.startswith(pattern_start):
-            continue
-        pattern_end = "".join(reversed(pattern_start))
-        if not s.endswith(pattern_end):
-            continue
-        repl_end = "".join(reversed(repl_start))
-        stripped = s[len(pattern_start) : -len(pattern_end)]
-        return repl_start + stripped + repl_end
-    return s
-
-
 def format_bytes(n: float):
     units = [None, "K", "M", "G", "T", "P", "E", "Z"]
     for unit in units[:-1]:
@@ -1363,14 +1181,6 @@ def safe_listdir(path: str) -> list[str]:
         return os.listdir(path)
     except OSError:
         return []
-
-
-def compare_paths(p1: str, p2: str):
-    return _resolve_path(p1) == _resolve_path(p2)
-
-
-def _resolve_path(p: str):
-    return realpath(os.path.expanduser(p))
 
 
 def shorten_path(
@@ -1605,30 +1415,7 @@ def env_var_name(s: str):
 def env_var_quote(s: str):
     if s == "":
         return ""
-    return shlex_quote(s)
-
-
-def realpath(path: str):
-    # Workaround for https://bugs.python.org/issue9949
-    try:
-        link = os.readlink(path)
-    except OSError:
-        return os.path.realpath(path)
-    else:
-        path_dir = os.path.dirname(path)
-        return os.path.abspath(os.path.join(path_dir, _strip_windows_prefix(link)))
-
-
-def _strip_windows_prefix(path: str):
-    if get_platform() != "Windows":
-        return path
-    if path.startswith("\\\\?\\"):
-        return path[4:]
-    return path
-
-
-def standardize_path(path: str):
-    return path.replace(os.path.sep, "/")
+    return shlex_util.shlex_quote(s)
 
 
 def bind_method(obj: Any, method_name: str, function: Any):
@@ -1680,7 +1467,7 @@ def _strip_comment_lines(s: str):
 
 
 def test_windows_symlinks():
-    if get_platform() != "Windows":
+    if os.name != "nt":
         return
     with TempDir() as tmp:
         os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
@@ -1711,12 +1498,6 @@ class PropertyCache:
         self._vals[name] = val
         self._expirations[name] = time.time() + self._timeouts[name]
         return val
-
-
-def get_platform():
-    import platform  # expensive
-
-    return platform.system()
 
 
 def make_executable(path: str):

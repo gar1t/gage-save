@@ -24,6 +24,7 @@ def operations():
     """Defining and running operations."""
     _show_help("operations")
 
+
 def gagefile():
     """Defining and using gage files."""
     _show_help("gagefile")

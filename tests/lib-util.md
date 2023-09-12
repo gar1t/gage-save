@@ -1,7 +1,3 @@
----
-test-options: +wildcard
----
-
 # Utils
 
 ## Matching filters
@@ -217,57 +213,6 @@ A reference can be escaped:
     >>> resolve_all_refs({"a": "\${foo}"})
     {'a': '${foo}'}
 
-## Testing text files
-
-Use `is_text_file` to test if a file is text or binary. This is used
-to provide a file viewer for text files.
-
-    >>> from gage._internal.util import is_text_file
-
-The test uses known file extensions as an optimization. To test the
-file content itself, we need to ignore extensions:
-
-    >>> def is_text(sample_path):
-    ...     path = sample("textorbinary", sample_path)
-    ...     return is_text_file(path, ignore_ext=True)
-
-Our samples:
-
-    >>> is_text("cookiecutter.json")
-    True
-
-    >>> is_text("empty.pyc")
-    False
-
-    >>> is_text("empty.txt")
-    True
-
-    >>> is_text("hello.py")
-    True
-
-    >>> is_text("hello_world.pyc")
-    False
-
-    >>> is_text("lena.jpg")
-    False
-
-    >>> is_text("lookup-error")
-    False
-
-    >>> is_text("lookup-error.txt")
-    True
-
-A non-existing file generates an error:
-
-    >>> is_text("non-existing")
-    Traceback (most recent call last):
-    OSError: .../samples/textorbinary/non-existing does not exist
-
-Directories aren't text files:
-
-    >>> is_text(".")
-    False
-
 ## Safe rmtree check
 
 The function `safe_rmtree` will fail if the specified path is a
@@ -291,86 +236,6 @@ Tests:
 
     >>> _top_level_dir(".")
     False
-
-## Shlex quote
-
-    >>> from gage._internal.util import shlex_quote as quote
-
-    >>> quote(None)
-    "''"
-
-    >>> quote("")
-    "''"
-
-    >>> quote("foo")
-    'foo'
-
-    >>> quote("foo bar")
-    "'foo bar'"
-
-    >>> quote("/foo/bar")
-    '/foo/bar'
-
-    >>> quote("/foo bar")
-    "'/foo bar'"
-
-    >>> quote("\\foo\\bar")
-    "'\\foo\\bar'"
-
-    >>> quote("D:\\foo\\bar")
-    "'D:\\foo\\bar'"
-
-    >>> quote("D:\\foo bar")
-    "'D:\\foo bar'"
-
-    >>> quote("'a b c'")
-    '"\'a b c\'"'
-
-    >>> quote("~")
-    "'~'"
-
-    >>> quote("a ~ b")
-    "'a ~ b'"
-
-    >>> quote("*")
-    "'*'"
-
-    >>> quote("?")
-    "'?'"
-
-## Shlex split
-
-    >>> from gage._internal.util import shlex_split as split
-
-    >>> split(None)
-    []
-
-    >>> split("")
-    []
-
-    >>> split("foo")
-    ['foo']
-
-    >>> split("foo bar")
-    ['foo', 'bar']
-
-    >>> split("'foo bar'")
-    ['foo bar']
-
-    >>> split("'foo bar' baz")
-    ['foo bar', 'baz']
-
-    >>> split("'/foo/bar'")
-    ['/foo/bar']
-
-    >>> split("'/foo bar'")
-    ['/foo bar']
-
-    >>> split("'/foo bar' baz bam")
-    ['/foo bar', 'baz', 'bam']
-
-    >>> split("'\\foo\\bar'")
-    ['\\foo\\bar']
 
 ## Nested config
 
@@ -781,8 +646,7 @@ The `util` module caches the active shell to avoid rereading the
 environment. The cached value is `util._cached_active_shell`.
 
     >>> from gage._internal import util
-    >>> util._cached_active_shell == shell, (util._cached_active_shell, shell)
-    (True, ...)
+    >>> assert util._cached_active_shell == shell
 
 We can verify that the environment is read only when this value is set
 to "__unset__". To test this, we temporarily replace the underlying
@@ -818,8 +682,7 @@ Force a re-read of the environment for active shell.
     >>> util._cached_active_shell = "__unset__"
     >>> shell = util.active_shell()
 
-    >>> shell == shell_save, (shell, shell_save)
-    (True, ...)
+    >>> assert shell == shell_save
 
 ## Check Guild version
 
@@ -839,7 +702,7 @@ Test some version assertions that we know are true.
 
 Provide an invalid spec (error message varies across Python versions).
 
-    >>> check_gage_version("not a valid spec")
+    >>> check_gage_version("not a valid spec")  # +wildcard
     Traceback (most recent call last):
     ValueError: invalid version spec 'not a valid spec': ...
 

@@ -2,7 +2,7 @@
 
 from typing import *
 
-from .file_util import FileSelectRule
+from .file_select import FileSelectRule
 
 import collections
 import logging

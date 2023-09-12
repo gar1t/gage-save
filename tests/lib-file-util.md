@@ -4,382 +4,9 @@ The module `gage._internal.file_util` implements advanced file utilities.
 
     >>> from gage._internal import file_util
 
-## Copy tree
-
-The function `file_util.copytree` is an advanced version of
-`guild.util.copytree` that uses a flexible file select scheme for
-selecting files from a root location to copy to a destination
-directory.
-
-`copytree` is driven by a `file_util.FileSelect` instance, which
-specifies:
-
-- A root location to copy from
-- Select configuration
-
-Select configuration is a list of rules, which can exclude or include
-files based on file attributes:
-
-- Name
-- Size
-- Type (text file, binary file, or directory)
-- Number of files previously selected by the rule
-
-For our tests, we generate a source directory and copy files from it to
-a destination directory.
-
-Define a facility for generating a source directory of files to copy.
-
-    >>> from gage._internal import util
-
-    >>> class file_base(object):
-    ...     def __init__(self, path, write_mode, base_char, size):
-    ...         self.path = path
-    ...         self.write_mode = write_mode
-    ...         self.base_char = base_char
-    ...         self.size = size
-    ...
-    ...     def mk(self, root):
-    ...         path = path_join(root, self.path)
-    ...         util.ensure_dir(os.path.dirname(path))
-    ...         with open(path, "w" + self.write_mode) as f:
-    ...             f.write(self.base_char * self.size)
-
-    >>> def empty(path):
-    ...     return text(path)
-
-    >>> def text(path, size=0):
-    ...     return file_base(path, "", "0", size)
-
-    >>> def binary(path, size):
-    ...     return file_base(path, "b", b"\x01", size)
-
-    >>> def make_src(specs):
-    ...     src = make_temp_dir()
-    ...     for spec in specs:
-    ...         spec.mk(src)
-    ...     return src
-
-Here's a function to copy a directory using `copytree`:
-
-    >>> def cp(src, select_rules, select_root=None, handler_cls=None):
-    ...     dest = make_temp_dir()
-    ...     select = file_util.FileSelect(select_root, select_rules)
-    ...     file_util.copytree(
-    ...         dest, select, src,
-    ...         handler_cls=handler_cls)
-    ...     find(dest)
-
-Here are the functions from `file_util` that define rules:
-
-    >>> include = file_util.include
-    >>> exclude = file_util.exclude
-
-### Basic file selection
-
-Here's a src containing a single text file:
-
-    >>> src = make_src([empty("a.txt")])
-    >>> find(src)
-    a.txt
-
-Without any rules, `copytree` will not copy any files:
-
-    >>> cp(src, [])
-    <empty>
-
-Here's a select with a single include rule that matches any file name:
-
-    >>> cp(src, [include("*")])
-    a.txt
-
-Rules are evaluated in the order specified. The last rule to match a
-file is the applied rule. Let's end our rules list with an exclude
-that matches any file name:
-
-    >>> cp(src, [include("*"), exclude("*")])
-    <empty>
-
-If we further add another include at the end of our rules list:
-
-    >>> cp(src, [include("*"), exclude("*"), include("*")])
-    a.txt
-
-Let's create a more complex source directory structure.
-
-    >>> src = make_src([
-    ...     empty("a.txt"),
-    ...     empty("d1/a.txt"),
-    ...     empty("d1/d1_1/b.txt"),
-    ...     empty("d1/d1_2/c.txt"),
-    ...     empty("d2/d.txt"),
-    ...     empty("d2/d.yml"),
-    ... ])
-
-Include all:
-
-    >>> cp(src, [include("*")])
-    a.txt
-    d1/a.txt
-    d1/d1_1/b.txt
-    d1/d1_2/c.txt
-    d2/d.txt
-    d2/d.yml
-
-Include only files with `.txt` extension:
-
-    >>> cp(src, [include("*.txt")])
-    a.txt
-    d1/a.txt
-    d1/d1_1/b.txt
-    d1/d1_2/c.txt
-    d2/d.txt
-
-Include only files with `.yml` extension:
-
-    >>> cp(src, [include("*.yml")])
-    d2/d.yml
-
-Select all files under `d1` subdirectory:
-
-    >>> cp(src, [include("d1/*")])
-    d1/a.txt
-    d1/d1_1/b.txt
-    d1/d1_2/c.txt
-
-We can specify multiple patterns at once:
-
-    >>> cp(src, [include(["d1/a.txt", "d1/d1_1/*"])])
-    d1/a.txt
-    d1/d1_1/b.txt
-
-Note that a single '*' matches all files under the prefix. This is the
-behavior of Python's `fnmatch` module, which Guild uses to match
-files.
-
-To select only `d1/a.txt` and ignore other files under `d1`, we can
-add an exclude to our rules:
-
-    >>> cp(src, [include("d1/*"), exclude("d1/d1*")])
-    d1/a.txt
-
-This approach relies on our foreknowledge that the other files under
-`d1` are under `d1/d1`. We can be more explicit in our rules by using
-regular expressions in our match.
-
-    >>> cp(src, [include("d1/[^/]+$", regex=True)])
-    d1/a.txt
-
-### Selecting directories
-
-Guild provides special support for selecting directories. Excluding
-directories, rather than the files under the directory, has a
-performance benefit as Guild doesn't have to evaluate files.
-
-Here's a structure with a directory:
-
-    >>> src = make_src([
-    ...     empty("d/a.txt"),
-    ...     empty("b.txt"),
-    ... ])
-
-We can exclude the directory `d` this way:
-
-    >>> cp(src, [include("*"), exclude("d", type="dir")])
-    b.txt
-
-### Selecting text or binary files
-
-We can define a rule that selects for a particular file type: text or
-binary (i.e. not text).
-
-Let's create another source directory structure, which includes both a
-text file and a binary file.
-
-    >>> src = make_src([
-    ...     text("a.txt", 10),
-    ...     binary("a.bin", 10),
-    ... ])
-
-Here's a rule that selects only text files:
-
-    >>> cp(src, [include("*", type="text")])
-    a.txt
-
-And a rule that only selects binary files:
-
-    >>> cp(src, [include("*", type="binary")])
-    a.bin
-
-### Skipping special directories
-
-In some cases, a copytree operation may want to skip special
-directories. These directories would include sentinels to indicate
-that they should be skipped.
-
-Here's a sample source structure that contains two such
-directories. One is marked with a `.nocopy` sentinel and another
-contains a file `bin/activate` (e.g. as in the case of a virtual
-environment, which uses this file for activation).
-
-    >>> src = make_src([
-    ...     empty("skip_dir/.nocopy"),
-    ...     empty("skip_dir/a.txt"),
-    ...     empty("skip_dir/b.txt"),
-    ...     empty("venv/bin/activate"),
-    ...     empty("venv/c.txt"),
-    ...     empty("keep_dir/d.txt"),
-    ...     empty("e.txt"),
-    ... ])
-
-To exclude `skip_dir` and `venv`, we need to indicate in our exclude
-spec that we're excluding a directory (type="dir") and a pattern for
-the applicable sentinel.
-
-    >>> cp(src, [
-    ...     include("*"),
-    ...     exclude("*", type="dir", sentinel=".nocopy"),
-    ...     exclude("*", type="dir", sentinel="bin/activate"),
-    ... ])
-    e.txt
-    keep_dir/d.txt
-
-We can re-enable an excluded directory this way:
-
-    >>> cp(src, [
-    ...     include("*"),
-    ...     exclude("*", type="dir", sentinel=".nocopy"),
-    ...     exclude("*", type="dir", sentinel="bin/activate"),
-    ...     include("venv", type="dir"),
-    ... ])
-    e.txt
-    keep_dir/d.txt
-    venv/bin/activate
-    venv/c.txt
-
-### Skipping files by size
-
-We can exclude files that are larger than a specified size.
-
-Let's create a source directory containing two files:
-
-    >>> src = make_src([
-    ...   empty("small.txt"),
-    ...   text("large.txt", size=100),
-    ... ])
-
-Let's copy only the small file:
-
-    >>> cp(src, [include("*", size_lt=99)])
-    small.txt
-
-And the large file:
-
-    >>> cp(src, [include("*", size_gt=99)])
-    large.txt
-
-### Skipping files after a number of matches
-
-A select rule may include a `max_matches` attribute, which specifies
-the maximum number of matches that rule can make before it stops
-matching. This is used to prevent copying unexpectedly large number of
-files.
-
-Here's a source directory containing ten files:
-
-    >>> src = make_src([empty("%i.txt" % i) for i in range(10)])
-    >>> find(src)  # +wildcard
-    0.txt
-    ...
-    9.txt
-
-Let's copy this source, but limit the number of included files to 6.
-
-    >>> cp(src, [include("*.txt", max_matches=6)])
-    0.txt
-    1.txt
-    2.txt
-    3.txt
-    4.txt
-    5.txt
-
-### Custom copytree handlers
-
-Guild supports custom handlers for the copy tree operation. We can use
-a custom handler to modify file copy and ignore behavior as well as
-error handling.
-
-Let's create a custom handler that simply logs information.
-
-    >>> class Handler:
-    ...
-    ...     def __init__(self, src_root, dest_root, _select):
-    ...         self.src_root = src_root
-    ...         self.dest_root = dest_root
-    ...
-    ...     def copy(self, path, _rule_results):
-    ...         print("copy: %s" % path)
-    ...
-    ...     def ignore(self, path, _rule_results):
-    ...         print("ignore: %s" % path)
-    ...
-    ...     def handle_copy_error(self, e, src, dest):
-    ...         assert False, (e, src, dest)
-    ...
-    ...     def close(self):
-    ...         pass
-
-Our source directory:
-
-    >>> src = make_src([
-    ...     empty("a.txt"),
-    ...     binary("a.bin", size=1),
-    ... ])
-
-We specify the class for our handler in the call to `copytree`.
-
-    >>> cp(src, [include("*")], handler_cls=Handler)
-    copy: a.bin
-    copy: a.txt
-    <empty>
-
-    >>> cp(src, [include("*.bin")], handler_cls=Handler)
-    copy: a.bin
-    ignore: a.txt
-    <empty>
-
-    >>> cp(src, [include("*", size_lt=1)], handler_cls=Handler)
-    ignore: a.bin
-    copy: a.txt
-    <empty>
-
-### Symlinks
-
-TODO
-
-### Alternative source roots
-
-TODO
-
-### Validation
-
-Valid rule types:
-
-    >>> _ = include("*", type=None)
-    >>> _ = include("*", type="text")
-    >>> _ = include("*", type="binary")
-    >>> _ = include("*", type="dir")
-
-Invalid:
-
-    >>> include("*", type="invalid")  # -space
-    Traceback (most recent call last):
-    ValueError: invalid value for type 'invalid':
-    expected one of text, binary, dir
-
 ## Test for file difference
 
-Use `util.files_differ()` to check whether or not two files differ.
+Use `util.files_differ()` to check if two files differ.
 
     >>> from gage._internal.file_util import files_differ
 
@@ -447,3 +74,54 @@ Use `textorbinary` sample files to generate a digest.
 
     >>> file_util.files_digest(findl(sample_dir), sample_dir)
     '0c5df8c6437e23df5371bdd1b5db7bc9'
+
+## Testing text files
+
+Use `is_text_file` to test if a file is text or binary. This is used
+to provide a file viewer for text files.
+
+    >>> from gage._internal.file_util import is_text_file
+
+The test uses known file extensions as an optimization. To test the
+file content itself, we need to ignore extensions:
+
+    >>> def is_text(sample_path):
+    ...     path = sample("textorbinary", sample_path)
+    ...     return is_text_file(path, ignore_ext=True)
+
+Our samples:
+
+    >>> is_text("cookiecutter.json")
+    True
+
+    >>> is_text("empty.pyc")
+    False
+
+    >>> is_text("empty.txt")
+    True
+
+    >>> is_text("hello.py")
+    True
+
+    >>> is_text("hello_world.pyc")
+    False
+
+    >>> is_text("lena.jpg")
+    False
+
+    >>> is_text("lookup-error")
+    False
+
+    >>> is_text("lookup-error.txt")
+    True
+
+A non-existing file generates an error:
+
+    >>> is_text("non-existing")  # +wildcard
+    Traceback (most recent call last):
+    OSError: .../samples/textorbinary/non-existing does not exist
+
+Directories aren't text files:
+
+    >>> is_text(".")
+    False

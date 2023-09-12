@@ -9,6 +9,7 @@ from ...__init__ import __version__
 from .. import cli
 from .. import config
 
+
 class Args(NamedTuple):
     version: bool
     cwd: str

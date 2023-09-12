@@ -1,4 +1,5 @@
 /dist
 /build
+/scratch.md
 *.egg-info
 *.pyc

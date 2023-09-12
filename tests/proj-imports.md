@@ -39,19 +39,19 @@
     gage._internal.commands.run_impl
     gage._internal.config
     gage._internal.exitcodes
+    gage._internal.file_select
     gage._internal.file_util
     gage._internal.gagefile
     gage._internal.log
     gage._internal.op_util
     gage._internal.opdef_util
     gage._internal.opref_util
-    gage._internal.plugin
-    gage._internal.plugins.python.__init__
     gage._internal.project_util
     gage._internal.python_util
     gage._internal.run_manifest
     gage._internal.run_output
     gage._internal.run_util
+    gage._internal.shlex_util
     gage._internal.test
     gage._internal.types
     gage._internal.util

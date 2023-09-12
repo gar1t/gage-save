@@ -19,6 +19,7 @@ import gage
 
 from . import config
 from . import file_util
+from . import shlex_util
 from . import util
 
 __all__ = [
@@ -186,7 +187,7 @@ def _filter_ignored(paths: list[str], ignore: str | list[str]):
 
 
 def _standardize_paths(paths: list[str]):
-    return [util.standardize_path(path) for path in paths]
+    return [file_util.standardize_path(path) for path in paths]
 
 
 def cat(*parts: str):
@@ -288,13 +289,13 @@ def _apply_venv_bin_path(env: dict[str, str]):
 
 
 def _popen(cmd: str, env: Env, cwd: Optional[str]):
-    if util.get_platform() == "Windows":
+    if os.name == "nt":
         return _popen_win(cmd, env, cwd)
     return _popen_posix(cmd, env, cwd)
 
 
 def _popen_win(cmd: str, env: Env, cwd: Optional[str]):
-    split_cmd = util.shlex_split(util.standardize_path(cmd))
+    split_cmd = shlex_util.shlex_split(file_util.standardize_path(cmd))
     return subprocess.Popen(
         split_cmd,
         stdout=subprocess.PIPE,
@@ -327,7 +328,7 @@ class _kill_after:
         self._kill()
 
     def _kill(self):
-        if util.get_platform() == "Windows":
+        if os.name == "nt":
             self._kill_win()
         else:
             self._kill_posix()

@@ -17,7 +17,7 @@ __all__ = [
     "load_data",
     "validate_data",
     "validation_error_output",
-    "validation_errors"
+    "validation_errors",
 ]
 
 __schema: Optional[jschon.JSONSchema] = None
