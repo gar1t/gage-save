@@ -28,36 +28,15 @@
     gage._internal.__init__
     gage._internal.ansi_util
     gage._internal.cli
-    gage._internal.click_util
-    gage._internal.commands.ac_support
     gage._internal.commands.check
     gage._internal.commands.check_impl
     gage._internal.commands.help
-    gage._internal.commands.impl_support
     gage._internal.commands.main
     gage._internal.commands.main_impl
     gage._internal.commands.operations
     gage._internal.commands.operations_impl
     gage._internal.commands.run
     gage._internal.commands.run_impl
-    gage._internal.commands.runs
-    gage._internal.commands.runs_archive
-    gage._internal.commands.runs_comment
-    gage._internal.commands.runs_delete
-    gage._internal.commands.runs_export
-    gage._internal.commands.runs_import
-    gage._internal.commands.runs_info
-    gage._internal.commands.runs_label
-    gage._internal.commands.runs_list
-    gage._internal.commands.runs_list_impl
-    gage._internal.commands.runs_mark
-    gage._internal.commands.runs_merge
-    gage._internal.commands.runs_publish
-    gage._internal.commands.runs_purge
-    gage._internal.commands.runs_restore
-    gage._internal.commands.runs_stop
-    gage._internal.commands.runs_support
-    gage._internal.commands.runs_tag
     gage._internal.config
     gage._internal.exitcodes
     gage._internal.file_util

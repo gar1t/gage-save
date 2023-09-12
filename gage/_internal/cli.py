@@ -23,6 +23,7 @@ __all__ = [
     "AliasGroup",
     "Table",
     "err",
+    "excludes",
     "label",
     "markdown",
     "out",
@@ -61,6 +62,20 @@ def label(s: str):
 
 def markdown(md: str):
     return rich.markdown.Markdown(md)
+
+
+def excludes(*params: str):
+    def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
+        if value:
+            for other_name in params:
+                if param.name != other_name and other_name in ctx.params:
+                    raise SystemExit(
+                        f"{param.name} and {other_name} cannot both be specified\n"
+                        f"Try '{ctx.command_path} --help' for more information."
+                    )
+        return value
+
+    return callback
 
 
 class pager:

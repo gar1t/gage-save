@@ -19,15 +19,22 @@ CheckData = list[tuple[str, str]]
 
 
 class Args(NamedTuple):
+    filename: str
     version: str
     json: bool
     verbose: bool
 
 
 def check(args: Args):
+    if args.filename:
+        _check_filename_and_exit(args.filename)
     if args.version:
         _check_version_and_exit(args.version)
     _print_check_info(args)
+
+
+def _check_filename_and_exit(req: str):
+    pass
 
 
 def _check_version_and_exit(req: str):

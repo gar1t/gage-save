@@ -3,15 +3,21 @@
 Help for `check`:
 
     >>> run("gage check --help", env={"COLUMNS": "72"})  # +diff
-    Usage: gage check [OPTIONS]
+    Usage: gage check [OPTIONS] [PATH]
     ⤶
       Show and validate settings.
     ⤶
-      Use `check` to show Gage ML version, install location, and other
+      Use **check** to show Gage ML version, install location, and other
       configured settings.
     ⤶
+      To check a Gage file for issues, specify the file as **PATH**.
+    ⤶
+    Arguments:
+      [PATH]  Check Gage file for issues. Cannot be used with --version.
+    ⤶
     Options:
-      --version SPEC  Test Gage version against SPEC.
+      --version SPEC  Test Gage version against SPEC. Cannot be used with
+                      filename.
       --json          Format check output as JSON.
       -v, --verbose   Show more information.
       --help          Show this message and exit.
@@ -88,4 +94,11 @@ Non matching spec:
     gage: invalid version spec '==foobar': expected end or semicolon (after name and
     no valid version specifier)
     See https://bit.ly/45AerAj for help with version specs.
+    <1>
+
+## Exclusive params
+
+    >>> run("gage check --version xxx some-path")
+    gage: filename and version cannot both be specified
+    Try 'gage check --help' for more information.
     <1>
