@@ -46,14 +46,6 @@ def _default_opdef(gf: GageFile):
     return None
 
 
-# def _try_plugin_opdef(opspec: Optional[str], cwd: str):
-#     return plugin_opdef_for_opspec(opspec, cwd)
-
-
-# def _try_builtin_opdef(opspec: Optional[str], cwd: str):
-#     return None
-
-
 def _opdef_not_found(opspec: Optional[str], *rest: Any):
     raise OpDefNotFound(opspec)
 
