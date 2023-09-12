@@ -9,6 +9,8 @@ import struct
 
 RunOutput = tuple[float, int, str]
 
+# TODO look for a standard tee module
+
 
 class RunOutputReader:
     def __init__(self, run_dir: str):
