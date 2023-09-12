@@ -63,7 +63,7 @@ StderrCapture = util.StderrCapture
 basename = os.path.basename
 findl = file_util.find
 symlink = os.symlink
-touch = util.touch
+touch = file_util.touch
 
 
 def parse_type(name: str, pattern: str, group_count: int = 0):
@@ -202,7 +202,7 @@ def cat(*parts: str):
 
 
 def write(filename: str, contents: str, append: bool = False):
-    util.write_file(filename, contents, append=append)
+    file_util.write_file(filename, contents, append=append)
 
 
 class SysPath:

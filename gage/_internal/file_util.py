@@ -4,20 +4,50 @@ from typing import *
 
 import errno
 import hashlib
+import logging
 import os
+import re
+import shutil
+import stat
+import subprocess
+import tempfile
+import time
 
 __all__ = [
+    "Chdir",
+    "TempDir",
+    "TempFile",
     "compare_paths",
+    "copytree",
+    "dir_size",
     "ensure_dir",
+    "ensure_safe_rmtree",
     "expand_path",
+    "file_md5",
+    "file_sha1",
+    "file_sha256",
     "files_differ",
+    "files_digest",
     "find",
     "find_up",
     "is_text_file",
     "make_dir",
+    "make_executable",
+    "mktempdir",
     "realpath",
+    "rmtempdir",
+    "safe_filename",
+    "safe_listdir",
+    "safe_rmtree",
+    "set_readonly",
+    "shorten_path",
     "standardize_path",
+    "subpath",
+    "test_windows_symlinks",
+    "write_file"
 ]
+
+log = logging.getLogger(__name__)
 
 
 def standardize_path(path: str):
@@ -164,24 +194,6 @@ def make_dir(d: str):
     os.makedirs(realpath(d))
 
 
-# def disk_usage(path: str):
-#     total = _file_size(path)
-#     for root, dirs, names in os.walk(path, followlinks=False):
-#         for name in dirs + names:
-#             path = os.path.join(root, name)
-#             total += _file_size(os.path.join(root, name))
-#     return total
-
-
-# def _file_size(path: str):
-#     stat = os.lstat if os.path.islink(path) else os.stat
-#     try:
-#         return stat(path).st_size
-#     except (OSError, IOError) as e:
-#         log.warning("could not read size of %s: %s", path, e)
-#         return 0
-
-
 def find(
     root: str,
     followlinks: bool = False,
@@ -305,3 +317,345 @@ def compare_paths(p1: str, p2: str):
 
 def _resolve_path(p: str):
     return realpath(os.path.expanduser(p))
+
+
+def file_sha256(path: str, use_cache: bool = True):
+    if use_cache:
+        cached_sha = try_cached_sha(path)
+        if cached_sha:
+            return cached_sha
+
+    return _gen_file_hash(path, hashlib.sha256())
+
+
+def file_sha1(path: str):
+    return _gen_file_hash(path, hashlib.sha1())
+
+
+def _gen_file_hash(path: str, hash: "hashlib._Hash"):
+    with open(path, "rb") as f:
+        while True:
+            data = f.read(102400)
+            if not data:
+                break
+            hash.update(data)
+    return hash.hexdigest()
+
+
+def try_cached_sha(for_file: str):
+    try:
+        f = open(_cached_sha_filename(for_file), "r")
+    except IOError:
+        return None
+    else:
+        return f.read().rstrip()
+
+
+def _cached_sha_filename(for_file: str):
+    parent, name = os.path.split(for_file)
+    return os.path.join(parent, f".gage-cache-{name}.sha")
+
+
+def write_cached_sha(sha: str, for_file: str):
+    with open(_cached_sha_filename(for_file), "w") as f:
+        f.write(sha)
+
+
+def file_md5(path: str):
+    import hashlib
+
+    return _gen_file_hash(path, hashlib.md5())
+
+
+class _TempBase:
+    def __init__(self, prefix: str = "gage-", suffix: str = "", keep: bool = False):
+        self._prefix = prefix
+        self._suffix = suffix
+        self._keep = keep
+        self.path = self._init_temp(self._prefix, self._suffix)
+
+    def __enter__(self):
+        return self
+
+    @staticmethod
+    def _init_temp(prefix: str, suffix: str) -> str:
+        raise NotImplementedError()
+
+    def __exit__(self, *exc: Any):
+        if not self._keep:
+            self.delete()
+
+    def keep(self):
+        self._keep = True
+
+    def delete(self) -> None:
+        raise NotImplementedError()
+
+
+class TempDir(_TempBase):
+    @staticmethod
+    def _init_temp(prefix: str, suffix: str):
+        return tempfile.mkdtemp(prefix=prefix, suffix=suffix)
+
+    def delete(self):
+        rmtempdir(self.path)
+
+
+class TempFile(_TempBase):
+    @staticmethod
+    def _init_temp(prefix: str, suffix: str):
+        f, path = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        os.close(f)
+        return path
+
+    def delete(self):
+        os.remove(self.path)
+
+
+def mktempdir(prefix: str = ""):
+    return tempfile.mkdtemp(prefix=prefix)
+
+
+def rmtempdir(path: str):
+    assert os.path.dirname(path) == tempfile.gettempdir(), path
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        if log.getEffectiveLevel() <= logging.DEBUG:
+            log.exception("rmtree %s", path)
+        else:
+            log.error("error removing %s: %s", path, e)
+
+
+def safe_rmtree(path: str, force: bool = False):
+    """Removes path if it's not top level or user dir."""
+    assert not _top_level_dir(path), path
+    assert path != os.path.expanduser("~"), path
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+    elif os.path.isfile(path):
+        os.remove(path)
+    elif not force:
+        raise ValueError(f"{path} does not exist")
+
+
+def ensure_safe_rmtree(path: str):
+    try:
+        safe_rmtree(path, force=True)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+
+def _top_level_dir(path: str):
+    abs_path = os.path.abspath(path)
+    parts = [p for p in re.split(r"[/\\]", abs_path) if p]
+    if os.name == "nt":
+        return len(parts) <= 2
+    return len(parts) <= 1
+
+def test_windows_symlinks():
+    if os.name != "nt":
+        return
+    with TempDir() as tmp:
+        os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
+
+def strip_trailing_sep(path: str):
+    if path and path[-1] in ("/", "\\"):
+        return path[:-1]
+    return path
+
+
+def strip_leading_sep(path: str):
+    if path and path[0] in ("/", "\\"):
+        return path[1:]
+    return path
+
+
+def ensure_trailing_sep(path: str, sep: Optional[str] = None):
+    sep = sep or os.path.sep
+    if path[-1:] != sep:
+        path += sep
+    return path
+
+
+def subpath(path: str, start: str, sep: Optional[str] = None):
+    if path == start:
+        raise ValueError(path, start)
+    start_with_sep = ensure_trailing_sep(start, sep)
+    if path.startswith(start_with_sep):
+        return path[len(start_with_sep) :]
+    raise ValueError(path, start)
+
+
+def symlink(target: str, link: str):
+    if os.name == "nt":
+        _windows_symlink(target, link)
+    else:
+        os.symlink(target, link)
+
+
+def copyfile(src: str, dest: str):
+    shutil.copyfile(src, dest)
+    shutil.copymode(src, dest)
+
+
+def _windows_symlink(target: str, link: str):
+    if os.path.isdir(target):
+        args = ["mklink", "/D", link, target]
+    else:
+        args = ["mklink", link, target]
+    try:
+        subprocess.check_output(args, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        err_msg = e.output.decode(errors="ignore").strip()
+        _maybe_symlink_error(err_msg, e.returncode)
+        raise OSError(e.returncode, err_msg) from e
+
+
+def _maybe_symlink_error(err_msg: str, err_code: int):
+    if "You do not have sufficient privilege to perform this operation" in err_msg:
+        raise SystemExit(
+            "You do not have sufficient privilege to perform this operation\n\n"
+            "For help, see "
+            "https://my.guild.ai/docs/windows#symbolic-links-privileges-in-windows",
+            err_code,
+        )
+
+
+def touch(filename: str):
+    open(filename, "ab").close()
+    now = time.time()
+    os.utime(filename, (now, now))
+
+
+def ensure_file(filename: str):
+    if not os.path.exists(filename):
+        touch(filename)
+
+def copytree(src: str, dest: str, preserve_links: bool = True):
+    try:
+        # dirs_exist_ok was added in Python 3.8:
+        # https://docs.python.org/3/library/shutil.html#shutil.copytree
+        shutil.copytree(src, dest, symlinks=preserve_links, dirs_exist_ok=True)
+    except TypeError as e:
+        assert "got an unexpected keyword argument 'dirs_exist_ok'" in str(e), e
+        # Drop this fallback when drop support for Python 3.7
+        # pylint: disable=deprecated-module
+        from distutils import dir_util
+
+        dir_util.copy_tree(src, dest, preserve_symlinks=preserve_links)
+
+
+class Chdir:
+    _save = None
+
+    def __init__(self, path: str):
+        self.path = path
+
+    def __enter__(self):
+        self._save = os.getcwd()
+        os.chdir(self.path)
+
+    def __exit__(self, *exc: Any):
+        assert self._save is not None
+        os.chdir(self._save)
+
+
+def dir_size(dir: str):
+    size = 0
+    for root, dirs, names in os.walk(dir):
+        for name in dirs + names:
+            size += os.path.getsize(os.path.join(root, name))
+    return size
+
+def safe_listdir(path: str) -> list[str]:
+    try:
+        return os.listdir(path)
+    except OSError:
+        return []
+
+
+def shorten_path(
+    path: str, max_len: int = 28, ellipsis: str = "\u2026", sep: str = os.path.sep
+):
+    if len(path) <= max_len:
+        return path
+    parts = _shorten_path_split_path(path, sep)
+    if len(parts) == 1:
+        return parts[0]
+    assert all(parts), parts
+    r = [parts.pop()]  # Always include rightmost part
+    if parts[0][0] == sep:
+        l = []
+        pop_r = False
+    else:
+        # Relative path, always include leftmost part
+        l = [parts.pop(0)]
+        pop_r = True
+    while parts:
+        len_l = sum((len(s) + 1 for s in l))
+        len_r = sum((len(s) + 1 for s in r))
+        part = parts.pop() if pop_r else parts.pop(0)
+        side = r if pop_r else l
+        if len_l + len_r + len(part) + len(ellipsis) >= max_len:
+            break
+        side.append(part)
+        pop_r = not pop_r
+    shortened = os.path.sep.join(
+        [os.path.sep.join(l), ellipsis, os.path.sep.join(reversed(r))]
+    )
+    if len(shortened) >= len(path):
+        return path
+    return shortened
+
+
+def _shorten_path_split_path(path: str, sep: str) -> list[str]:
+    """Splits path into parts.
+
+    Leading and repeated '/' chars are prepended to the
+    part. E.g. "/foo/bar" is returned as ["/foo", "bar"] and
+    "foo//bar" as ["foo", "/bar"].
+    """
+    if not path:
+        return []
+    parts = path.split(sep)
+    packed = []
+    blanks = []
+    for part in parts:
+        if part == "":
+            blanks.append("")
+        else:
+            packed.append(sep.join(blanks + [part]))
+            blanks = []
+    if len(blanks) > 1:
+        packed.append(sep.join(blanks))
+    return packed
+
+def make_executable(path: str):
+    os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
+
+
+def write_file(
+    filename: str, contents: str, append: bool = False, readonly: bool = False
+):
+    opts = "a" if append else "w"
+    with open(filename, opts) as f:
+        f.write(contents)
+    if readonly:
+        set_readonly(filename)
+
+
+def set_readonly(filename: str, readonly: bool = True):
+    mode = (
+        stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH
+        if readonly
+        else stat.S_IWUSR | stat.S_IREAD
+    )
+    os.chmod(filename, mode)
+
+
+def safe_filename(s: str):
+    if os.name == "nt":
+        s = re.sub(r"[:<>?]", "_", s).rstrip()
+    return re.sub(r"[/\\]+", "_", s)

@@ -536,10 +536,10 @@ def _init_git_ls_files_sample_project():
 
     Returns the project directory.
     """
-    project_dir = util.mktempdir("guild-check-")
+    project_dir = file_util.mktempdir("guild-check-")
     _ = subprocess.check_output([_git_exe(), "init"], cwd=project_dir)
     os.mkdir(os.path.join(project_dir, "files"))
-    util.touch(os.path.join(project_dir, "files", "foo.txt"))
+    file_util.touch(os.path.join(project_dir, "files", "foo.txt"))
     with open(os.path.join(project_dir, ".gitignore"), "w") as f:
         f.write("*.txt\n")
     return project_dir

@@ -4,15 +4,11 @@ from typing import *
 
 import datetime
 import errno
-import hashlib
 import logging
 import os
 import re
-import shutil
-import stat
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 
@@ -76,8 +72,6 @@ def pop_find(l: list[Any], f: Callable[[Any], Any], default: Any = None):
             l.remove(x)
             break
     return popped
-
-
 
 
 def ensure_deleted(path: str):
@@ -301,147 +295,10 @@ def _format_details(details: list[str]):
     return lines
 
 
-def file_sha256(path: str, use_cache: bool = True):
-    if use_cache:
-        cached_sha = try_cached_sha(path)
-        if cached_sha:
-            return cached_sha
-    import hashlib
-
-    return _gen_file_hash(path, hashlib.sha256())
-
-
-def file_sha1(path: str):
-    return _gen_file_hash(path, hashlib.sha1())
-
-
-def _gen_file_hash(path: str, hash: "hashlib._Hash"):
-    with open(path, "rb") as f:
-        while True:
-            data = f.read(102400)
-            if not data:
-                break
-            hash.update(data)
-    return hash.hexdigest()
-
-
-def try_cached_sha(for_file: str):
-    try:
-        f = open(_cached_sha_filename(for_file), "r")
-    except IOError:
-        return None
-    else:
-        return f.read().rstrip()
-
-
-def _cached_sha_filename(for_file: str):
-    parent, name = os.path.split(for_file)
-    return os.path.join(parent, f".gage-cache-{name}.sha")
-
-
-def write_cached_sha(sha: str, for_file: str):
-    with open(_cached_sha_filename(for_file), "w") as f:
-        f.write(sha)
-
-
-def file_md5(path: str):
-    import hashlib
-
-    return _gen_file_hash(path, hashlib.md5())
-
-
 def parse_url(url: str):
     from urllib.parse import urlparse
 
     return urlparse(url)
-
-
-class TempBase:
-    def __init__(self, prefix: str = "gage-", suffix: str = "", keep: bool = False):
-        self._prefix = prefix
-        self._suffix = suffix
-        self._keep = keep
-        self.path = self._init_temp(self._prefix, self._suffix)
-
-    def __enter__(self):
-        return self
-
-    @staticmethod
-    def _init_temp(prefix: str, suffix: str) -> str:
-        raise NotImplementedError()
-
-    def __exit__(self, *exc: Any):
-        if not self._keep:
-            self.delete()
-
-    def keep(self):
-        self._keep = True
-
-    def delete(self) -> None:
-        raise NotImplementedError()
-
-
-class TempDir(TempBase):
-    @staticmethod
-    def _init_temp(prefix: str, suffix: str):
-        return tempfile.mkdtemp(prefix=prefix, suffix=suffix)
-
-    def delete(self):
-        rmtempdir(self.path)
-
-
-class TempFile(TempBase):
-    @staticmethod
-    def _init_temp(prefix: str, suffix: str):
-        f, path = tempfile.mkstemp(prefix=prefix, suffix=suffix)
-        os.close(f)
-        return path
-
-    def delete(self):
-        os.remove(self.path)
-
-
-def mktempdir(prefix: str = ""):
-    return tempfile.mkdtemp(prefix=prefix)
-
-
-def rmtempdir(path: str):
-    assert os.path.dirname(path) == tempfile.gettempdir(), path
-    try:
-        shutil.rmtree(path)
-    except Exception as e:
-        if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception("rmtree %s", path)
-        else:
-            log.error("error removing %s: %s", path, e)
-
-
-def safe_rmtree(path: str, force: bool = False):
-    """Removes path if it's not top level or user dir."""
-    assert not _top_level_dir(path), path
-    assert path != os.path.expanduser("~"), path
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-    elif os.path.isfile(path):
-        os.remove(path)
-    elif not force:
-        raise ValueError(f"{path} does not exist")
-
-
-def ensure_safe_rmtree(path: str):
-    try:
-        safe_rmtree(path, force=True)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
-
-
-def _top_level_dir(path: str):
-    abs_path = os.path.abspath(path)
-    parts = [p for p in re.split(r"[/\\]", abs_path) if p]
-    if os.name == "nt":
-        return len(parts) <= 2
-    return len(parts) <= 1
 
 
 class LogCapture(logging.Filter):
@@ -615,90 +472,7 @@ def _iter_resolved_ref_parts(
             yield part
 
 
-def strip_trailing_sep(path: str):
-    if path and path[-1] in ("/", "\\"):
-        return path[:-1]
-    return path
 
-
-def strip_leading_sep(path: str):
-    if path and path[0] in ("/", "\\"):
-        return path[1:]
-    return path
-
-
-def ensure_trailing_sep(path: str, sep: Optional[str] = None):
-    sep = sep or os.path.sep
-    if path[-1:] != sep:
-        path += sep
-    return path
-
-
-def subpath(path: str, start: str, sep: Optional[str] = None):
-    if path == start:
-        raise ValueError(path, start)
-    start_with_sep = ensure_trailing_sep(start, sep)
-    if path.startswith(start_with_sep):
-        return path[len(start_with_sep) :]
-    raise ValueError(path, start)
-
-
-def which(cmd: str):
-    which_cmd = "where" if os.name == "nt" else "which"
-    devnull = open(os.devnull, "w")
-    try:
-        out = subprocess.check_output([which_cmd, cmd], stderr=devnull)
-    except subprocess.CalledProcessError:
-        return None
-    else:
-        assert out, cmd
-        return out.decode("utf-8").split(os.linesep, 1)[0]
-
-
-def symlink(target: str, link: str):
-    if os.name == "nt":
-        _windows_symlink(target, link)
-    else:
-        os.symlink(target, link)
-
-
-def copyfile(src: str, dest: str):
-    shutil.copyfile(src, dest)
-    shutil.copymode(src, dest)
-
-
-def _windows_symlink(target: str, link: str):
-    if os.path.isdir(target):
-        args = ["mklink", "/D", link, target]
-    else:
-        args = ["mklink", link, target]
-    try:
-        subprocess.check_output(args, shell=True, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        err_msg = e.output.decode(errors="ignore").strip()
-        _maybe_symlink_error(err_msg, e.returncode)
-        raise OSError(e.returncode, err_msg) from e
-
-
-def _maybe_symlink_error(err_msg: str, err_code: int):
-    if "You do not have sufficient privilege to perform this operation" in err_msg:
-        raise SystemExit(
-            "You do not have sufficient privilege to perform this operation\n\n"
-            "For help, see "
-            "https://my.guild.ai/docs/windows#symbolic-links-privileges-in-windows",
-            err_code,
-        )
-
-
-def touch(filename: str):
-    open(filename, "ab").close()
-    now = time.time()
-    os.utime(filename, (now, now))
-
-
-def ensure_file(filename: str):
-    if not os.path.exists(filename):
-        touch(filename)
 
 
 def getmtime(filename: str):
@@ -796,11 +570,6 @@ def apply_env(target: dict[str, str], source: dict[str, str], names: list[str]):
             pass
 
 
-def safe_filename(s: str):
-    if os.name == "nt":
-        s = re.sub(r"[:<>?]", "_", s).rstrip()
-    return re.sub(r"[/\\]+", "_", s)
-
 
 def wait_forever(sleep_interval: float = 0.1):
     while True:
@@ -856,150 +625,6 @@ def is_executable_file(path: str):
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
 
-def copytree(src: str, dest: str, preserve_links: bool = True):
-    try:
-        # dirs_exist_ok was added in Python 3.8:
-        # https://docs.python.org/3/library/shutil.html#shutil.copytree
-        shutil.copytree(src, dest, symlinks=preserve_links, dirs_exist_ok=True)
-    except TypeError as e:
-        assert "got an unexpected keyword argument 'dirs_exist_ok'" in str(e), e
-        # Drop this fallback when drop support for Python 3.7
-        # pylint: disable=deprecated-module
-        from distutils import dir_util
-
-        dir_util.copy_tree(src, dest, preserve_symlinks=preserve_links)
-
-
-# TODO: Restore when under test in tests/lib-util.md
-# class CopyFilter:
-#     """Interface of `copy_filter` used with `select_copytree()`."""
-
-#     def delete_excluded_dirs(self, parent: str, dirs: list[str]) -> None:
-#         """Delete excluded dirs prior to copy tree traversal.
-
-#         Use as optimization to avoid traversing into directories that
-#         don't contain files to copy.
-#         """
-
-#     def default_select_path(self, path: str) -> bool:
-#         """Return the default selection result for `path`.
-
-#         This value is used to determine the selection if no other
-#         selection rule from `config` returns a non-None value.
-#         """
-#         raise NotImplementedError()
-
-#     def pre_copy(self, path: str) -> None:
-#         """Perform an action prior to copying a selected file."""
-
-
-# def select_copytree(src: str, dest: str, config, copy_filter=None):
-#     """Copies files from src to dest using select configuration.
-
-#     `config` is an instance of `xxx.FileSelectDef`. If the
-#     files spec is empty, all files are selected. Otherwise, the select
-#     rules are applied to each file to determine if it's copied.
-
-#     `copy_filter` is an optional filter that is applied after the file
-#     select process.
-#     """
-#     if not isinstance(config, list):
-#         raise ValueError(f"invalid config: expected list got {config!r}")
-#     log.debug("copying files from %s to %s", src, dest)
-#     to_copy = _select_files_to_copy(src, config, copy_filter)
-#     if not to_copy:
-#         log.debug("no files to copy")
-#         return
-#     for file_src, file_src_rel_path in to_copy:
-#         file_dest = os.path.join(dest, file_src_rel_path)
-#         log.debug("copying file %s to %s", file_src, file_dest)
-#         ensure_dir(os.path.dirname(file_dest))
-#         _try_copy_file(file_src, file_dest)
-
-
-# def _select_files_to_copy(src_dir: str, config, copy_filter):
-#     to_copy = []
-#     seen_dirs = set()
-#     log.debug("generating file list from %s", src_dir)
-#     for root, dirs, files in os.walk(src_dir, followlinks=True):
-#         seen_dirs.add(realpath(root))
-#         _del_excluded_select_copy_dirs(
-#             dirs, src_dir, root, seen_dirs, config, copy_filter
-#         )
-#         for name in files:
-#             path = os.path.join(root, name)
-#             if not os.path.isfile(path):
-#                 continue
-#             rel_path = os.path.relpath(path, src_dir)
-#             log.debug("considering file to copy %s", path)
-#             if _select_to_copy(path, rel_path, config, copy_filter):
-#                 log.debug("selected file to copy %s", path)
-#                 to_copy.append((path, rel_path))
-#     # Sort before notifying copy_filter to have deterministic result
-#     to_copy.sort()
-#     if copy_filter:
-#         copy_filter.pre_copy(to_copy)
-#     return to_copy
-
-
-# def _del_excluded_select_copy_dirs(
-#     dirs, src_dir: str, root, seen_dirs, config, copy_filter
-# ):
-#     _del_seen_dirs(dirs, root, seen_dirs)
-#     _del_config_excluded_dirs(dirs, src_dir, root, config)
-#     if copy_filter:
-#         copy_filter.delete_excluded_dirs(root, dirs)
-
-
-# def _del_seen_dirs(dirs, root, seen):
-#     for dir_name in dirs:
-#         real_path = realpath(os.path.join(root, dir_name))
-#         if real_path in seen:
-#             dirs.remove(dir_name)
-
-
-# def _del_config_excluded_dirs(dirs, src_dir, root, config):
-#     for name in list(dirs):
-#         path = os.path.join(root, name)
-#         rel_path = os.path.relpath(path, src_dir)
-#         if not _select_to_copy(path, rel_path, config):
-#             dirs.remove(name)
-
-
-# def _select_to_copy(path, rel_path, config, copy_filter=None):
-#     assert isinstance(config, list)
-#     last_match = None
-#     for config_item in config:
-#         for spec in config_item.specs:
-#             if _select_file_match(rel_path, spec):
-#                 last_match = spec
-#     if last_match:
-#         return _select_to_copy_for_spec(last_match)
-#     if copy_filter:
-#         return copy_filter.default_select_path(path)
-#     return True
-
-
-# def _select_file_match(rel_path, spec):
-#     return any((fnmatch.fnmatch(rel_path, p) for p in spec.patterns))
-
-
-# def _select_to_copy_for_spec(spec):
-#     return spec.type == "include"
-
-
-# def _try_copy_file(src, dest):
-#     try:
-#         shutil.copyfile(src, dest)
-#     except (IOError, OSError) as e:
-#         # This is not an error we want to stop an operation for. Log
-#         # and continue.
-#         if log.getEffectiveLevel() <= logging.DEBUG:
-#             log.exception("copy %s to %s", src, dest)
-#         else:
-#             log.warning("could not copy source code file %s: %s", src, e)
-
-
 def hostname():
     return os.getenv("HOST") or _real_hostname()
 
@@ -1030,27 +655,6 @@ def format_bytes(n: float):
     return f"{n:.1f}{units[-1]}"
 
 
-class Chdir:
-    _save = None
-
-    def __init__(self, path: str):
-        self.path = path
-
-    def __enter__(self):
-        self._save = os.getcwd()
-        os.chdir(self.path)
-
-    def __exit__(self, *exc: Any):
-        assert self._save is not None
-        os.chdir(self._save)
-
-
-def dir_size(dir: str):
-    size = 0
-    for root, dirs, names in os.walk(dir):
-        for name in dirs + names:
-            size += os.path.getsize(os.path.join(root, name))
-    return size
 
 
 def platform_info():
@@ -1176,68 +780,6 @@ def short_digest(s: str):
     return s[:8]
 
 
-def safe_listdir(path: str) -> list[str]:
-    try:
-        return os.listdir(path)
-    except OSError:
-        return []
-
-
-def shorten_path(
-    path: str, max_len: int = 28, ellipsis: str = "\u2026", sep: str = os.path.sep
-):
-    if len(path) <= max_len:
-        return path
-    parts = _shorten_path_split_path(path, sep)
-    if len(parts) == 1:
-        return parts[0]
-    assert all(parts), parts
-    r = [parts.pop()]  # Always include rightmost part
-    if parts[0][0] == sep:
-        l = []
-        pop_r = False
-    else:
-        # Relative path, always include leftmost part
-        l = [parts.pop(0)]
-        pop_r = True
-    while parts:
-        len_l = sum((len(s) + 1 for s in l))
-        len_r = sum((len(s) + 1 for s in r))
-        part = parts.pop() if pop_r else parts.pop(0)
-        side = r if pop_r else l
-        if len_l + len_r + len(part) + len(ellipsis) >= max_len:
-            break
-        side.append(part)
-        pop_r = not pop_r
-    shortened = os.path.sep.join(
-        [os.path.sep.join(l), ellipsis, os.path.sep.join(reversed(r))]
-    )
-    if len(shortened) >= len(path):
-        return path
-    return shortened
-
-
-def _shorten_path_split_path(path: str, sep: str) -> list[str]:
-    """Splits path into parts.
-
-    Leading and repeated '/' chars are prepended to the
-    part. E.g. "/foo/bar" is returned as ["/foo", "bar"] and
-    "foo//bar" as ["foo", "/bar"].
-    """
-    if not path:
-        return []
-    parts = path.split(sep)
-    packed = []
-    blanks = []
-    for part in parts:
-        if part == "":
-            blanks.append("")
-        else:
-            packed.append(sep.join(blanks + [part]))
-            blanks = []
-    if len(blanks) > 1:
-        packed.append(sep.join(blanks))
-    return packed
 
 
 class HTTPResponse:
@@ -1466,12 +1008,6 @@ def _strip_comment_lines(s: str):
     return "\n".join([line for line in s.split("\n") if line.rstrip()[:1] != "#"])
 
 
-def test_windows_symlinks():
-    if os.name != "nt":
-        return
-    with TempDir() as tmp:
-        os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
-
 
 PropertyCacheProp = tuple[str, Any, Callable[..., Any], float]
 
@@ -1499,11 +1035,6 @@ class PropertyCache:
         self._expirations[name] = time.time() + self._timeouts[name]
         return val
 
-
-def make_executable(path: str):
-    import stat
-
-    os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
 
 
 def natsorted(*args: Any, **kw: Any):
@@ -1707,20 +1238,13 @@ def encode_cfg_val(x: Any):
     return str(x)
 
 
-def write_file(
-    filename: str, contents: str, append: bool = False, readonly: bool = False
-):
-    opts = "a" if append else "w"
-    with open(filename, opts) as f:
-        f.write(contents)
-    if readonly:
-        set_readonly(filename)
-
-
-def set_readonly(filename: str, readonly: bool = True):
-    mode = (
-        stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH
-        if readonly
-        else stat.S_IWUSR | stat.S_IREAD
-    )
-    os.chmod(filename, mode)
+def which(cmd: str):
+    which_cmd = "where" if os.name == "nt" else "which"
+    devnull = open(os.devnull, "w")
+    try:
+        out = subprocess.check_output([which_cmd, cmd], stderr=devnull)
+    except subprocess.CalledProcessError:
+        return None
+    else:
+        assert out, cmd
+        return out.decode("utf-8").split(os.linesep, 1)[0]
