@@ -6,7 +6,9 @@
       Show help for a topic.
     ⤶
     Commands:
-      filters  Filtering results.
+      filters     Filtering results.
+      gagefile    Defining and using gage files.
+      operations  Defining and running operations.
     <0>
 
 Note that topics are listed under the heading **Commands**, which is

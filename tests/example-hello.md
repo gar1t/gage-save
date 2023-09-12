@@ -12,15 +12,16 @@ possible Gage project.
     >>> cat("gage.json")
     {
       "hello": {
-        "description": "Hello world style operation",
+        "description": "Say hello to my friend",
         "exec": ["python", "-c", "print('Hello Gage!')"]
       }
     }
 
 List operations.
 
-    >>> run("gage ops")
-    hello  Hello world style operation
+    >>> run("gage ops")  # -space
+    operation  description
+    hello      Say hello to my friend
     <0>
 
 Run hello.

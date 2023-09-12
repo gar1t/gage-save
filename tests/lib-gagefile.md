@@ -12,7 +12,7 @@ Create a function that validates Gage file data.
 
     >>> def validate(data, verbose=False):
     ...     try:
-    ...         gagefile.validate(data)
+    ...         gagefile.validate_data(data)
     ...     except gagefile.ValidationError as e:
     ...         if verbose:
     ...             import json

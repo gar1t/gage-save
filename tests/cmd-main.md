@@ -15,8 +15,10 @@ Running `gage` without arguments shows help.
       --help     Show this message and exit.
     ⤶
     Commands:
-      check  Show and validate Gage ML settings.
-      run    Start an operation.
+      check            Show and validate settings.
+      help             Show help for a topic.
+      operations, ops  Show available operations.
+      run              Start or stage an operation.
     <0>
 
 ## Help
@@ -45,6 +47,8 @@ The `-C` runs the command in the specified directory.
     >>> run(f"gage -C {tmp} check -v")  # +parse -space
     {}
     command_directory      {x:path}
+    project_directory      <none>
+    gagefile               <none>
     <0>
 
     >>> assert x == tmp
