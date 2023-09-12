@@ -472,9 +472,6 @@ def _iter_resolved_ref_parts(
             yield part
 
 
-
-
-
 def getmtime(filename: str):
     try:
         return os.path.getmtime(filename)
@@ -570,7 +567,6 @@ def apply_env(target: dict[str, str], source: dict[str, str], names: list[str]):
             pass
 
 
-
 def wait_forever(sleep_interval: float = 0.1):
     while True:
         time.sleep(sleep_interval)
@@ -653,8 +649,6 @@ def format_bytes(n: float):
             return f"{n:.1f}{unit}"
         n /= 1024.0
     return f"{n:.1f}{units[-1]}"
-
-
 
 
 def platform_info():
@@ -778,8 +772,6 @@ def short_digest(s: str):
     if not s:
         return ""
     return s[:8]
-
-
 
 
 class HTTPResponse:
@@ -1008,7 +1000,6 @@ def _strip_comment_lines(s: str):
     return "\n".join([line for line in s.split("\n") if line.rstrip()[:1] != "#"])
 
 
-
 PropertyCacheProp = tuple[str, Any, Callable[..., Any], float]
 
 
@@ -1034,7 +1025,6 @@ class PropertyCache:
         self._vals[name] = val
         self._expirations[name] = time.time() + self._timeouts[name]
         return val
-
 
 
 def natsorted(*args: Any, **kw: Any):

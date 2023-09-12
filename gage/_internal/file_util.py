@@ -44,7 +44,7 @@ __all__ = [
     "standardize_path",
     "subpath",
     "test_windows_symlinks",
-    "write_file"
+    "write_file",
 ]
 
 log = logging.getLogger(__name__)
@@ -454,11 +454,13 @@ def _top_level_dir(path: str):
         return len(parts) <= 2
     return len(parts) <= 1
 
+
 def test_windows_symlinks():
     if os.name != "nt":
         return
     with TempDir() as tmp:
         os.symlink(tempfile.gettempdir(), os.path.join(tmp.path, "link"))
+
 
 def strip_trailing_sep(path: str):
     if path and path[-1] in ("/", "\\"):
@@ -533,6 +535,7 @@ def ensure_file(filename: str):
     if not os.path.exists(filename):
         touch(filename)
 
+
 def copytree(src: str, dest: str, preserve_links: bool = True):
     try:
         # dirs_exist_ok was added in Python 3.8:
@@ -568,6 +571,7 @@ def dir_size(dir: str):
         for name in dirs + names:
             size += os.path.getsize(os.path.join(root, name))
     return size
+
 
 def safe_listdir(path: str) -> list[str]:
     try:
@@ -631,6 +635,7 @@ def _shorten_path_split_path(path: str, sep: str) -> list[str]:
     if len(blanks) > 1:
         packed.append(sep.join(blanks))
     return packed
+
 
 def make_executable(path: str):
     os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
