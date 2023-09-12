@@ -11,6 +11,15 @@ import yaml
 
 from .types import GageFile
 
+__all__ = [
+    "ValidationError",
+    "load_gagefile",
+    "load_data",
+    "validate_data",
+    "validation_error_output",
+    "validation_errors"
+]
+
 __schema: Optional[jschon.JSONSchema] = None
 
 
@@ -31,7 +40,7 @@ def validation_errors(e: ValidationError):
     return list(e.validation_result.collect_errors())
 
 
-def validate(obj: JSONCompatible):
+def validate_data(obj: JSONCompatible):
     schema = _ensure_schema()
     result = schema.evaluate(jschon.JSON(obj))
     if not result.valid:
@@ -56,12 +65,12 @@ def _load_schema():
     return jschon.JSONSchema(schema_data)
 
 
-def load(filename: str):
-    data = _data_for_file(filename)
+def load_gagefile(filename: str):
+    data = load_data(filename)
     return GageFile(filename, data)
 
 
-def _data_for_file(filename: str):
+def load_data(filename: str):
     ext = os.path.splitext(filename)[1].lower()
     if ext == ".toml":
         return _load_toml(filename)
@@ -88,7 +97,7 @@ def _load_yaml(filename: str):
         return yaml.safe_load(f)
 
 
-def for_dir(path: str):
+def gagefile_for_dir(path: str):
     paths = [
         os.path.join(path, candidate)
         for candidate in [
@@ -101,5 +110,5 @@ def for_dir(path: str):
     for path in paths:
         if not os.path.exists(path):
             continue
-        return load(path)
+        return load_gagefile(path)
     raise FileNotFoundError(paths[-1])

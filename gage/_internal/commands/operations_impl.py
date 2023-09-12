@@ -11,7 +11,7 @@ from .. import gagefile
 
 def operations():
     try:
-        gf = gagefile.for_dir(config.cwd())
+        gf = gagefile.gagefile_for_dir(config.cwd())
     except FileNotFoundError:
         raise SystemExit("No operations defined for the current project")
     else:

@@ -47,6 +47,12 @@ exec = "python train.py"
 - Fix plain table printing and matching with Groktest (look for `-space`
   options in tests associated with commands that print a table)
 
+- Gage file validation should show the line/col numbers of errors (note
+  that we strip comments so adjust for that)
+
+- Gage file comments for JSON can't be inline - find a parser or get the
+  comment stripping right
+
 ## Run layout
 
 - Init run by creating `.meta` (done)

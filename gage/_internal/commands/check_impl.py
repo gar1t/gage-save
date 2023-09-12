@@ -2,16 +2,18 @@
 
 from typing import *
 
+import json
 import platform
 import sys
 
 import gage
 
 from .. import cli
-from .. import gagefile
 from .. import config
+from .. import gagefile
 from .. import project_util
 from .. import util
+
 
 __all__ = ["check"]
 
@@ -27,19 +29,33 @@ class Args(NamedTuple):
 
 def check(args: Args):
     if args.filename:
-        _check_filename_and_exit(args.filename)
+        _check_gagefile_and_exit(args)
     if args.version:
-        _check_version_and_exit(args.version)
+        _check_version_and_exit(args)
     _print_check_info(args)
 
 
-def _check_filename_and_exit(req: str):
-    pass
-
-
-def _check_version_and_exit(req: str):
+def _check_gagefile_and_exit(args: Args):
+    data = gagefile.load_data(args.filename)
     try:
-        match = util.check_gage_version(req)
+        gagefile.validate_data(data)
+    except gagefile.ValidationError as e:
+        cli.err(f"[red bold]ERROR[/red bold]: {args.filename} has problems")
+        if args.verbose:
+            output = gagefile.validation_error_output(e)
+            cli.err(json.dumps(output, indent=2, sort_keys=True))
+        else:
+            for err in gagefile.validation_errors(e):
+                cli.err(err)
+        raise SystemExit(1)
+    else:
+        cli.err(f"{args.filename} is a valid Gage file")
+        raise SystemExit(0)
+
+
+def _check_version_and_exit(args: Args):
+    try:
+        match = util.check_gage_version(args.version)
     except ValueError as e:
         msg = _format_version_check_error(e)
         raise SystemExit(
@@ -49,7 +65,7 @@ def _check_version_and_exit(req: str):
         if not match:
             raise SystemExit(
                 f"version mismatch: current version '{gage.__version__}' "
-                f"does not match '{req}'"
+                f"does not match '{args.version}'"
             )
         else:
             raise SystemExit(0)
@@ -90,12 +106,13 @@ def _maybe_verbose_info_data(verbose: bool) -> CheckData:
     return [
         ("command_directory", cwd),
         ("project_directory", project_dir or "<none>"),
-        ("gagefile", gagefile.filename if gagefile  else "<none>"),
+        ("gagefile", gagefile.filename if gagefile else "<none>"),
     ]
+
 
 def _try_gagefile(cwd: str):
     try:
-        return gagefile.for_dir(cwd)
+        return gagefile.gagefile_for_dir(cwd)
     except FileNotFoundError:
         return None
 

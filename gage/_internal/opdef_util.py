@@ -25,7 +25,7 @@ def opdef_for_opspec(opspec: Optional[str], cwd: Optional[str] = None):
 
 def _try_project_opdef(opspec: Optional[str], cwd: str):
     try:
-        gf = gagefile.for_dir(cwd)
+        gf = gagefile.gagefile_for_dir(cwd)
     except FileNotFoundError:
         return None
     else:

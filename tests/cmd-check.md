@@ -50,6 +50,29 @@ directory for control.
 
     >>> assert x == tmp
 
+## Check Gage file
+
+Validate `hello` example.
+
+    >>> use_example("hello")
+
+    >>> run("gage check gage.json")
+    gage.json is a valid Gage file
+    <0>
+
+Generate an invalid Gage file.
+
+    >>> cd(make_temp_dir())
+
+    >>> write("gage.json", """
+    ... 123
+    ... """)
+
+    >>> run("gage check gage.json")
+    ERROR: gage.json has problems
+    The instance must be of type "object"
+    <1>
+
 ## Check version
 
 The `--version` option is used to check the Gage version against a
