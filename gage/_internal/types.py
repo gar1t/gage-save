@@ -45,7 +45,12 @@ class OpDef:
 
     @property
     def exec(self):
-        return OpDefExec(self, self._data.get("exec") or {})
+        exec = self._data.get("exec")
+        if exec is None:
+            return None
+        if isinstance(exec, str):
+            return exec
+        return OpDefExec(self, exec)
 
 
 class OpDefExec:

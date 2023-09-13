@@ -3,9 +3,9 @@
         "exec": {
             "copy-sourcecode": "cp * $run_dir",
             "copy-deps": "echo pass",
-            "init-runtime": "echo pass",
+            // Intentionally skip: "init-runtime": "echo pass",
             "run": "dir .",
-            "finalize-run": "echo pass"
+            "finalize-run": ["echo", "pass"]
         }
     }
 }

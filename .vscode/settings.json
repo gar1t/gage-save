@@ -20,7 +20,8 @@
     }
   ],
   "files.associations": {
-    "gage.json": "jsonc"
+    "gage.json": "jsonc",
+    "**/samples/gagefiles/*.json": "jsonc"
   },
   "cSpell.enabled": true,
   "cSpell.spellCheckOnlyWorkspaceFiles": true,
