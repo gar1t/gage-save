@@ -19,7 +19,7 @@ Run meta init is performed by `init_run_meta`. Meta must be initialized
 before a run is staged or started.
 
 Runs must exist before their meta directory is initialized. For details
-on run creation, see [*Making a run*](run-lifecycle-1-make-run.md).
+on run creation, see [*Making a run*](topic-run-lifecycle-1-make-run.md).
 
 Create a new run.
 

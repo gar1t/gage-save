@@ -20,7 +20,7 @@ process.
 
 Run meta must be initialized before the run can be staged. For more
 information on this process, see [*Initializing run
-meta*](run-lifecycle-2-init-meta.md).
+meta*](topic-run-lifecycle-2-init-meta.md).
 
 Create a run and initialize its meta.
 
