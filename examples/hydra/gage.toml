@@ -1,0 +1,11 @@
+[my_app]
+
+exec = "python my_app.py"
+
+[[my_app.config]]
+
+include = "conf/**/*.yml"
+
+[[my_app.config.bind]]
+
+target = "*"

@@ -34,6 +34,19 @@
       "title": "Path pattern",
       "minLength": 1
     },
+    "path-patterns": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/path-pattern"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/path-pattern"
+          }
+        }
+      ]
+    },
     "writeable": {
       "oneOf": [
         {
@@ -48,6 +61,52 @@
           }
         }
       ]
+    },
+    "binding": {
+      "type": "object",
+      "title": "Configuration binding",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "title": "Binding target path"
+        },
+        "name": {
+          "type": "string",
+          "title": "Binding name"
+        }
+      },
+      "required": ["target"]
+    },
+    "config": {
+      "type": "object",
+      "title": "Run configuration",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "title": "Path to configuration file"
+        },
+        "include": {
+          "$ref": "#/$defs/path-patterns"
+        },
+        "exclude": {
+          "$ref": "#/$defs/path-patterns"
+        },
+        "bind": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/binding"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/binding"
+              }
+            }
+          ]
+        }
+      }
     }
   },
 
@@ -98,38 +157,32 @@
             }
           ]
         },
-        "requires": {
-          "type": "array",
-          "title": "Operation dependencies",
-          "items": {
-            "oneOf": [
-              {
-                "type": "string",
-                "title": "Required resource",
-                "format": "uri"
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "resource": {
-                    "type": "string",
-                    "title": "Required resource",
-                    "format": "uri"
-                  },
-                  "select": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/$defs/path-pattern"
-                    }
-                  },
-                  "writeable": {
-                    "$ref": "#/$defs/writeable"
-                  }
-                }
-              }
-            ]
+        "sourcecode": {
+          "type": "object",
+          "title": "Operation source code",
+          "additionalProperties": false,
+          "properties": {
+            "include": {
+              "$ref": "#/$defs/path-patterns"
+            },
+            "exclude": {
+              "$ref": "#/$defs/path-patterns"
+            }
           }
+        },
+        "config": {
+          "title": "Operation configuration",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/config"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/config"
+              }
+            }
+          ]
         }
       }
     }

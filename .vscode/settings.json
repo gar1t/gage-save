@@ -2,7 +2,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.analysis.ignore": ["gage/_vendor", "tests"],
+  "python.analysis.ignore": ["examples", "tests"],
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportUntypedFunctionDecorator": "none",
@@ -15,7 +15,7 @@
   "black-formatter.args": ["--skip-string-normalization"],
   "json.schemas": [
     {
-      "fileMatch": ["gage.json", "**/samples/gagefiles/*.json"],
+      "fileMatch": ["gage.json", "gage.toml", "**/samples/gagefiles/*.json"],
       "url": "/gage/gagefile.schema.json"
     }
   ],

@@ -109,6 +109,21 @@ assumption that dependencies are not modified by a run. In cases where a
 resolved dependency must be written, the dependency may specify
 `writeable` as a boolean or as an array of paths.
 
-    >>> run("gage check writeable-deps.json")
+    >>> run("gage check writeable-deps.json")  # +skip - might not use requires
     writeable-deps.json is a valid Gage file
     <0>
+
+## Missing config binding target
+
+When specifying a binding, `target` is required.
+
+    >>> run("gage check missing-bind-target.json")  # +wildcard
+    ERROR: missing-bind-target.json has problems
+    Properties ['train'] are invalid
+    Properties ['config'] are invalid
+    ...
+    Properties ['bind'] are invalid
+    ...
+    The object is missing required properties ['target']
+    ...
+    <1>
