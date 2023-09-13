@@ -43,6 +43,7 @@ Create a run and initialize its meta.
     id
     initialized
     log/runner
+    name
     opdef.json
     opref
     proc/cmd

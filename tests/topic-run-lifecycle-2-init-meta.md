@@ -87,6 +87,7 @@ Gage creates the following files:
     -r--r--r-- initialized
     drwxrwxr-x log
     -rw-rw-r-- log/runner
+    -r--r--r-- name
     -r--r--r-- opdef.json
     -r--r--r-- opref
     drwxrwxr-x proc
@@ -169,8 +170,9 @@ process.
 
 The runner log contains log entries for the actions performed.
 
-    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse +diff
+    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse
     {:date} Writing id
+    {:date} Writing name
     {:date} Writing opdef.json
     {:date} Writing proc/cmd
     {:date} Writing proc/env

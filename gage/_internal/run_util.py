@@ -146,6 +146,7 @@ def init_run_meta(
     _ensure_meta_log_dir(meta_dir)
     log = _runner_log(run)
     _write_run_id(run, meta_dir, log)
+    _write_run_name(run, meta_dir, log)
     _write_opdef(opdef, meta_dir, log)
     _write_cmd_args(cmd, meta_dir, log)
     _write_cmd_env(cmd, meta_dir, log)
@@ -177,6 +178,12 @@ def _write_run_id(run: Run, meta_dir: str, log: Logger):
     log.info("Writing id")
     filename = os.path.join(meta_dir, "id")
     write_file(filename, run.id, readonly=True)
+
+
+def _write_run_name(run: Run, meta_dir: str, log: Logger):
+    log.info("Writing name")
+    filename = os.path.join(meta_dir, "name")
+    write_file(filename, run.name, readonly=True)
 
 
 def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
