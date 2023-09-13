@@ -19,17 +19,19 @@ from .file_util import write_file
 
 from .opref_util import encode_opref
 
+from .run_manifest import RunManifest
+
 __all__ = [
     "META_SCHEMA",
-    "run_status",
-    "run_meta_dir",
-    "run_attrs",
-    "run_attr",
-    "make_run",
-    "unique_run_id",
-    "run_timestamp",
     "init_run_meta",
+    "make_run",
+    "run_attr",
+    "run_attrs",
+    "run_meta_dir",
+    "run_status",
+    "run_timestamp",
     "stage_run",
+    "unique_run_id",
 ]
 
 META_SCHEMA = 1
@@ -106,7 +108,7 @@ def make_run(location: Optional[str] = None):
 
 
 def unique_run_id():
-    return uuid.uuid4().hex
+    return str(uuid.uuid4())
 
 
 def run_timestamp():
@@ -248,7 +250,88 @@ def stage_run(run: Run):
     if not os.path.exists(meta_dir):
         raise FileNotFoundError(f"Run meta dir does not exist: {meta_dir}")
     log = _runner_log(run)
+    manifest = run_manifest(run, writable=True)
+    for action in _stage_actions(run):
+        action(run, manifest, log)
+    _finalize_staged_run(run, manifest, log)
     _write_staged_timestamp(meta_dir, log)
+
+    """
+    TODO
+
+    - Resolve "actions" (some callback) for:
+      - Copy source code
+      - Transform applicable source code with flag values
+      - Init runtime
+      - Copy/resolve deps (are these separate exec attr, one
+        for copy another for download?)
+
+    - For each action, apply it and then update the manifest
+      based on the latest files list in the run dir
+      - Apply a status field based on new file or timestamp
+        change
+      - Update modified timestamp if needed
+      - NOTE: this might be an append only application with the
+        expectation that the manifest will be rewritten on run
+        finalize to include sha256 digests - OR we could be
+        talking about an interim manifest or manifest log, which
+        is separate from the final manifest (e.g. it's written
+        under logs and can be a totally different file)
+
+    Start with actions that are Nushell commands first.
+
+    Then introduce an action driven by `sourcecode` and
+    `requires` attrs.
+
+    These perform what `exec.copy-sourcecode` and `exec.deps`
+    would otherwise handle. Not sure if they should be mutually
+    exclusive or if they can be used together? Probably together
+    where the exec occurs after the derived.
+
+    """
+
+
+StageAction = Callable[[Run, RunManifest, Logger], None]
+
+
+def _stage_actions(run: Run) -> Iterable[StageAction]:
+    return [copy_sourcecode]
+
+
+def copy_sourcecode(run: Run, manifest: RunManifest, log: Logger):
+    # Apply spec if any, update manifest with 's' entries
+    pass
+
+
+def copy_sourcecode_exec(run: Run, manifest: RunManifest, log: Logger):
+    # Exec exec.sourcecode if specified, update manifest with 's' entries
+    pass
+
+
+def resolve_deps(run: Run, manifest: RunManifest, log: Logger):
+    # Resolve deps under `requires`, update manifest with 'd' entries
+    pass
+
+
+def copy_deps_exec(run: Run, manifest: RunManifest, log: Logger):
+    # Exec exec.copy_deps if specified, update manifest with 'd' entries
+    pass
+
+
+def init_runtime_exec(run: Run, manifest: RunManifest, log: Logger):
+    # Exec exec.init_runtime if specified, update manifest with 'r' entries
+    pass
+
+
+def _finalize_staged_run(run: Run, manifest: RunManifest, log: Logger):
+    # - Write/rewrite the manifest applying codes and sha256 digests
+    #   OR wait until the run is completed and do this?
+    # - Change all files to read-only
+    # - Need a list of writeable files in opdef to skip the read
+    #   only setting
+    # - COULD have an escape hatch here as a post-stage exec to let the
+    #   user do funny stuff, e.g. make files writeable
+    pass
 
 
 def _write_staged_timestamp(meta_dir: str, log: Logger):
@@ -256,3 +339,12 @@ def _write_staged_timestamp(meta_dir: str, log: Logger):
     filename = os.path.join(meta_dir, "staged")
     timestamp = run_timestamp()
     write_file(filename, str(timestamp), readonly=True)
+
+
+# =================================================================
+# Run manifest
+# =================================================================
+
+
+def run_manifest(run: Run, writable: bool = False):
+    return RunManifest(run)

@@ -101,3 +101,14 @@ Exec commands must be either strings or arrays of strings.
     Properties ['copy-deps', 'init-runtime', 'finalize-run'] are invalid
     ...
     <1>
+
+## Writeable dependencies
+
+By default Gage sets resolved dependency files to read-only under the
+assumption that dependencies are not modified by a run. In cases where a
+resolved dependency must be written, the dependency may specify
+`writeable` as a boolean or as an array of paths.
+
+    >>> run("gage check writeable-deps.json")
+    writeable-deps.json is a valid Gage file
+    <0>

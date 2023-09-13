@@ -120,12 +120,12 @@ Supported top-level attributes:
     The array has too few elements (minimum 1)
     ...
 
-Note that the following example is invalid but manages to pass the
-validation. This is an issue with jschon 0.11.0. As it's not a critical
-problem for Gage we're living with the behavior.
-
-    >>> validate({"test": {"exec": [""]}})
-    ok
+    >>> validate({"test": {"exec": [""]}})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['exec'] are invalid
+    ...
+    The text is too short (minimum 1 characters)
+    ...
 
 ## Experiments with TOML
 

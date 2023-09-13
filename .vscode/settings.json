@@ -16,7 +16,7 @@
   "json.schemas": [
     {
       "fileMatch": ["gage.json", "**/samples/gagefiles/*.json"],
-      "url": "/gage/schema/gagefile.json"
+      "url": "/gage/gagefile.schema.json"
     }
   ],
   "files.associations": {
@@ -99,6 +99,8 @@
     "preexec",
     "printl",
     "procs",
+    "proquint",
+    "proquints",
     "psutil",
     "pwsh",
     "pycache",

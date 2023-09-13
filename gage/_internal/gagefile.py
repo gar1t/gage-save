@@ -54,24 +54,16 @@ def validate_data(obj: JSONCompatible):
 def _ensure_schema():
     if not __schema:
         catalog = jschon.create_catalog("2020-12")
-        catalog.add_uri_source(
-            jschon.URI("https://gageml.org/"),
-            jschon.LocalSource(_schema_dir(), suffix=".json"),
-        )
         globals()["__schema"] = _load_schema()
     assert __schema
     return __schema
 
 
-def _schema_dir():
-    return os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "schema",
-    )
-
-
 def _load_schema():
-    src = os.path.join(_schema_dir(), "gagefile.json")
+    src = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "gagefile.schema.json",
+    )
     with open(src) as f:
         schema_data = json.load(f)
     return jschon.JSONSchema(schema_data)
@@ -83,6 +75,8 @@ def load_gagefile(filename: str):
 
 
 def load_data(filename: str):
+    if not os.path.exists(filename):
+        raise LoadError(f"file does not exist: {filename}")
     ext = os.path.splitext(filename)[1].lower()
     if ext == ".toml":
         return _load_toml(filename)
@@ -90,7 +84,7 @@ def load_data(filename: str):
         return _load_json(filename)
     if ext in (".yaml", ".yml"):
         return _load_yaml(filename)
-    raise TypeError(f"unsupported file extension for {filename}")
+    raise LoadError(f"unsupported file extension for {filename}")
 
 
 def _load_toml(filename: str):

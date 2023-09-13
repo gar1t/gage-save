@@ -5,7 +5,7 @@ from typing import *
 from .types import *
 
 
-class Manifest:
+class RunManifest:
     def __init__(self, run: Run):
         self.run = run
 

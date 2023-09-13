@@ -41,6 +41,7 @@ __all__ = [
     "parse_date",
     "parse_path",
     "parse_run_id",
+    "parse_run_name",
     "parse_timestamp",
     "parse_ver",
     "path_exists",
@@ -110,8 +111,13 @@ def parse_path(s: str):
     return s
 
 
-@parse_type("run_id", r"[a-f0-9]{32}")
+@parse_type("run_id", r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
 def parse_run_id(s: str):
+    return s
+
+
+@parse_type("run_name", r"[a-z]{5}-[a-z]{5}")
+def parse_run_name(s: str):
     return s
 
 

@@ -2,9 +2,9 @@
 
 from typing import *
 
-from jschon import JSONCompatible
-
 Data = dict[str, Any]
+
+# NO IMPORTS ALLOWED
 
 
 class OpDefNotFound(Exception):
@@ -32,7 +32,7 @@ class OpDef:
         self.name = name
         self._data = data
 
-    def as_json(self) -> JSONCompatible:
+    def as_json(self) -> Data:
         return self._data
 
     @property
@@ -96,6 +96,32 @@ class Run:
     def __init__(self, run_id: str, run_dir: str):
         self.id = run_id
         self.run_dir = run_dir
+        self.name = _run_name_for_id(run_id)
+
+
+def _run_name_for_id(run_id: str):
+    # An unusual case of implementation in this module but it's tied to
+    # Run construction. Run names are, by definition,
+    # [proquints](https://arxiv.org/html/0901.4016) of the first 32 bits
+    # of data in a hex-encoded UUID.
+    #
+    # In cases where a run ID is not a hex-encoded UUID, the proquint is
+    # generated from the 32 bit crc digest of the run ID.
+    from proquint import uint2quint_str
+
+    return uint2quint_str(_run_id_as_uint(run_id))
+
+
+def _run_id_as_uint(run_id: str):
+    if len(run_id) >= 32:
+        # Test for likely hex-encoded UUID
+        try:
+            return int(run_id[:8], 16)
+        except ValueError:
+            pass
+    from binascii import crc32
+
+    return crc32(run_id.encode())
 
 
 RunStatus = Literal["unknown", "foobar"]  # TODO!

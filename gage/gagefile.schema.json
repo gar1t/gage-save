@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gageml.org/gagefile",
+  "title": "Gage ML Project File",
+
+  "$defs": {
+    "shell-cmd": {
+      "type": "string",
+      "title": "Shell command",
+      "minLength": 1
+    },
+    "cmd-args": {
+      "type": "array",
+      "title": "Command arguments",
+      "items": {
+        "title": "Command argument",
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "exec-cmd": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/shell-cmd"
+        },
+        {
+          "$ref": "#/$defs/cmd-args"
+        }
+      ]
+    },
+    "path-pattern": {
+      "type": "string",
+      "title": "Path pattern",
+      "minLength": 1
+    },
+    "writeable": {
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Writeable flag"
+        },
+        {
+          "type": "array",
+          "title": "List of writeable paths",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": {
+    ".+": {
+      "type": "object",
+      "title": "Operation definition",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "default": {
+          "type": "boolean"
+        },
+        "exec": {
+          "title": "Exec spec",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/shell-cmd"
+            },
+            {
+              "$ref": "#/$defs/cmd-args"
+            },
+            {
+              "type": "object",
+              "title": "Full exec spec",
+              "additionalProperties": false,
+              "properties": {
+                "copy-sourcecode": {
+                  "$ref": "#/$defs/exec-cmd"
+                },
+                "copy-deps": {
+                  "$ref": "#/$defs/exec-cmd"
+                },
+                "init-runtime": {
+                  "$ref": "#/$defs/exec-cmd"
+                },
+                "run": {
+                  "$ref": "#/$defs/exec-cmd"
+                },
+                "finalize-run": {
+                  "$ref": "#/$defs/exec-cmd"
+                }
+              }
+            }
+          ]
+        },
+        "requires": {
+          "type": "array",
+          "title": "Operation dependencies",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "title": "Required resource",
+                "format": "uri"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "resource": {
+                    "type": "string",
+                    "title": "Required resource",
+                    "format": "uri"
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/path-pattern"
+                    }
+                  },
+                  "writeable": {
+                    "$ref": "#/$defs/writeable"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

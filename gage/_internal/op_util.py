@@ -16,7 +16,7 @@ def init_run(op: Op):
 
 
 def stage_run(run: Run, op: Op):
-    with run_manifest.Manifest(run):
+    with run_manifest.RunManifest(run):
         _copy_sourcecode(op, run)
         _resolve_deps(op, run)
 

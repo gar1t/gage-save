@@ -17,14 +17,25 @@ Create a new run.
 
     >>> run = make_run(runs_home)
 
-We know three things about the run:
+We know four things about the run:
 
 1. It has a unique ID
 
        >>> run.id  # +parse
        '{run_id:run_id}'
 
-2. It has a corresponding run directory under `runs_home`
+2. It has a name based on the ID
+
+       >>> run.name  # +parse
+       '{run_name:run_name}'
+
+   Any run with the same ID has the same name.
+
+       >>> from gage._internal.types import Run
+
+       >>> assert Run(run_id, None).name == run_name
+
+3. It has a corresponding run directory under `runs_home`
 
        >>> run.run_dir  # +parse
        '{run_dir:path}'
@@ -33,7 +44,7 @@ We know three things about the run:
 
        >>> assert run_dir == path_join(runs_home, run_id)
 
-3. It's status is `unknown`
+4. It's status is `unknown`
 
        >>> run_status(run)
        'unknown'
