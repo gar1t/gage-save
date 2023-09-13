@@ -252,7 +252,7 @@ def stage_run(run: Run):
 
 
 def _write_staged_timestamp(meta_dir: str, log: Logger):
-    log.info("Writing initialized")
-    filename = os.path.join(meta_dir, "initialized")
+    log.info("Writing staged")
+    filename = os.path.join(meta_dir, "staged")
     timestamp = run_timestamp()
     write_file(filename, str(timestamp), readonly=True)

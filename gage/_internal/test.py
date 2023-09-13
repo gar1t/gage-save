@@ -29,6 +29,7 @@ __all__ = [
     "basename",
     "cat",
     "cd",
+    "delete_temp_dir",
     "find",
     "findl",
     "json",
@@ -64,6 +65,7 @@ basename = os.path.basename
 findl = file_util.find
 symlink = os.symlink
 touch = file_util.touch
+delete_temp_dir = file_util.rmtempdir
 
 
 def parse_type(name: str, pattern: str, group_count: int = 0):

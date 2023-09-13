@@ -32,6 +32,10 @@ class ValidationError(Exception):
         self.validation_result = validation_result
 
 
+class LoadError(Exception):
+    pass
+
+
 def validation_error_output(e: ValidationError):
     return e.validation_result.output("verbose")
 
@@ -49,17 +53,25 @@ def validate_data(obj: JSONCompatible):
 
 def _ensure_schema():
     if not __schema:
-        jschon.create_catalog("2020-12")
+        catalog = jschon.create_catalog("2020-12")
+        catalog.add_uri_source(
+            jschon.URI("https://gageml.org/"),
+            jschon.LocalSource(_schema_dir(), suffix=".json"),
+        )
         globals()["__schema"] = _load_schema()
     assert __schema
     return __schema
 
 
-def _load_schema():
-    src = os.path.join(
+def _schema_dir():
+    return os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "gagefile.schema.json",
+        "schema",
     )
+
+
+def _load_schema():
+    src = os.path.join(_schema_dir(), "gagefile.json")
     with open(src) as f:
         schema_data = json.load(f)
     return jschon.JSONSchema(schema_data)
@@ -89,7 +101,10 @@ def _load_toml(filename: str):
 def _load_json(filename: str):
     with open(filename) as f:
         s = "".join([line for line in f if line.lstrip()[:2] != "//"])
-        return json.loads(s)
+        try:
+            return json.loads(s)
+        except json.JSONDecodeError as e:
+            raise LoadError(f"invalid JSON: {e}")
 
 
 def _load_yaml(filename: str):

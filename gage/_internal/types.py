@@ -43,6 +43,35 @@ class OpDef:
     def default(self):
         return bool(self._data.get("default"))
 
+    @property
+    def exec(self):
+        return OpDefExec(self, self._data.get("exec") or {})
+
+
+class OpDefExec:
+    def __init__(self, opdef: OpDef, data: Data):
+        self._data = data
+
+    @property
+    def copy_sourcecode(self) -> str | None:
+        return self._data.get("copy-sourcecode")
+
+    @property
+    def copy_deps(self) -> str | None:
+        return self._data.get("copy-deps")
+
+    @property
+    def init_runtime(self) -> str | None:
+        return self._data.get("init-runtime")
+
+    @property
+    def run(self) -> str | None:
+        return self._data.get("run")
+
+    @property
+    def finalize_run(self) -> str | None:
+        return self._data.get("finalize-run")
+
 
 class GageFile:
     def __init__(self, filename: str, data: Data):

@@ -36,21 +36,34 @@ def check(args: Args):
 
 
 def _check_gagefile_and_exit(args: Args):
-    data = gagefile.load_data(args.filename)
     try:
-        gagefile.validate_data(data)
-    except gagefile.ValidationError as e:
-        cli.err(f"[red bold]ERROR[/red bold]: {args.filename} has problems")
-        if args.verbose:
-            output = gagefile.validation_error_output(e)
-            cli.err(json.dumps(output, indent=2, sort_keys=True))
-        else:
-            for err in gagefile.validation_errors(e):
-                cli.err(err)
-        raise SystemExit(1)
+        data = gagefile.load_data(args.filename)
+    except gagefile.LoadError as e:
+        _handle_gagefile_load_error(e, args)
     else:
-        cli.err(f"{args.filename} is a valid Gage file")
-        raise SystemExit(0)
+        try:
+            gagefile.validate_data(data)
+        except gagefile.ValidationError as e:
+            _handle_gagefile_validation_error(e, args)
+        else:
+            cli.err(f"{args.filename} is a valid Gage file")
+            raise SystemExit(0)
+
+
+def _handle_gagefile_load_error(e: gagefile.LoadError, args: Args):
+    cli.err(f"[red bold]ERROR[/red bold]: {args.filename}: {e}")
+    raise SystemExit(1)
+
+
+def _handle_gagefile_validation_error(e: gagefile.ValidationError, args: Args):
+    cli.err(f"[red bold]ERROR[/red bold]: {args.filename} has problems")
+    if args.verbose:
+        output = gagefile.validation_error_output(e)
+        cli.err(json.dumps(output, indent=2, sort_keys=True))
+    else:
+        for err in gagefile.validation_errors(e):
+            cli.err(err)
+    raise SystemExit(1)
 
 
 def _check_version_and_exit(args: Args):

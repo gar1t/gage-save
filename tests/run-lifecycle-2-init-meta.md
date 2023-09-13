@@ -1,15 +1,14 @@
 # Initialing run meta
 
-Run metadata ("meta") is information about the run that is independent
-of the run directory and its contents. Meta is located in a side-car
-directory (i.e. located along side the run directory) with the same name
-but ending in `.meta`.
+Run metadata ("meta") is information about the run that's independent of
+the run directory. Meta is located in a side-car directory (i.e. located
+along side the run directory) with the same name but ending in `.meta`.
 
 Specifically excluded from the meta directory:
 
 - Source code
 - Dependencies
-- User generated files
+- User-generated files
 
 A run must be initialized before it can be staged or run. Once
 initialized, the run appears in a run listing.
@@ -19,12 +18,15 @@ Initializing a run does not affect the run directory.
 Run meta init is performed by `init_run_meta`. Meta must be initialized
 before a run is staged or started.
 
-    >>> from gage._internal.run_util import *
-    >>> from gage._internal.types import *
+Runs must exist before their meta directory is initialized. For details
+on run creation, see [*Making a run*](run-lifecycle-1-make-run.md).
 
-Runs must exist before their meta directory is initialized.
+Create a new run.
+
+    >>> from gage._internal.run_util import *
 
     >>> runs_home = make_temp_dir()
+
     >>> run = make_run(runs_home)
 
 `run_meta_dir` returns the meta directory path for a run.
@@ -36,9 +38,8 @@ The meta directory does not exist initially.
 
     >>> assert not path_exists(meta_dir)
 
-To initialize a run, provide the following:
+Initialing meta requires the following information:
 
-- Run
 - Op reference
 - Op definition
 - Op command
@@ -46,6 +47,8 @@ To initialize a run, provide the following:
 - System attributes
 
 Define inputs to the init function.
+
+    >>> from gage._internal.types import *
 
     >>> opref = OpRef("test", "test")
 
@@ -65,7 +68,7 @@ Define inputs to the init function.
     ...     "platform": "test 123"
     ... }
 
-Initialize the run by calling `init_run_meta`.
+Initialize the run meta with `init_run_meta()`.
 
     >>> init_run_meta(
     ...     run,
@@ -76,7 +79,7 @@ Initialize the run by calling `init_run_meta`.
     ...     system_attrs
     ... )
 
-The following files are created:
+Gage creates the following files:
 
     >>> find(meta_dir, include_dirs=True, permissions=True)  # +diff
     -r--r--r-- __schema__

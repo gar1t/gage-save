@@ -15,8 +15,8 @@
   "black-formatter.args": ["--skip-string-normalization"],
   "json.schemas": [
     {
-      "fileMatch": ["gage.json"],
-      "url": "/gage/gagefile.schema.json"
+      "fileMatch": ["gage.json", "**/samples/gagefiles/*.json"],
+      "url": "/gage/schema/gagefile.json"
     }
   ],
   "files.associations": {
@@ -55,6 +55,7 @@
     "followlinks",
     "funs",
     "gagefile",
+    "gagefiles",
     "gageml",
     "GAGEPLAIN",
     "GAGETEST",

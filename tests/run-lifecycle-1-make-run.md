@@ -3,12 +3,11 @@
 A run is created with an ID and a run directory. Runs are always local
 to a system.
 
-A run is typically created using `make_run`. This function generates a
-unique ID and creates a corresponding run directory in a given parent
+A run can be created using `make_run`. This function generates a unique
+ID and creates a corresponding run directory in a given parent
 directory.
 
     >>> from gage._internal.run_util import *
-    >>> from gage._internal.var import list_runs
 
 Create a parent directory.
 
@@ -18,7 +17,7 @@ Create a new run.
 
     >>> run = make_run(runs_home)
 
-We know three things about this run:
+We know three things about the run:
 
 1. It has a unique ID
 
@@ -39,8 +38,6 @@ We know three things about this run:
        >>> run_status(run)
        'unknown'
 
-There's nothing more to the run.
-
 The run directory is empty.
 
     >>> find(run_dir)
@@ -55,6 +52,8 @@ It's attributes cannot be read.
     >>> assert x == run_dir
 
 The run doesn't show up in a run listing.
+
+    >>> from gage._internal.var import list_runs
 
     >>> list_runs(runs_home)
     []

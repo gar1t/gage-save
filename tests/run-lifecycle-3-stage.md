@@ -1,26 +1,36 @@
 # Staging a run dir
 
 A staged run can be started by a runner using only the run directory and
-the contents of the run meta directory. Staged runs can be relocated to
-run on another compatible system. A staged run is independent of its
-project.
+the contents of the run meta directory. Staged runs (i.e. the run and
+meta directories) can be relocated to another compatible system and
+started there.
 
-A staged run requires a compatible system (platform, installed
-applications and libraries, etc.)
+A staged run is independent of its project.
 
-For staging to occur, the runner must copy all files required by the run
-that are not otherwise required of the system to the run directory.
+A staged run relies on a compatible system (platform, installed
+applications and libraries, etc.) to run. If a staged run is moved to an
+incompatible system, it won't run.
 
-Apart from creating a run manifest and logging actions performed during
-staging, the run meta directory is not changed.
+To stage a run, the runner must copy all files required by the run that
+are not otherwise provided by the system to the run directory.
+
+When staging a run, meta is updated with a manifest file and additional
+log entries, which reflect the actions performed during the staging
+process.
+
+Run meta must be initialized before the run can be staged. For more
+information on this process, see [*Initializing run
+meta*](run-lifecycle-2-init-meta.md).
+
+Create a run and initialize its meta.
 
     >>> from gage._internal.run_util import *
-    >>> from gage._internal.types import *
-
-Run meta must be initialized before the run can be staged.
 
     >>> runs_home = make_temp_dir()
+
     >>> run = make_run(runs_home)
+
+    >>> from gage._internal.types import *
 
     >>> opref = OpRef("test", "test")
     >>> opdef = OpDef("test", {})
@@ -38,26 +48,54 @@ Run meta must be initialized before the run can be staged.
     proc/cmd
     proc/env
 
-For details about initializing run meta, see
-[`run-lifecycle-2-init-meta.md`](run-lifecycle-2-init-meta.md).
+Stage the run using `stage_run()`.
 
-Stage the run using `stage_run`.
+    >>> stage_run(run)
 
+According to the meta configuration above, nothing is copied for
+staging.
 
-## Notes
+Two changes are made in this case.
 
-What are we doing here? What does it actually mean to stage something?
+- A `staged` timestamp is written
 
-I think this is more like "configure your 'system' for a run". In this
-case the system is the run directory (cwd) and the command + env that's
-needed to run the thing successfully.
+    >>> meta_dir = run_meta_dir(run)
 
-Here's some scenarios:
+    >>> find(meta_dir, include_dirs=True, permissions=True)  # +wildcard
+    -r--r--r-- __schema__
+    ...
+    -r--r--r-- staged
 
-``` bash
-# cwd is the run directory
-virtualenv .venv
-.venv/bin/pip install $PROJECT  # What's the correct var here??
+- Runner logs are updated
 
-```
-- Run `virtual env `
+    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse
+    {}
+    {:date} Writing staged
+
+## Copying files
+
+Gage divides staged file copies into three phases:
+
+- Source code copy
+- Runtime init
+- Dependency resolution
+
+Each of these these phases is implemented by `stages`
+
+## Errors
+
+Stage a non-existing run directory.
+
+    >>> missing_run_dir = make_temp_dir()
+    >>> delete_temp_dir(missing_run_dir)
+
+    >>> stage_run(Run("", missing_run_dir))  # +parse
+    Traceback (most recent call last):
+    FileNotFoundError: Run dir does not exist: {:path}
+
+Stage a run without a meta dir.
+
+    >>> run_dir_no_meta = make_temp_dir()
+    >>> stage_run(Run("", run_dir_no_meta))  # +parse
+    Traceback (most recent call last):
+    FileNotFoundError: Run meta dir does not exist: {:path}.meta

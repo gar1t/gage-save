@@ -16,7 +16,7 @@ requires = "data.txt"
 
 decription = "Use a virtual env for a run"
 
-[virtualenv.stages]
+[virtualenv.exec]
 
 copy-sourcecode = """
 cp -r **/*.py $run_dir
