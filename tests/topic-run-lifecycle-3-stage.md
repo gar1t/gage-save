@@ -38,7 +38,7 @@ Create a run and initialize its meta.
 
     >>> init_run_meta(run, opref, opdef, cmd, {}, {})
 
-    >>> find(run_meta_dir(run))
+    >>> ls(run_meta_dir(run))
     __schema__
     id
     initialized
@@ -62,7 +62,7 @@ Two changes are made in this case.
 
     >>> meta_dir = run_meta_dir(run)
 
-    >>> find(meta_dir, include_dirs=True, permissions=True)  # +wildcard
+    >>> ls(meta_dir, include_dirs=True, permissions=True)  # +wildcard
     -r--r--r-- __schema__
     ...
     -r--r--r-- staged

@@ -3,6 +3,7 @@
 from typing import *
 
 import errno
+import glob
 import hashlib
 import logging
 import os
@@ -28,6 +29,7 @@ __all__ = [
     "file_sha256",
     "files_differ",
     "files_digest",
+    "ls",
     "find",
     "find_up",
     "is_text_file",
@@ -194,7 +196,7 @@ def make_dir(d: str):
     os.makedirs(realpath(d))
 
 
-def find(
+def ls(
     root: str,
     followlinks: bool = False,
     includedirs: bool = False,
@@ -212,6 +214,61 @@ def find(
         for name in files:
             paths.append(relpath(path, name))
     return paths if unsorted else sorted(paths)
+
+
+def find(
+    top: str,
+    include: List[str],
+    exclude: List[str],
+    followlinks: bool = True,
+):
+    exclude_re = [_glob_to_pattern(p) for p in exclude]
+    return [
+        path
+        for path in _globs(include, followlinks)  # \
+        if not _excluded(path, exclude_re)
+    ]
+
+
+def _glob_to_pattern(pattern: str):
+    path_sep = re.escape(os.path.sep)
+    re_str = path_sep.join(_glob_part_to_re(part) for part in pattern.split("/")) + "$"
+    return re.compile(re_str)
+
+
+_GLOB_MATCHER_P = re.compile(r"\*\*|\*|\?")
+
+
+def _glob_part_to_re(s: str):
+    re_parts = []
+    path_sep = re.escape(os.path.sep)
+    pos = 0
+    for m in _GLOB_MATCHER_P.finditer(s):
+        start, end = m.span()
+        re_parts.append(re.escape(s[pos:start]))
+        matcher = s[start:end]
+        if matcher == "*":
+            re_parts.append(rf"[^{path_sep}]+")
+        elif matcher == "**":
+            re_parts.append(r".+")
+        elif matcher == "?":
+            re_parts.append(rf"[^{path_sep}]")
+        else:
+            assert False, (matcher, s)
+        pos = end
+    re_parts.append(re.escape(s[pos:]))
+    return "".join(re_parts)
+
+
+def _globs(patterns: list[str], followlinks: bool):
+    paths: set[str] = set()
+    for p in patterns:
+        paths.update(glob.glob(p, recursive=True, include_hidden=True))
+    return paths
+
+
+def _excluded(path: str, patterns: list[Pattern[str]]):
+    return any(p.match(path) for p in patterns)
 
 
 def find_up(

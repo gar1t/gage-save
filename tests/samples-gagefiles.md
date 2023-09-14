@@ -127,3 +127,12 @@ When specifying a binding, `target` is required.
     The object is missing required properties ['target']
     ...
     <1>
+
+## Kitchen sink
+
+`kitchen-sink.json` is intended to demonstrate every configuration
+option.
+
+    >>> run("gage check kitchen-sink.toml")
+    kitchen-sink.toml is a valid Gage file
+    <0>

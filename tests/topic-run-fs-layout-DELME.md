@@ -9,11 +9,11 @@ TODO: run various samples to show files after various run commands.
 
     >> use_project("hello-project", var_home)
 
-    >> find(".")
+    >> ls(".")
     gage.json
     hello.py
 
-    >> find(var_home)
+    >> ls(var_home)
     <empty>
 
 TODO: implement!
@@ -25,7 +25,7 @@ TODO: implement!
 
 TODO: implement!
 
-    >> find(var_home)
+    >> ls(var_home)
     <empty>
 
 Notes on run dir layout:

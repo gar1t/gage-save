@@ -81,7 +81,7 @@ Initialize the run meta with `init_run_meta()`.
 
 Gage creates the following files:
 
-    >>> find(meta_dir, include_dirs=True, permissions=True)  # +diff
+    >>> ls(meta_dir, include_dirs=True, permissions=True)  # +diff
     -r--r--r-- __schema__
     -r--r--r-- id
     -r--r--r-- initialized

@@ -8,23 +8,12 @@ include = [
     "config.json"
 ]
 
-# config.json
-#
-# {
-#   "lr": 0.1,
-#   "epochs": 1000
-# }
-
 [[train.config]]
 
 path = "config.json"
-bind = [
-    "lr as train-lr",
-    "epochs as train-epochs"
-]
 
 [[train.config.bind]]
 
-path = "lr"
+targe = "lr"
 name = "train-lr"
 description = "Train learning rate"

@@ -30,9 +30,9 @@ __all__ = [
     "cat",
     "cd",
     "delete_temp_dir",
-    "find",
-    "findl",
+    "lsl",
     "json",
+    "ls",
     "make_dir",
     "make_temp_dir",
     "normlf",
@@ -58,12 +58,12 @@ __all__ = [
     "write",
 ]
 
-# Pass through
+# Pass-through
 
 LogCapture = util.LogCapture
 StderrCapture = util.StderrCapture
 basename = os.path.basename
-findl = file_util.find
+lsl = file_util.ls
 symlink = os.symlink
 touch = file_util.touch
 delete_temp_dir = file_util.rmtempdir
@@ -161,7 +161,7 @@ def make_temp_dir(prefix: str = "gage-test-"):
 FindIgnore = str | list[str]
 
 
-def find(
+def ls(
     root: str,
     follow_links: bool = False,
     include_dirs: bool = False,
@@ -170,7 +170,7 @@ def find(
 ):
     import natsort
 
-    paths = file_util.find(root, follow_links, include_dirs)
+    paths = file_util.ls(root, follow_links, include_dirs)
     if ignore:
         paths = _filter_ignored(paths, ignore)
     paths = _standardize_paths(paths)

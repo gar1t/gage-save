@@ -53,7 +53,7 @@ Create a source list to copy.
     ...     empty("sub-2/c"),
     ... ])
 
-    >>> find(src)
+    >>> ls(src)
     a
     sub-1/b
     sub-2/c
@@ -64,7 +64,7 @@ Copy all files to a new directory.
 
     >>> copyfiles(src, dest, ["a", "sub-1/b", "sub-2/c"])
 
-    >>> find(dest)
+    >>> ls(dest)
     a
     sub-1/b
     sub-2/c
@@ -78,7 +78,7 @@ single `include` rule to match a file name pattern.
 
     >>> copyfiles(src, dest, ["a", "sub-1/b", "sub-2/c"], b_select)
 
-    >>> find(dest)
+    >>> ls(dest)
     sub-1/b
 
 The filter mechanism supports a variety of tests beyond name matching.
@@ -114,14 +114,14 @@ copied files.
     ...     dest = make_temp_dir()
     ...     select = FileSelect(select_rules)
     ...     copytree(src, dest, select, handler)
-    ...     find(dest)
+    ...     ls(dest)
 
 ### Basic file selection
 
 Here's a src containing a single text file:
 
     >>> src = make_src([empty("a.txt")])
-    >>> find(src)
+    >>> ls(src)
     a.txt
 
 Without any rules, `copytree` will not copy any files:.
@@ -232,7 +232,7 @@ Create a simple layout that includes a directory.
     ...     empty("d/c.txt"),
     ... ])
 
-    >>> find(src)
+    >>> ls(src)
     a.txt
     d/b.txt
     d/c.txt
@@ -284,7 +284,7 @@ Create a layout with both text and binary files.
     ...     binary("a.bin", 10),
     ... ])
 
-    >>> find(src)
+    >>> ls(src)
     a.bin
     a.txt
 
@@ -375,7 +375,7 @@ prevent copying an unexpectedly large number of files.
 Create a structure containing ten files.
 
     >>> src = make_src([empty(f"{i}.txt") for i in range(10)])
-    >>> find(src)
+    >>> ls(src)
     0.txt
     1.txt
     2.txt

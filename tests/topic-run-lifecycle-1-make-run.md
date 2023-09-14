@@ -51,7 +51,7 @@ We know four things about the run:
 
 The run directory is empty.
 
-    >>> find(run_dir)
+    >>> ls(run_dir)
     <empty>
 
 It's attributes cannot be read.

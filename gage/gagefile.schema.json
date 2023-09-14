@@ -63,20 +63,28 @@
       ]
     },
     "binding": {
-      "type": "object",
-      "title": "Configuration binding",
-      "additionalProperties": false,
-      "properties": {
-        "target": {
+      "oneOf": [
+        {
           "type": "string",
-          "title": "Binding target path"
+          "title": "Simplified configuration binding"
         },
-        "name": {
-          "type": "string",
-          "title": "Binding name"
+        {
+          "type": "object",
+          "title": "Full configuration binding",
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "type": "string",
+              "title": "Binding target path"
+            },
+            "name": {
+              "type": "string",
+              "title": "Binding name"
+            }
+          },
+          "required": ["target"]
         }
-      },
-      "required": ["target"]
+      ]
     },
     "config": {
       "type": "object",

@@ -1,0 +1,42 @@
+[a]
+
+description = "Baseline config"
+default = true
+
+exec = "echo hello"
+
+[a.sourcecode]
+
+include = ["*.py", "*.yaml"]
+
+[a.config]
+
+path = "config.yaml"
+
+# config.yaml
+# -----------
+# lr: 0.1
+# epochs: 1000
+
+[a.config.bind]
+
+target = "*"
+
+[b]
+
+description = "Config bindings as array of strings"
+
+[b.config]
+
+path = "config.yaml"
+bind = ["lr", "epochs"]
+
+[c]
+
+description = "Use include and exclude for config"
+
+[c.config]
+
+include = "config/*.yaml"
+exclude = "config/example.yaml"
+bind = "*"

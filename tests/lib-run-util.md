@@ -28,5 +28,5 @@ as the same.
     Traceback (most recent call last):
     ValueError: mismatched names in opref ('hi') and opdef ('bye')
 
-    >>> find(tmp)
+    >>> ls(tmp)
     <empty>
