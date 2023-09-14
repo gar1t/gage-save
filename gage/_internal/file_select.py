@@ -11,6 +11,7 @@ import re
 import shutil
 
 from .shlex_util import shlex_quote
+from .shlex_util import shlex_split
 
 from .file_util import ensure_dir
 from .file_util import is_text_file
@@ -27,10 +28,12 @@ __all__ = [
     "FileSelectResults",
     "FileSelect",
     "DisabledFileSelect",
-    "include",
-    "exclude",
     "copyfiles",
     "copytree",
+    "exclude",
+    "include",
+    "parse_patterns",
+    "preview_copytree",
 ]
 
 log = logging.getLogger(__name__)
@@ -174,7 +177,7 @@ def _native_paths(patterns: list[str]):
 
 
 def _patterns_match_f(patterns: list[str], regex: bool):
-    return _regex_match_f(patterns) if regex else _fnmatch_f(patterns)
+    return regex and _regex_match_f(patterns) or _fnmatch_f(patterns)
 
 
 def _regex_match_f(patterns: list[str]):
@@ -439,11 +442,11 @@ def copytree(
     dest: str,
     select: FileSelect | None = None,
     handler: FileCopyHandler | None = None,
-    followlinks: bool = True,
+    follow_links: bool = True,
 ):
     """Copies files from src to dest for a FileSelect.
 
-    If followlinks is True (default), follows linked directories when
+    If follow_links is True (default), follows linked directories when
     copying the tree.
 
     A file select spec may be specified to control the copy process. The
@@ -457,7 +460,7 @@ def copytree(
         return
     handler = handler or FileCopyHandler()
     try:
-        _copytree_impl(src, dest, select, handler, followlinks)
+        _copytree_impl(src, dest, select, handler, follow_links)
     finally:
         handler.close()
 
@@ -467,9 +470,9 @@ def _copytree_impl(
     dest: str,
     select: FileSelect | None,
     handler: FileCopyHandler,
-    followlinks: bool,
+    follow_links: bool,
 ):
-    for root, dirs, files in os.walk(src, followlinks=followlinks):
+    for root, dirs, files in os.walk(src, followlinks=follow_links):
         dirs.sort()
         relroot = _relpath(root, src)
         pruned = _prune_dirs(src, relroot, select, dirs)
@@ -518,3 +521,122 @@ def _select_file_for_copy(
     if selected:
         return True, file_src, os.path.join(dest_root, relroot, name), results
     return False, file_src, None, results
+
+
+def parse_patterns(include: list[str], exclude: list[str]):
+    include_rules = [_parse_pattern(p, True) for p in include]
+    exclude_rules = [_parse_pattern(p, False) for p in exclude]
+    return FileSelect([*include_rules, *exclude_rules])
+
+
+def _parse_pattern(spec: str, result: bool):
+    pattern, *tokens = shlex_split(spec)
+    type = _file_type_for_tokens(tokens)
+    size_lt, size_gt = _file_size_for_tokens(tokens)
+    sentinel = _sentinel_for_tokens(tokens)
+    max_matches = _max_matches_for_tokens(tokens)
+    return FileSelectRule(
+        result,
+        _glob_to_re_pattern(pattern),
+        regex=True,
+        type=type,
+        size_lt=size_lt,
+        size_gt=size_gt,
+        sentinel=sentinel,
+        max_matches=max_matches,
+    )
+
+
+def _file_type_for_tokens(tokens: list[str]) -> FileSelectRuleType | None:
+    for type in ("dir", "text", "binary"):
+        if type in tokens:
+            return type
+    return None
+
+_FILE_SIZE_TOKEN_P = re.compile(r"size([<>])(\d+)$")
+
+def _file_size_for_tokens(tokens: list[str]) -> tuple[int | None, int | None]:
+    size_lt = None
+    size_gt = None
+    for t in tokens:
+        m = _FILE_SIZE_TOKEN_P.match(t)
+        if m:
+            if m.group(1) == ">":
+                size_gt = int(m.group(2))
+            else:
+                assert m.group(1) == "<"
+                size_lt = int(m.group(2))
+    return size_lt, size_gt
+
+
+def _sentinel_for_tokens(tokens: list[str]) -> str:
+    for t in tokens:
+        if t.startswith("sentinel="):
+            return t[9:]
+    return ""
+
+_MAX_MATCHES_TOKEN_P = re.compile(r"max-matches=(\d+)$")
+
+def _max_matches_for_tokens(tokens: list[str]) -> int | None:
+    for t in tokens:
+        m = _MAX_MATCHES_TOKEN_P.match(t)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+_GLOB_MATCHER_P = re.compile(r"\*\*/?|\*|\?")
+
+
+def _glob_to_re_pattern(pattern: str):
+    re_parts = []
+    path_sep = re.escape(os.path.sep)
+    pos = 0
+    for m in _GLOB_MATCHER_P.finditer(pattern):
+        start, end = m.span()
+        re_parts.append(re.escape(pattern[pos:start]))
+        matcher = pattern[start:end]
+        if matcher == "*":
+            re_parts.append(rf"[^{path_sep}]+")
+        elif matcher in ("**/", "**"):
+            re_parts.append(r"(?:.+/)*")
+        elif matcher == "?":
+            re_parts.append(rf"[^{path_sep}]")
+        else:
+            assert False, (matcher, pattern)
+        pos = end
+    re_parts.append(re.escape(pattern[pos:]))
+    re_parts.append("$")
+    return "".join(re_parts)
+
+
+class _PreviewHandler(FileCopyHandler):
+    def __init__(self, src: str):
+        self.src_root = src
+        self.to_copy: list[tuple[str, FileSelectResults | None]] = []
+
+    def copy(
+        self,
+        src: str,
+        dest: str,
+        select_results: FileSelectResults | None = None,
+    ):
+        src_relpath = os.path.relpath(src, self.src_root)
+        self.to_copy.append((src_relpath, select_results))
+
+    def ignore(self, src: str, results: FileSelectResults | None):
+        pass
+
+    def handle_copy_error(self, error: Exception, src: str, dest: str):
+        return False
+
+    def close(self):
+        pass
+
+
+def preview_copytree(
+    src: str, select: FileSelect | None = None, follow_links: bool = True
+):
+    handler = _PreviewHandler(src)
+    copytree(src, "", select, handler, follow_links)
+    return handler.to_copy

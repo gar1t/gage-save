@@ -459,3 +459,267 @@ Invalid:
     Traceback (most recent call last):
     ValueError: invalid value for type 'invalid':
     expected one of text, binary, dir
+
+## Preview copy tree
+
+A copy tree operation can be previewed using `preview_copytree()`.
+
+`preview_copytree()` returns a list of path, select results tuples for a
+copy tree of source and select results.
+
+Create a directory structure to preview.
+
+    >>> src = make_src([
+    ...     empty("a.txt"),
+    ...     empty("b.txt"),
+    ...     empty("A/a.txt"),
+    ...     binary("A/b.bin", 20),
+    ...     empty("A/B/c.txt"),
+    ...     empty("C/a.txt"),
+    ...     empty("C/b.txt"),
+    ...     binary("C/c.bin", 20),
+    ... ])
+
+    >>> ls(src, include_dirs=True)
+    A
+    A/B
+    A/B/c.txt
+    A/a.txt
+    A/b.bin
+    C
+    C/a.txt
+    C/b.txt
+    C/c.bin
+    a.txt
+    b.txt
+
+Preview various copy tree select rules.
+
+    >>> def preview(rules):
+    ...     any = False
+    ...     select = FileSelect(rules)
+    ...     for path, select_results in preview_copytree(src, select):
+    ...         print(path)
+    ...         any = True
+    ...     if not any:
+    ...         print("<none>")
+
+An empty rule list selects nothing.
+
+    >>> preview([])
+    <none>
+
+Select everything.
+
+    >>> preview([include("*")])
+    a.txt
+    b.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+    C/c.bin
+
+Select file names.
+
+    >>> preview([include(["a.txt", "b.txt"])])
+    a.txt
+    b.txt
+    A/a.txt
+    C/a.txt
+    C/b.txt
+
+Select under A.
+
+    >>> preview([include("A/*")])
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+
+    >>> preview([include("A/*/c.txt")])
+    A/B/c.txt
+
+## Parsing include/exclude patterns
+
+`parse_patterns` parses include and exclude patterns to create a
+`FileSelect` instance.
+
+Create a directory structure to apply patterns to.
+
+    >>> src = make_src([
+    ...     empty("a.txt"),
+    ...     empty("b.txt"),
+    ...     empty("A/a.txt"),
+    ...     binary("A/b.bin", 20),
+    ...     empty("A/B/c.txt"),
+    ...     empty("C/a.txt"),
+    ...     empty("C/b.txt"),
+    ...     binary("C/c.bin", 20),
+    ... ])
+
+    >>> ls(src, include_dirs=True)
+    A
+    A/B
+    A/B/c.txt
+    A/a.txt
+    A/b.bin
+    C
+    C/a.txt
+    C/b.txt
+    C/c.bin
+    a.txt
+    b.txt
+
+Create a preview function that parses include and exclude patterns.
+
+    >>> def preview(include, exclude):
+    ...     any = False
+    ...     select = parse_patterns(include, exclude)
+    ...     for path, results in preview_copytree(src, select):
+    ...         print(path)
+    ...         any = True
+    ...     if not any:
+    ...         print("<none>")
+
+Show various selections.
+
+    >>> preview([], [])
+    <none>
+
+    >>> preview(["*"], [])
+    a.txt
+    b.txt
+
+    >>> preview(["*.txt"], [])
+    a.txt
+    b.txt
+
+`**`` matches directories. When specified by itself, no files can match.
+
+    >>> preview(["**"], [])
+    <none>
+
+To select files, use `**/<pattern>``.
+
+    >>> preview(["**/*"], [])
+    a.txt
+    b.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+    C/c.bin
+
+    >>> preview(["**/a.txt"], [])
+    a.txt
+    A/a.txt
+    C/a.txt
+
+    >>> preview(["**/C/a.txt"], [])
+    C/a.txt
+
+    >>> preview(["**/c.txt"], [])
+    A/B/c.txt
+
+    >>> preview(["**/A/**/c.txt"], [])
+    A/B/c.txt
+
+    >>> preview(["**/A/B/c.txt"], [])
+    A/B/c.txt
+
+    >>> preview(["**/A/B/**/c.txt"], [])
+    A/B/c.txt
+
+Use exclude to exclude included matches.
+
+    >>> preview(["**/*"], ["a.txt"])
+    b.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+    C/c.bin
+
+    >>> preview(["**/*"], ["**/*.bin"])
+    a.txt
+    b.txt
+    A/a.txt
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+
+Use `text` or `binary` as a pattern annotation to indicate the match
+type.
+
+    >>> preview(["**/* text"], [])
+    a.txt
+    b.txt
+    A/a.txt
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+
+    >>> preview(["**/* binary"], [])
+    A/b.bin
+    C/c.bin
+
+Use `dir` to exclude dirs. This applies the performance optimization
+described above.
+
+    >>> preview(["**/*"], ["A dir"])
+    a.txt
+    b.txt
+    C/a.txt
+    C/b.txt
+    C/c.bin
+
+Use `size>N` or `size<N` to include or exclude by size.
+
+    >>> preview(["**/* size>1"], [])
+    A/b.bin
+    C/c.bin
+
+    >>> preview(["**/* size<20"], [])
+    a.txt
+    b.txt
+    A/a.txt
+    A/B/c.txt
+    C/a.txt
+    C/b.txt
+
+    >>> preview(["**/*"], ["**/b.* size<20"])
+    a.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+    C/a.txt
+    C/c.bin
+
+Use `sentinel` to skip directories containing sentinels.
+
+    >>> preview(["**/*"], ["**/* dir sentinel=c.txt"])
+    a.txt
+    b.txt
+    A/a.txt
+    A/b.bin
+    C/a.txt
+    C/b.txt
+    C/c.bin
+
+Use `max_matches` to limit result count for a pattern.
+
+    >>> preview(["**/* max-matches=5"], [])
+    a.txt
+    b.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt
+
+    >>> preview(["**/* max-matches=5"], ["a.*"])
+    b.txt
+    A/a.txt
+    A/b.bin
+    A/B/c.txt

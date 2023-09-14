@@ -172,7 +172,7 @@ def ls(
 
     paths = file_util.ls(root, follow_links, include_dirs)
     if ignore:
-        paths = file_util.filter_paths(paths, util.coerce_list(ignore))
+        paths = _filter_ignored(paths, ignore)
     paths = _standardize_paths(paths)
     paths.sort(key=natsort.natsort_key)
     if not paths:

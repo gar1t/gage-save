@@ -5,13 +5,15 @@ from typing import *
 from ..types import *
 
 from .. import cli
+from .. import run_sourcecode
 
 from ..opdef_util import opdef_for_spec
 
 
 class Args(NamedTuple):
     operation: str
-    preview: bool
+    preview_sourcecode: bool
+    preview_all: bool
 
 
 def run(args: Args):
@@ -24,14 +26,55 @@ def run(args: Args):
 
 
 def _handle_opdef(opdef: OpDef, args: Args):
-    if args.preview:
-        _preview_run(opdef, args)
+    if _preview_opts(args):
+        _preview_and_exit(opdef, args)
     else:
         print(f"TODO: run {opdef.name}")
 
 
-def _preview_run(opdef: OpDef, args: Args):
-    print(f"TODO: preview {opdef.name}")
+# =================================================================
+# Preview
+# =================================================================
+
+def _preview_opts(args: Args):
+    return args.preview_sourcecode or args.preview_all
+
+
+def _preview_and_exit(opdef: OpDef, args: Args) -> NoReturn:
+    if args.preview_sourcecode or args.preview_all:
+        _preview_sourcecode(opdef)
+    if args.preview_all:
+        _preview_config(opdef, args)
+        _preview_deps(opdef)
+        _preview_runtime_init(opdef)
+        _preview_run_exec(opdef)
+        _preview_run_finalize(opdef)
+    raise SystemExit(0)
+
+
+def _preview_sourcecode(opdef: OpDef):
+    sourcecode = run_sourcecode.init(opdef)
+    cli.out(run_sourcecode.preview(sourcecode))
+
+
+def _preview_config(opdef: OpDef, args: Args):
+    cli.out("TODO: preview config")
+
+
+def _preview_deps(opdef: OpDef):
+    cli.out("TODO: preview deps")
+
+
+def _preview_runtime_init(opdef: OpDef):
+    cli.out("TODO: preview runtime init")
+
+
+def _preview_run_exec(opdef: OpDef):
+    cli.out("TODO: preview run exec")
+
+
+def _preview_run_finalize(opdef: OpDef):
+    cli.out("TODO: preview finalize")
 
 
 # =================================================================

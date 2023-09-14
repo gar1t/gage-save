@@ -14,11 +14,19 @@ def run(
             help="Operation to start.",
         ),
     ] = "",
-    preview: Annotated[
+    preview_sourcecode: Annotated[
         bool,
         Option(
-            "--preview",
-            help="Show run steps without making any changes.",
+            "--preview-sourcecode",
+            help="Preview source code selection.",
+            show_default=False,
+        ),
+    ] = False,
+    preview_all: Annotated[
+        bool,
+        Option(
+            "--preview-all",
+            help="Preview all run steps without making changes.",
             show_default=False,
         ),
     ] = False,
@@ -34,6 +42,7 @@ def run(
     run(
         Args(
             operation=operation,
-            preview=preview,
+            preview_sourcecode=preview_sourcecode,
+            preview_all=preview_all,
         )
     )

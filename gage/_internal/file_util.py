@@ -3,7 +3,6 @@
 from typing import *
 
 import errno
-import glob
 import hashlib
 import logging
 import os
@@ -30,7 +29,6 @@ __all__ = [
     "files_differ",
     "files_digest",
     "ls",
-    "find",
     "find_up",
     "is_text_file",
     "make_dir",
@@ -199,7 +197,7 @@ def make_dir(d: str):
 def ls(
     root: str,
     followlinks: bool = False,
-    includedirs: bool = False,
+    include_dirs: bool = False,
     unsorted: bool = False,
 ):
     paths: list[str] = []
@@ -209,68 +207,11 @@ def ls(
 
     for path, dirs, files in os.walk(root, followlinks=followlinks):
         for name in dirs:
-            if includedirs or os.path.islink(os.path.join(path, name)):
+            if include_dirs or os.path.islink(os.path.join(path, name)):
                 paths.append(relpath(path, name))
         for name in files:
             paths.append(relpath(path, name))
     return paths if unsorted else sorted(paths)
-
-
-def find(
-    top: str,
-    include: List[str],
-    exclude: List[str],
-    followlinks: bool = True,
-):
-    return filter_paths(_globs(include, followlinks), exclude)
-
-
-def _globs(patterns: list[str], followlinks: bool):
-    paths: set[str] = set()
-    for p in patterns:
-        paths.update(glob.glob(p, recursive=True, include_hidden=True))
-    return iter(paths)
-
-
-def filter_paths(paths: Iterable[str], exclude: List[str]) -> Iterable[str]:
-    if not exclude:
-        return paths
-    exclude_re = [_glob_to_pattern(p) for p in exclude]
-    return (path for path in paths if not _excluded(path, exclude_re))
-
-
-def _glob_to_pattern(pattern: str):
-    path_sep = re.escape(os.path.sep)
-    re_str = path_sep.join(_glob_part_to_re(part) for part in pattern.split("/")) + "$"
-    return re.compile(re_str)
-
-
-_GLOB_MATCHER_P = re.compile(r"\*\*|\*|\?")
-
-
-def _glob_part_to_re(s: str):
-    re_parts = []
-    path_sep = re.escape(os.path.sep)
-    pos = 0
-    for m in _GLOB_MATCHER_P.finditer(s):
-        start, end = m.span()
-        re_parts.append(re.escape(s[pos:start]))
-        matcher = s[start:end]
-        if matcher == "*":
-            re_parts.append(rf"[^{path_sep}]+")
-        elif matcher == "**":
-            re_parts.append(r".+")
-        elif matcher == "?":
-            re_parts.append(rf"[^{path_sep}]")
-        else:
-            assert False, (matcher, s)
-        pos = end
-    re_parts.append(re.escape(s[pos:]))
-    return "".join(re_parts)
-
-
-def _excluded(path: str, patterns: list[Pattern[str]]):
-    return any(p.match(path) for p in patterns)
 
 
 def find_up(

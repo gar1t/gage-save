@@ -53,6 +53,7 @@ def err(val: Any, style: str | None = None):
 def error_message(msg: str):
     err(f"[red bold]ERROR:[/red bold] {msg}")
 
+
 def exit_with_error(msg: str, code: int = 1) -> NoReturn:
     error_message(msg)
     raise SystemExit(code)
@@ -112,12 +113,13 @@ def _pager_supports_styles(pager: str | None):
     return parts[0] == "less" and "-r" in parts[1:]
 
 
-def Table(header: list[str] | None = None):
+def Table(header: list[str] | None = None, **kw: Any):
     t = rich.table.Table(
         show_header=header is not None,
         box=rich.box.ROUNDED if not is_plain else None,
         border_style=TABLE_BORDER_STYLE,
         header_style=TABLE_HEADER_STYLE,
+        **kw
     )
     for col_name in header or []:
         t.add_column(col_name)
