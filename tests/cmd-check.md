@@ -60,6 +60,18 @@ Validate `hello` example.
     gage.json is a valid Gage file
     <0>
 
+If a directory is specified, `check` looks for a Gage file.
+
+    >>> run("gage check .")
+    ./gage.json is a valid Gage file
+    <0>
+
+If a specified path doesn't exist, `check` exits with an error.
+
+    >>> run("gage check not-there.toml")
+    ERROR: not-there.toml does not exist
+    <1>
+
 Generate an invalid Gage file.
 
     >>> cd(make_temp_dir())
@@ -109,12 +121,12 @@ Non matching spec:
     <1>
 
     >>> run("gage check --version foobar")
-    gage: invalid version spec 'foobar': missing comparison operator (==, <, >, etc.)
+    ERROR: invalid version spec 'foobar': missing comparison operator (==, <, >, etc.)
     See https://bit.ly/45AerAj for help with version specs.
     <1>
 
     >>> run("gage check --version ==foobar")  # -space
-    gage: invalid version spec '==foobar': expected end or semicolon (after name and
+    ERROR: invalid version spec '==foobar': expected end or semicolon (after name and
     no valid version specifier)
     See https://bit.ly/45AerAj for help with version specs.
     <1>
@@ -122,6 +134,6 @@ Non matching spec:
 ## Exclusive params
 
     >>> run("gage check --version xxx some-path")
-    gage: filename and version cannot both be specified
+    gage: path and version cannot both be specified
     Try 'gage check --help' for more information.
     <1>

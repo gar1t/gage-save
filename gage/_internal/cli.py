@@ -23,6 +23,8 @@ __all__ = [
     "AliasGroup",
     "Table",
     "err",
+    "error_message",
+    "exit_with_error",
     "excludes",
     "label",
     "markdown",
@@ -46,6 +48,14 @@ def out(val: Any, style: str | None = None, wrap: bool = False, err: bool = Fals
 
 def err(val: Any, style: str | None = None):
     out(val, err=True)
+
+
+def error_message(msg: str):
+    err(f"[red bold]ERROR:[/red bold] {msg}")
+
+def exit_with_error(msg: str, code: int = 1) -> NoReturn:
+    error_message(msg)
+    raise SystemExit(code)
 
 
 def text(s: str, style: str | rich.style.Style = ""):

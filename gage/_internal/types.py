@@ -8,7 +8,8 @@ Data = dict[str, Any]
 
 
 class OpDefNotFound(Exception):
-    pass
+    def __init__(self, spec: str | None):
+        self.spec = spec
 
 
 class OpError(Exception):

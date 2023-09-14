@@ -40,3 +40,13 @@ description = "Use include and exclude for config"
 include = "config/*.yaml"
 exclude = "config/example.yaml"
 bind = "*"
+
+[d]
+
+description = "Specify execs for each life cycle stage"
+
+[d.exec]
+
+copy-sourcecode = """
+
+"""

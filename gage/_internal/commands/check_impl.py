@@ -3,6 +3,7 @@
 from typing import *
 
 import json
+import os
 import platform
 import sys
 
@@ -21,14 +22,14 @@ CheckData = list[tuple[str, str]]
 
 
 class Args(NamedTuple):
-    filename: str
+    path: str
     version: str
     json: bool
     verbose: bool
 
 
 def check(args: Args):
-    if args.filename:
+    if args.path:
         _check_gagefile_and_exit(args)
     if args.version:
         _check_version_and_exit(args)
@@ -36,27 +37,62 @@ def check(args: Args):
 
 
 def _check_gagefile_and_exit(args: Args):
+    filename = _gagefile_filename(args.path)
+    data = _gagefile_data(filename, args)
+    _validate_gagefile_data_and_exit(data, filename, args)
+
+
+def _gagefile_filename(path: str):
+    assert path
+    if os.path.isdir(path):
+        return _gagefile_path_for_dir(path)
+    if os.path.exists(path):
+        return path
+    _gagefile_find_error(path)
+
+
+def _gagefile_path_for_dir(dirname: str):
     try:
-        data = gagefile.load_data(args.filename)
-    except gagefile.LoadError as e:
-        _handle_gagefile_load_error(e, args)
+        return gagefile.gagefile_path_for_dir(dirname)
+    except FileNotFoundError:
+        _gagefile_find_error(dirname)
+
+
+def _gagefile_find_error(path: str) -> NoReturn:
+    if os.path.isdir(path):
+        list = "".join(["\n  " + name for name in gagefile.gagefile_candidates()])
+        cli.exit_with_error(
+            f"Cannot find a Gage file in {path}\n\n"
+            f"Looking for one of:{list}\n\n"
+            "For help with Gage files try 'gage help gagefile'"
+        )
     else:
-        try:
-            gagefile.validate_data(data)
-        except gagefile.ValidationError as e:
-            _handle_gagefile_validation_error(e, args)
-        else:
-            cli.err(f"{args.filename} is a valid Gage file")
-            raise SystemExit(0)
+        cli.exit_with_error(f"{path} does not exist")
 
 
-def _handle_gagefile_load_error(e: gagefile.LoadError, args: Args):
-    cli.err(f"[red bold]ERROR[/red bold]: {args.filename}: {e}")
-    raise SystemExit(1)
+def _gagefile_data(filename: str, args: Args):
+    try:
+        return gagefile.load_data(filename)
+    except gagefile.LoadError as e:
+        _gagefile_load_error(e, args)
 
 
-def _handle_gagefile_validation_error(e: gagefile.ValidationError, args: Args):
-    cli.err(f"[red bold]ERROR[/red bold]: {args.filename} has problems")
+def _gagefile_load_error(e: gagefile.LoadError, args: Args):
+    cli.exit_with_error(f"{args.path}: {e}")
+
+
+def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> NoReturn:
+    try:
+        gagefile.validate_data(data)
+    except gagefile.ValidationError as e:
+        _gagefile_validation_error(e, args)
+    else:
+        cli.err(f"{filename} is a valid Gage file")
+        raise SystemExit(0)
+
+
+def _gagefile_validation_error(e: gagefile.ValidationError, args: Args) -> NoReturn:
+    cli.error_message(f"{args.path} has problems")
     if args.verbose:
         output = gagefile.validation_error_output(e)
         cli.err(json.dumps(output, indent=2, sort_keys=True))
@@ -70,22 +106,21 @@ def _check_version_and_exit(args: Args):
     try:
         match = util.check_gage_version(args.version)
     except ValueError as e:
-        msg = _format_version_check_error(e)
-        raise SystemExit(
-            f"{msg}\nSee https://bit.ly/45AerAj for help with version specs."
-        )
+        _bad_version_spec_error(e)
     else:
         if not match:
             raise SystemExit(
                 f"version mismatch: current version '{gage.__version__}' "
                 f"does not match '{args.version}'"
             )
-        else:
-            raise SystemExit(0)
+        raise SystemExit(0)
 
 
-def _format_version_check_error(e: ValueError):
-    return e.args[0].split("\n")[0].lower()
+def _bad_version_spec_error(e: ValueError):
+    err_msg = e.args[0].split("\n")[0].lower()
+    cli.exit_with_error(
+        f"{err_msg}\nSee https://bit.ly/45AerAj for help with version specs."
+    )
 
 
 def _print_check_info(args: Args):

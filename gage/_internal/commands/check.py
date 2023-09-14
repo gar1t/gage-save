@@ -11,7 +11,7 @@ __all__ = ["check"]
 
 
 def check(
-    filename: Annotated[
+    path: Annotated[
         str,
         Argument(
             help="Check Gage file for issues. Cannot be used with --version.",
@@ -56,7 +56,7 @@ def check(
 
     check(
         Args(
-            filename=filename,
+            path=path,
             version=version,
             json=json,
             verbose=verbose,

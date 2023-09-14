@@ -1238,3 +1238,8 @@ def which(cmd: str):
     else:
         assert out, cmd
         return out.decode("utf-8").split(os.linesep, 1)[0]
+
+T = TypeVar("T")
+
+def coerce_list(x: T | list[T]) -> list[T]:
+    return x if isinstance(x, list) else [x]

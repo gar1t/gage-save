@@ -162,17 +162,17 @@ FindIgnore = str | list[str]
 
 
 def ls(
-    root: str,
+    root: str = ".",
     follow_links: bool = False,
     include_dirs: bool = False,
-    ignore: Optional[FindIgnore] = None,
+    ignore: FindIgnore | None = None,
     permissions: bool = False,
 ):
     import natsort
 
     paths = file_util.ls(root, follow_links, include_dirs)
     if ignore:
-        paths = _filter_ignored(paths, ignore)
+        paths = file_util.filter_paths(paths, util.coerce_list(ignore))
     paths = _standardize_paths(paths)
     paths.sort(key=natsort.natsort_key)
     if not paths:
@@ -186,7 +186,7 @@ def ls(
                 print(path)
 
 
-def _filter_ignored(paths: list[str], ignore: str | list[str]):
+def _filter_ignored(paths: list[str], ignore: FindIgnore):
     if isinstance(ignore, str):
         ignore = [ignore]
     return [
@@ -194,7 +194,7 @@ def _filter_ignored(paths: list[str], ignore: str | list[str]):
     ]
 
 
-def _standardize_paths(paths: list[str]):
+def _standardize_paths(paths: Iterable[str]):
     return [file_util.standardize_path(path) for path in paths]
 
 

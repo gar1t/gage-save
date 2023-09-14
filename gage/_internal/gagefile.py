@@ -13,6 +13,8 @@ from .types import GageFile
 
 __all__ = [
     "ValidationError",
+    "gagefile_candidates",
+    "gagefile_path_for_dir",
     "load_gagefile",
     "load_data",
     "validate_data",
@@ -106,18 +108,23 @@ def _load_yaml(filename: str):
         return yaml.safe_load(f)
 
 
-def gagefile_for_dir(path: str):
-    paths = [
-        os.path.join(path, candidate)
-        for candidate in [
-            os.path.join(".gage", "settings.json"),
-            "gage.toml",
-            "gage.yaml",
-            "gage.json",
-        ]
-    ]
-    for path in paths:
+def gagefile_for_dir(dirname: str):
+    return load_gagefile(gagefile_path_for_dir(dirname))
+
+
+def gagefile_path_for_dir(dirname: str):
+    for name in gagefile_candidates():
+        path = os.path.join(dirname, name)
         if not os.path.exists(path):
             continue
-        return load_gagefile(path)
-    raise FileNotFoundError(paths[-1])
+        return path
+    raise FileNotFoundError()
+
+
+def gagefile_candidates():
+    return [
+        os.path.join(".gage", "settings.json"),
+        "gage.toml",
+        "gage.yaml",
+        "gage.json",
+    ]

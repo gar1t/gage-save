@@ -1,11 +1,16 @@
 [my_app]
 
+description = "Replicates the Hydra Get Started example."
 exec = "python my_app.py"
 
-[[my_app.config]]
+[my_app.sourcecode]
 
-include = "conf/**/*.yml"
+include = "**/*"
 
-[[my_app.config.bind]]
+[my_app.config]
+
+include = "conf/**/*.yaml"
+
+[my_app.config.bind]
 
 target = "*"

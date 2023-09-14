@@ -3,6 +3,7 @@
 from typing import *
 
 from typer import Argument
+from typer import Option
 
 
 def run(
@@ -12,7 +13,15 @@ def run(
             metavar="[OPERATION]",
             help="Operation to start.",
         ),
-    ] = ""
+    ] = "",
+    preview: Annotated[
+        bool,
+        Option(
+            "--preview",
+            help="Show run steps without making any changes.",
+            show_default=False,
+        ),
+    ] = False,
 ):
     """Start or stage an operation.
 
@@ -20,6 +29,11 @@ def run(
     project Gage file. To list available options for the current
     directory, use **gage operations**.
     """
-    from .run_impl import run
+    from .run_impl import run, Args
 
-    run(operation)
+    run(
+        Args(
+            operation=operation,
+            preview=preview,
+        )
+    )

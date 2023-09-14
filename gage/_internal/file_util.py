@@ -222,12 +222,21 @@ def find(
     exclude: List[str],
     followlinks: bool = True,
 ):
+    return filter_paths(_globs(include, followlinks), exclude)
+
+
+def _globs(patterns: list[str], followlinks: bool):
+    paths: set[str] = set()
+    for p in patterns:
+        paths.update(glob.glob(p, recursive=True, include_hidden=True))
+    return iter(paths)
+
+
+def filter_paths(paths: Iterable[str], exclude: List[str]) -> Iterable[str]:
+    if not exclude:
+        return paths
     exclude_re = [_glob_to_pattern(p) for p in exclude]
-    return [
-        path
-        for path in _globs(include, followlinks)  # \
-        if not _excluded(path, exclude_re)
-    ]
+    return (path for path in paths if not _excluded(path, exclude_re))
 
 
 def _glob_to_pattern(pattern: str):
@@ -258,13 +267,6 @@ def _glob_part_to_re(s: str):
         pos = end
     re_parts.append(re.escape(s[pos:]))
     return "".join(re_parts)
-
-
-def _globs(patterns: list[str], followlinks: bool):
-    paths: set[str] = set()
-    for p in patterns:
-        paths.update(glob.glob(p, recursive=True, include_hidden=True))
-    return paths
 
 
 def _excluded(path: str, patterns: list[Pattern[str]]):

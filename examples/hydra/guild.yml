@@ -1,9 +1,0 @@
-my_app:
-  flags-dest: config:conf/config.yaml
-  flags:
-    timeout:
-      arg-name: db.timeout
-      default: 10
-  requires:
-    - config: conf/config.yaml
-      target-path: conf
