@@ -42,6 +42,7 @@ __all__ = [
     "parse_path",
     "parse_run_id",
     "parse_run_name",
+    "parse_sha256",
     "parse_timestamp",
     "parse_ver",
     "path_exists",
@@ -124,6 +125,11 @@ def parse_run_name(s: str):
 @parse_type("date", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
 def parse_date(s: str):
     return datetime.datetime.fromisoformat(_format_tz(s))
+
+
+@parse_type("sha256", "[a-f0-9]{64}")
+def parse_sha256(s: str):
+    return s
 
 
 def _format_tz(s: str):

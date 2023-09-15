@@ -17,19 +17,20 @@ from . import run_sourcecode
 
 from .file_select import copy_files
 
-from .file_util import make_dir
+from .file_util import make_dir, set_readonly
 from .file_util import ensure_dir
+from .file_util import file_sha256
 from .file_util import write_file
 
 from .opref_util import decode_opref
 from .opref_util import encode_opref
 
-from .run_manifest import SOURCECODE_TYPE
-
 
 __all__ = [
     "META_SCHEMA",
+    "RunManifest",
     "copy_sourcecode",
+    "finalize_staged_run",
     "init_run_meta",
     "make_run",
     "meta_opdef",
@@ -308,7 +309,27 @@ def copy_sourcecode(project_dir: str, run: Run):
     log.info("Source code include: %s", sourcecode.include)
     log.info("Source code exclude: %s", sourcecode.exclude)
     copy_files(project_dir, run.run_dir, sourcecode.paths)
-    _apply_log_files(run, SOURCECODE_TYPE)
+    _apply_log_files(run, "s")
+
+
+def finalize_staged_run(run: Run):
+    with RunManifest(run, "w") as m:
+        for type, path in _reduce_files_log(run):
+            filename = os.path.join(run.run_dir, path)
+            set_readonly(filename)
+            digest = file_sha256(filename)
+            m.add(type, digest, path)
+
+
+def _reduce_files_log(run: Run):
+    paths: Dict[str, LoggedFileType] = {}
+    for event, type, modified, path in _iter_files_log(run):
+        if event == "a":
+            paths[path] = type
+        elif event == "d":
+            paths.pop(path, None)
+    for path, type in paths.items():
+        yield type, path
 
 
 # =================================================================
@@ -317,6 +338,8 @@ def copy_sourcecode(project_dir: str, run: Run):
 
 LoggedFileEvent = Literal["a", "d", "m"]
 LoggedFileType = Literal["s", "d", "r"]
+
+RunFileType = Literal["s", "d", "r", "g"]
 
 
 def _run_meta_schema(run: Run):
@@ -342,7 +365,7 @@ def _apply_log_files(run: Run, type: LoggedFileType):
     pre_files = _init_pre_files_index(run)
     seen = set()
     with _open_files_log(run) as f:
-        for entry in _scan_files(run.run_dir):
+        for entry in _iter_run_files(run):
             relpath = os.path.relpath(entry.path, run.run_dir)
             seen.add(relpath)
             modified = int(entry.stat().st_mtime * 1_000_000)
@@ -356,6 +379,10 @@ def _apply_log_files(run: Run, type: LoggedFileType):
             if path not in seen:
                 encoded = _encode_logged_file(LoggedFile("d", type, None, path))
                 f.write(encoded)
+
+
+def _iter_run_files(run: Run):
+    return _scan_files(run.run_dir)
 
 
 def _scan_files(dir: str) -> Generator[DirEntry[str], Any, None]:
@@ -394,7 +421,7 @@ def _iter_files_log(run: Run):
         lineno = 1
         for line in f:
             try:
-                yield _decode_files_log_line(line)
+                yield _decode_files_log_line(line.rstrip())
             except TypeError:
                 raise TypeError(
                     "bad encoding in \"{filename}\", line {lineno}: {line!r}"
@@ -427,3 +454,25 @@ def _open_files_log(run: Run):
 
 def _encode_logged_file(file: LoggedFile):
     return f"{file.event} {file.type} {file.modified or '-'} {file.path}\n"
+
+
+class RunManifest:
+    def __init__(self, run: Run, mode: Literal["r", "w", "a"] = "r"):
+        self._f = open(run_meta_path(run, "manifest"), mode)
+
+    def close(self):
+        self._f.close()
+
+    def __enter__(self):
+        self._f.__enter__()
+        return self
+
+    def __exit__(self, *exc: Any):
+        self._f.__exit__(*exc)
+
+    def add(self, type: RunFileType, digest: str, path: str):
+        self._f.write(_encode_run_manifest_entry(type, digest, path))
+
+
+def _encode_run_manifest_entry(type: RunFileType, digest: str, path: str):
+    return f"{type} {digest} {path}\n"

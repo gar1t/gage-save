@@ -178,14 +178,43 @@ TODO: `resolve_deps()`
 
 ## Finalize staged run
 
-TODO: `finalize_staged_run()`
+As the last phase of staging, two changes are made:
 
-- Use `log/files` to generated run manifest
-- Make files read only with exceptions from opdef (but from where?)
+- Run directory files are made read-only
+- Run manifest is written
 
+Files copied to the run directory for staging are typically inputs only
+and are not modified by the run.
 
+TODO: how to make an exception in the general case? We can specify that
+a dependency is writable but what about source code/config and runtime
+files? We need a general facility to exempt a file from read-only
+status.
 
+The run manifest is written so that tools can rely on a list of input
+files (source code, dependencies, and runtime).
 
+Finalize the staged run.
+
+    >>> finalize_staged_run(run)
+
+List the run files.
+
+    >>> ls(run.run_dir, permissions=True)
+    -r--r--r-- conf/eval.yaml
+    -r--r--r-- conf/train.yaml
+    -r--r--r-- eval.py
+    -r--r--r-- gage.toml
+    -r--r--r-- train.py
+
+Show the run manifest.
+
+    >>> cat(run_meta_path(run, "manifest"))  # +parse
+    s {:sha256} conf/eval.yaml
+    s {:sha256} conf/train.yaml
+    s {:sha256} eval.py
+    s {:sha256} gage.toml
+    s {:sha256} train.py
 
 ## Errors
 
