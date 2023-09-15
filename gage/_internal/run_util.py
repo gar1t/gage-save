@@ -3,6 +3,7 @@
 from typing import *
 from .types import *
 from logging import Logger
+from os import DirEntry
 
 import json
 import logging
@@ -12,29 +13,37 @@ import time
 import uuid
 
 from . import config
+from . import run_sourcecode
+
+from .file_select import copy_files
 
 from .file_util import make_dir
 from .file_util import ensure_dir
 from .file_util import write_file
 
+from .opref_util import decode_opref
 from .opref_util import encode_opref
 
-from .run_manifest import RunManifest
+from .run_manifest import SOURCECODE_TYPE
+
 
 __all__ = [
     "META_SCHEMA",
+    "copy_sourcecode",
     "init_run_meta",
     "make_run",
+    "meta_opdef",
     "run_attr",
     "run_attrs",
     "run_meta_dir",
+    "run_meta_path",
     "run_status",
     "run_timestamp",
     "stage_run",
     "unique_run_id",
 ]
 
-META_SCHEMA = 1
+META_SCHEMA = "1"
 
 __last_ts = None
 __last_ts_lock = threading.Lock()
@@ -264,112 +273,157 @@ def _write_initialized_timestamp(meta_dir: str, log: Logger):
 
 
 # =================================================================
+# Meta API
+# =================================================================
+
+
+def meta_opref(run: Run) -> OpRef:
+    with open(run_meta_path(run, "opref")) as f:
+        return decode_opref(f.read())
+
+
+def meta_opdef(run: Run) -> OpDef:
+    opref = meta_opref(run)
+    with open(run_meta_path(run, "opdef.json")) as f:
+        data = json.load(f)
+    return OpDef(opref.get_full_name(), data)
+
+
+# =================================================================
 # Stage run
 # =================================================================
 
 
 def stage_run(run: Run):
-    if not os.path.exists(run.run_dir):
-        raise FileNotFoundError(f"Run dir does not exist: {run.run_dir}")
-    meta_dir = run_meta_dir(run)
-    if not os.path.exists(meta_dir):
-        raise FileNotFoundError(f"Run meta dir does not exist: {meta_dir}")
+    assert False, "TODO: need a ref to a project dir"
+    opdef = meta_opdef(run)
+    copy_sourcecode(run, opdef)
+
+
+def copy_sourcecode(project_dir: str, run: Run):
     log = _runner_log(run)
-    manifest = run_manifest(run, writable=True)
-    for action in _stage_actions(run):
-        action(run, manifest, log)
-    _finalize_staged_run(run, manifest, log)
-    _write_staged_timestamp(meta_dir, log)
-
-    """
-    TODO
-
-    - Resolve "actions" (some callback) for:
-      - Copy source code
-      - Transform applicable source code with flag values
-      - Init runtime
-      - Copy/resolve deps (are these separate exec attr, one
-        for copy another for download?)
-
-    - For each action, apply it and then update the manifest
-      based on the latest files list in the run dir
-      - Apply a status field based on new file or timestamp
-        change
-      - Update modified timestamp if needed
-      - NOTE: this might be an append only application with the
-        expectation that the manifest will be rewritten on run
-        finalize to include sha256 digests - OR we could be
-        talking about an interim manifest or manifest log, which
-        is separate from the final manifest (e.g. it's written
-        under logs and can be a totally different file)
-
-    Start with actions that are Nushell commands first.
-
-    Then introduce an action driven by `sourcecode` and
-    `requires` attrs.
-
-    These perform what `exec.copy-sourcecode` and `exec.deps`
-    would otherwise handle. Not sure if they should be mutually
-    exclusive or if they can be used together? Probably together
-    where the exec occurs after the derived.
-
-    """
-
-
-StageAction = Callable[[Run, RunManifest, Logger], None]
-
-
-def _stage_actions(run: Run) -> Iterable[StageAction]:
-    return [copy_sourcecode]
-
-
-def copy_sourcecode(run: Run, manifest: RunManifest, log: Logger):
-    # Apply spec if any, update manifest with 's' entries
-    pass
-
-
-def copy_sourcecode_exec(run: Run, manifest: RunManifest, log: Logger):
-    # Exec exec.sourcecode if specified, update manifest with 's' entries
-    pass
-
-
-def resolve_deps(run: Run, manifest: RunManifest, log: Logger):
-    # Resolve deps under `requires`, update manifest with 'd' entries
-    pass
-
-
-def copy_deps_exec(run: Run, manifest: RunManifest, log: Logger):
-    # Exec exec.copy_deps if specified, update manifest with 'd' entries
-    pass
-
-
-def init_runtime_exec(run: Run, manifest: RunManifest, log: Logger):
-    # Exec exec.init_runtime if specified, update manifest with 'r' entries
-    pass
-
-
-def _finalize_staged_run(run: Run, manifest: RunManifest, log: Logger):
-    # - Write/rewrite the manifest applying codes and sha256 digests
-    #   OR wait until the run is completed and do this?
-    # - Change all files to read-only
-    # - Need a list of writeable files in opdef to skip the read
-    #   only setting
-    # - COULD have an escape hatch here as a post-stage exec to let the
-    #   user do funny stuff, e.g. make files writeable
-    pass
-
-
-def _write_staged_timestamp(meta_dir: str, log: Logger):
-    log.info("Writing staged")
-    filename = os.path.join(meta_dir, "staged")
-    timestamp = run_timestamp()
-    write_file(filename, str(timestamp), readonly=True)
+    opdef = meta_opdef(run)
+    sourcecode = run_sourcecode.init(project_dir, opdef)
+    log.info("Copying source code (see log/files for details)")
+    log.info("Source code include: %s", sourcecode.include)
+    log.info("Source code exclude: %s", sourcecode.exclude)
+    copy_files(project_dir, run.run_dir, sourcecode.paths)
+    _apply_log_files(run, SOURCECODE_TYPE)
 
 
 # =================================================================
-# Run manifest
+# Utils
 # =================================================================
 
+LoggedFileEvent = Literal["a", "d", "m"]
+LoggedFileType = Literal["s", "d", "r"]
 
-def run_manifest(run: Run, writable: bool = False):
-    return RunManifest(run)
+
+def _run_meta_schema(run: Run):
+    with open(run_meta_path(run, "__schema__")) as f:
+        return f.read().rstrip()
+
+
+def _apply_log_files(run: Run, type: LoggedFileType):
+    """
+    TODO:
+    - Read <meta>/log/files to infer a list of pre-existing files
+    - Scan the run dir
+    - For any pre-existing file that isn't in cur list, mark as deleted
+    - For any new file in run dir
+
+    Log fields:
+
+    - 'a' for added 'd' for deleted 'm' for modified
+    - type (arg)
+    - modified timestamp
+    - path
+    """
+    pre_files = _init_pre_files_index(run)
+    seen = set()
+    with _open_files_log(run) as f:
+        for entry in _scan_files(run.run_dir):
+            relpath = os.path.relpath(entry.path, run.run_dir)
+            seen.add(relpath)
+            modified = int(entry.stat().st_mtime * 1_000_000)
+            pre_modified = pre_files.get(relpath)
+            if modified == pre_modified:
+                continue
+            event = "a" if pre_modified is None else "m"
+            encoded = _encode_logged_file(LoggedFile(event, type, modified, relpath))
+            f.write(encoded)
+        for path in pre_files:
+            if path not in seen:
+                encoded = _encode_logged_file(LoggedFile("d", type, None, path))
+                f.write(encoded)
+
+
+def _scan_files(dir: str) -> Generator[DirEntry[str], Any, None]:
+    for entry in os.scandir(dir):
+        if entry.is_file():
+            yield entry
+        elif entry.is_dir():
+            for entry in _scan_files(entry.path):
+                yield entry
+
+
+PreFilesIndex = Dict[str, int | None]
+
+
+def _init_pre_files_index(run: Run) -> PreFilesIndex:
+    return {path: modified for event, type, modified, path in _iter_files_log(run)}
+
+
+class LoggedFile(NamedTuple):
+    event: LoggedFileEvent
+    type: LoggedFileType
+    modified: int | None
+    path: str
+
+
+def _iter_files_log(run: Run):
+    schema = _run_meta_schema(run)
+    if schema != META_SCHEMA:
+        raise TypeError(f"unsupported meta schema: {schema!r}")
+    filename = run_meta_path(run, "log", "files")
+    try:
+        f = open(filename)
+    except FileNotFoundError:
+        pass
+    else:
+        lineno = 1
+        for line in f:
+            try:
+                yield _decode_files_log_line(line)
+            except TypeError:
+                raise TypeError(
+                    "bad encoding in \"{filename}\", line {lineno}: {line!r}"
+                )
+            lineno += 1
+
+
+def _decode_files_log_line(line: str):
+    parts = line.split(" ", 3)
+    if len(parts) != 4:
+        raise TypeError()
+    event, type, modified_str, path = parts
+    if modified_str == "-":
+        modified = None
+    else:
+        try:
+            modified = int(modified_str)
+        except ValueError:
+            raise TypeError()
+    if event not in ("a", "d", "m"):
+        raise TypeError()
+    if type not in ("s", "d", "r"):
+        raise TypeError()
+    return LoggedFile(event, type, modified, path)
+
+
+def _open_files_log(run: Run):
+    return open(run_meta_path(run, "log", "files"), "a")
+
+
+def _encode_logged_file(file: LoggedFile):
+    return f"{file.event} {file.type} {file.modified or '-'} {file.path}\n"

@@ -4,6 +4,8 @@ from typing import *
 
 from .types import *
 
+SOURCECODE_TYPE = "s"
+
 
 class RunManifest:
     def __init__(self, run: Run):

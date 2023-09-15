@@ -21,6 +21,11 @@ class OpRef:
         self.op_ns = op_ns
         self.op_name = op_name
 
+    def get_full_name(self):
+        if not self.op_ns:
+            return self.op_name
+        return f"{self.op_ns}:{self.op_name}"
+
 
 class OpCmd:
     def __init__(self, args: list[str], env: dict[str, str]):

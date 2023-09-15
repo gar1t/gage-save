@@ -4,8 +4,6 @@ from typing import *
 
 from .types import *
 
-import os
-
 from . import cli
 
 from .file_select import parse_patterns
@@ -49,9 +47,8 @@ class RunSourceCode:
         }
 
 
-def init(opdef: OpDef):
+def init(src: str, opdef: OpDef):
     sourcecode = opdef.get_sourcecode()
-    src = os.path.dirname(opdef.get_src())
     include = _sourcecode_include(sourcecode)
     exclude = _sourcecode_exclude(sourcecode)
     select = parse_patterns(include, exclude)

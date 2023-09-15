@@ -15,8 +15,10 @@ To stage a run, the runner must copy all files required by the run that
 are not otherwise provided by the system to the run directory.
 
 When staging a run, meta is updated with a manifest file and additional
-log entries, which reflect the actions performed during the staging
-process.
+log entries, which reflect the changes made to the run directory during
+staging.
+
+## Run meta
 
 Run meta must be initialized before the run can be staged. For more
 information on this process, see [*Initializing run
@@ -32,11 +34,29 @@ Create a run and initialize its meta.
 
     >>> from gage._internal.types import *
 
+Op ref identifies the run:
+
     >>> opref = OpRef("test", "test")
-    >>> opdef = OpDef("test", {})
-    >>> cmd = OpCmd(["python", "-c", "print('Hello!')"], {})
+
+Source code specifies what files to copy. In this test, the `sourcecode`
+spec is empty, which applies the default include/exclude rules.
+
+    >>> sourcecode = {}
+
+Create the op def.
+
+    >>> opdef = OpDef("test", {"sourcecode": sourcecode})
+
+The command is what is run. As tests below only stage the run, this
+command is merely an example.
+
+    >>> cmd = OpCmd(["python", "train.py"], {})
+
+Initialize the run meta.
 
     >>> init_run_meta(run, opref, opdef, cmd, {}, {})
+
+List the generated files.
 
     >>> ls(run_meta_dir(run))
     __schema__
@@ -49,41 +69,127 @@ Create a run and initialize its meta.
     proc/cmd
     proc/env
 
-Stage the run using `stage_run()`.
+## Run stage phases
 
-    >>> stage_run(run)
+Run staging consists of the following phases:
 
-According to the meta configuration above, nothing is copied for
-staging.
+- Copy source code
+- Apply configuration
+- Initialize runtime
+- Resolve dependencies
+- Finalize staged run
 
-Two changes are made in this case.
+The order of these phases is important:
 
-- A `staged` timestamp is written
+1. Source code must be copied before configuration is applied
+2. A runtime may require configured source code
+3. Dependency resolution may required an initialized runtime
+4. All files must be written before a staged run is finalized
 
-    >>> meta_dir = run_meta_dir(run)
+Each phase is implemented by a function in `run_util`:
 
-    >>> ls(meta_dir, include_dirs=True, permissions=True)  # +wildcard
-    -r--r--r-- __schema__
-    ...
-    -r--r--r-- staged
+- `copy_sourcecode`
+- `apply_config`
+- `init_runtime`
+- `resolve_deps`
+- `finalize_staged_run`
 
-- Runner logs are updated
+Each of these functions is called by `run_util.stage_run()` to stage a
+run.
 
-    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse
+Changes made to the run directory for each phase up to stage finalizing
+are written to `log/files`. This log is used to generate a run manifest,
+which contains a record of source code, resolved dependencies, and
+runtime files.
+
+## Copy source code
+
+`copy_sourcecode()` requires a source directory and a run.
+
+Create a sample source code directory structure.
+
+    >>> sourcecode_dir = make_temp_dir()
+    >>> touch(path_join(sourcecode_dir, "train.py"))
+    >>> touch(path_join(sourcecode_dir, "eval.py"))
+    >>> touch(path_join(sourcecode_dir, "gage.toml"))
+    >>> make_dir(path_join(sourcecode_dir, "conf"))
+    >>> touch(path_join(sourcecode_dir, "conf", "train.yaml"))
+    >>> touch(path_join(sourcecode_dir, "conf", "eval.yaml"))
+
+    >>> ls(sourcecode_dir)
+    conf/eval.yaml
+    conf/train.yaml
+    eval.py
+    gage.toml
+    train.py
+
+Before copying anything, confirm the run directory is empty.
+
+    >>> ls(run.run_dir)
+    <empty>
+
+Copy the source code to the run directory.
+
+    >>> copy_sourcecode(sourcecode_dir, run)
+
+Source code files are copied and left in a writeable state.
+
+    >>> ls(sourcecode_dir, permissions=True)
+    -rw-rw-r-- conf/eval.yaml
+    -rw-rw-r-- conf/train.yaml
+    -rw-rw-r-- eval.py
+    -rw-rw-r-- gage.toml
+    -rw-rw-r-- train.py
+
+The list of files is written to the files log. Log entries are per line
+and consist of an event, a file type, a modified timestamp, and a path.
+
+    >>> cat(run_meta_path(run, "log", "files"))  # +parse
+    a s {:d} conf/eval.yaml
+    a s {:d} conf/train.yaml
+    a s {:d} eval.py
+    a s {:d} gage.toml
+    a s {:d} train.py
+
+In this case, "a" means the file was added. "s" means it's a source code
+type.
+
+    >>> cat(run_meta_path(run, "log", "runner"))  # +parse -space
     {}
-    {:date} Writing staged
+    {:date} Copying source code (see log/files for details)
+    {:date} Source code include:
+      ['**/* text size<10000 max-matches=500']
+    {:date} Source code exclude:
+      ['**/.* dir',
+       '**/* dir sentinel=bin/activate',
+       '**/* dir sentinel=.nocopy']
 
-## Copying files
+## Apply config
 
-Gage divides staged file copies into three phases:
+TODO: `apply_config()`
 
-- Source code copy
-- Runtime init
-- Dependency resolution
+## Init runtime
 
-Each of these these phases is implemented by `stages`
+TODO: `init_runtime()`
+
+## Resolve dependencies
+
+TODO: `resolve_deps()`
+
+## Finalize staged run
+
+TODO: `finalize_staged_run()`
+
+- Use `log/files` to generated run manifest
+- Make files read only with exceptions from opdef (but from where?)
+
+
+
+
 
 ## Errors
+
+    >>> # +skiprest TODO reinstate
 
 Stage a non-existing run directory.
 

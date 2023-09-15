@@ -29,7 +29,7 @@ Create a new run.
 
     >>> run = make_run(runs_home)
 
-`run_meta_dir` returns the meta directory path for a run.
+`run_meta_dir()` returns the meta directory path for a run.
 
     >>> meta_dir = run_meta_dir(run)
     >>> assert meta_dir == run.run_dir + ".meta"
@@ -40,11 +40,11 @@ The meta directory does not exist initially.
 
 Initialing meta requires the following information:
 
-- Op reference
-- Op definition
-- Op command
-- User attributes
-- System attributes
+- Op reference (OpRef)
+- Op definition (OpDef)
+- Op command (OpCmd)
+- User attributes (Dict[str, Any])
+- System attributes (Dict[str, Any])
 
 Define inputs to the init function.
 
@@ -108,7 +108,7 @@ assumed to be writable until the run is finalized (see below).
 contents.
 
     >>> cat(path_join(meta_dir, "__schema__"))  # +parse
-    {x:d}
+    {x}
 
 The current schema is defined by `META_SCHEMA`.
 

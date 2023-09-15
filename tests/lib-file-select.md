@@ -1,9 +1,9 @@
 # File select / copy tree support
 
 The `file_select` module provides rules-based copy file support. Its two
-main functions are `copyfiles` and `copytree`. Both functions use the
-same file selection scheme. `copyfiles` selects from a list of files.
-`copytree` selects files under a root directory.
+main functions are `copy_files` and `copy_tree`. Both functions use the
+same file selection scheme. `copy_files` selects from a list of files.
+`copy_tree` selects files under a root directory.
 
     >>> from gage._internal.file_select import *
 
@@ -43,7 +43,7 @@ Functions for generating test files:
 
 ## Copy list
 
-`copyfiles` selects files from a provided list.
+`copy_files` selects files from a provided list.
 
 Create a source list to copy.
 
@@ -62,7 +62,7 @@ Copy all files to a new directory.
 
     >>> dest = make_temp_dir()
 
-    >>> copyfiles(src, dest, ["a", "sub-1/b", "sub-2/c"])
+    >>> copy_files(src, dest, ["a", "sub-1/b", "sub-2/c"])
 
     >>> ls(dest)
     a
@@ -76,7 +76,7 @@ single `include` rule to match a file name pattern.
 
     >>> dest = make_temp_dir()
 
-    >>> copyfiles(src, dest, ["a", "sub-1/b", "sub-2/c"], b_select)
+    >>> copy_files(src, dest, ["a", "sub-1/b", "sub-2/c"], b_select)
 
     >>> ls(dest)
     sub-1/b
@@ -86,9 +86,9 @@ These are covered in the **Copy tree** tests below.
 
 ## Copy tree
 
-`copytree` is like `copyfiles` in that it uses an optional filter
-mechanism to select files to copy. Unlike `copyfiles`, which uses an
-explicit list of file candidates, `copytree` scans the source directory
+`copy_tree` is like `copy_files` in that it uses an optional filter
+mechanism to select files to copy. Unlike `copy_files`, which uses an
+explicit list of file candidates, `copy_tree` scans the source directory
 for files to copy.
 
 Select configuration is a list of rules, which can exclude or include
@@ -101,19 +101,19 @@ Attributes include:
 - Type (text file, binary file, or directory)
 - Number of files previously selected by the rule
 
-`copytree` uses a copy handler, which provides an optional *select*
+`copy_tree` uses a copy handler, which provides an optional *select*
 specification. The spec tells the handler whether or not to copy a file.
-It also tells `copytree` whether or not to scan the contents of a
+It also tells `copy_tree` whether or not to scan the contents of a
 directory in the first place.
 
 Define a function that copies files from a source directory to a new
-destination using `copytree` and select rules. The function prints the
+destination using `copy_tree` and select rules. The function prints the
 copied files.
 
     >>> def copy_src(src, select_rules, handler=None):
     ...     dest = make_temp_dir()
     ...     select = FileSelect(select_rules)
-    ...     copytree(src, dest, select, handler)
+    ...     copy_tree(src, dest, select, handler)
     ...     ls(dest)
 
 ### Basic file selection
@@ -124,7 +124,7 @@ Here's a src containing a single text file:
     >>> ls(src)
     a.txt
 
-Without any rules, `copytree` will not copy any files:.
+Without any rules, `copy_tree` will not copy any files:.
 
     >>> copy_src(src, [])
     <empty>
@@ -397,7 +397,7 @@ Limit the number of included files to 6.
     4.txt
     5.txt
 
-### Custom copytree handlers
+### Custom copy_tree handlers
 
 Custom handlers are used to change the copy behavior.
 

@@ -28,8 +28,8 @@ __all__ = [
     "FileSelectResults",
     "FileSelect",
     "DisabledFileSelect",
-    "copyfiles",
-    "copytree",
+    "copy_files",
+    "copy_tree",
     "exclude",
     "include",
     "parse_patterns",
@@ -391,7 +391,7 @@ class FileCopyHandler:
         pass
 
 
-def copyfiles(
+def copy_files(
     src: str,
     dest: str,
     files: list[str],
@@ -437,7 +437,7 @@ def _copyfiles_impl(
                 handler.ignore(file_src, results)
 
 
-def copytree(
+def copy_tree(
     src: str,
     dest: str,
     select: FileSelect | None = None,
@@ -644,5 +644,5 @@ def preview_copytree(
     follow_links: bool = True,
 ):
     handler = _PreviewHandler(src)
-    copytree(src, "", select, handler, follow_links)
+    copy_tree(src, "", select, handler, follow_links)
     return handler.to_copy

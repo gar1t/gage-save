@@ -2,6 +2,8 @@
 
 from typing import *
 
+import os
+
 from ..types import *
 
 from .. import cli
@@ -70,7 +72,8 @@ def _init_previews(opdef: OpDef, args: Args):
 
 
 def _init_sourcecode_preview(opdef: OpDef):
-    sourcecode = run_sourcecode.init(opdef)
+    project_dir = os.path.dirname(opdef.get_src())
+    sourcecode = run_sourcecode.init(project_dir, opdef)
     return Preview(
         "sourcecode",
         lambda: run_sourcecode.preview(sourcecode),
