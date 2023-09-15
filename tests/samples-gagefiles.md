@@ -34,12 +34,12 @@ A minimal configuration is one operation with an exec attribute.
 
     >>> gf = load_gagefile("minimal.json")
 
-    >>> gf.operations  # +wildcard
+    >>> gf.get_operations()  # +wildcard
     {'train': <gage._internal.types.OpDef ...>}
 
-    >>> train = gf.operations["train"]
+    >>> train = gf.get_operations()["train"]
 
-    >>> train.exec
+    >>> train.get_exec()
     'echo hello'
 
 ## Missing exec
@@ -52,7 +52,7 @@ An operation does not need an exec attribute.
 
     >>> gf = load_gagefile("missing-exec.json")
 
-    >>> gf.operations["train"].exec
+    >>> gf.get_operations()["train"].get_exec()
 
 ## Full exec spec
 
@@ -65,26 +65,26 @@ various stages of a run lifecycle.
 
     >>> gf = load_gagefile("full-exec.json")
 
-    >>> gf.operations  # +wildcard
+    >>> gf.get_operations()  # +wildcard
     {'train': <gage._internal.types.OpDef ...>}
 
-    >>> train = gf.operations["train"]
+    >>> train = gf.get_operations()["train"]
 
-    >>> train.exec  # +wildcard
+    >>> train.get_exec()  # +wildcard
     <gage._internal.types.OpDefExec ...>
 
-    >>> train.exec.copy_sourcecode
+    >>> train.get_exec().get_copy_sourcecode()
     'cp * $run_dir'
 
-    >>> train.exec.copy_deps
+    >>> train.get_exec().get_copy_deps()
     'echo pass'
 
-    >>> train.exec.init_runtime
+    >>> train.get_exec().get_init_runtime()
 
-    >>> train.exec.run
+    >>> train.get_exec().get_run()
     'dir .'
 
-    >>> train.exec.finalize_run
+    >>> train.get_exec().get_finalize_run()
     ['echo', 'pass']
 
 ## Invalid full exec

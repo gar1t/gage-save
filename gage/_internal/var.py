@@ -7,7 +7,9 @@ import functools
 import os
 
 from . import config
-from . import run_util
+
+from .run_util import run_attr
+from .run_util import run_name_for_id
 
 RunFilter = Callable[[Run], bool]
 
@@ -30,7 +32,7 @@ def _all_runs_filter(run: Run):
 
 
 def _all_runs(root: str):
-    return [Run(id, run_base) for id, run_base in _iter_runs(root)]
+    return [Run(id, run_base, run_name_for_id(id)) for id, run_base in _iter_runs(root)]
 
 
 def _iter_runs(root: str):
@@ -65,10 +67,10 @@ def _run_attr_cmp(a: Run, b: Run, attr: str):
         rev = -1
     else:
         rev = 1
-    x_val = run_util.run_attr(a, attr)
+    x_val = run_attr(a, attr)
     if x_val is None:
         return -rev
-    y_val = run_util.run_attr(b, attr)
+    y_val = run_attr(b, attr)
     if y_val is None:
         return rev
     return rev * ((x_val > y_val) - (x_val < y_val))

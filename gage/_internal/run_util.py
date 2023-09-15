@@ -104,11 +104,29 @@ def make_run(location: Optional[str] = None):
     location = location or config.runs_home()
     run_dir = os.path.join(location, run_id)
     make_dir(run_dir)
-    return Run(run_id, run_dir)
+    return Run(run_id, run_dir, run_name_for_id(run_id))
 
 
 def unique_run_id():
     return str(uuid.uuid4())
+
+
+def run_name_for_id(run_id: str) -> str:
+    from proquint import uint2quint_str
+
+    return uint2quint_str(_run_id_as_uint(run_id))
+
+
+def _run_id_as_uint(run_id: str):
+    if len(run_id) >= 32:
+        # Test for likely hex-encoded UUID
+        try:
+            return int(run_id[:8], 16)
+        except ValueError:
+            pass
+    from binascii import crc32
+
+    return crc32(run_id.encode())
 
 
 def run_timestamp():

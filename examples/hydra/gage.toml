@@ -5,7 +5,10 @@ exec = "python my_app.py"
 
 [my_app.sourcecode]
 
-include = "**/*"
+#include = "**/*"
+#exclude = ".venv dir"
+
+exclude = ".gitignore"
 
 [my_app.config]
 

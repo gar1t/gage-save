@@ -19,9 +19,10 @@ possible Gage project.
 
 List operations.
 
-    >>> run("gage ops")  # -space
-    operation  description
-    hello      Say hello to my friend
+    >>> run("gage ops")
+    | operation | description            |
+    |-----------|------------------------|
+    | hello     | Say hello to my friend |
     <0>
 
 Run hello.

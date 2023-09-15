@@ -90,13 +90,13 @@ Stage a non-existing run directory.
     >>> missing_run_dir = make_temp_dir()
     >>> delete_temp_dir(missing_run_dir)
 
-    >>> stage_run(Run("", missing_run_dir))  # +parse
+    >>> stage_run(Run("", missing_run_dir, ""))  # +parse
     Traceback (most recent call last):
     FileNotFoundError: Run dir does not exist: {:path}
 
 Stage a run without a meta dir.
 
     >>> run_dir_no_meta = make_temp_dir()
-    >>> stage_run(Run("", run_dir_no_meta))  # +parse
+    >>> stage_run(Run("", run_dir_no_meta, ""))  # +parse
     Traceback (most recent call last):
     FileNotFoundError: Run meta dir does not exist: {:path}.meta

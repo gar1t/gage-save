@@ -31,9 +31,9 @@ We know four things about the run:
 
    Any run with the same ID has the same name.
 
-       >>> from gage._internal.types import Run
+       >>> from gage._internal.run_util import run_name_for_id
 
-       >>> assert Run(run_id, None).name == run_name
+       >>> assert run_name == run_name_for_id(run.id)
 
 3. It has a corresponding run directory under `runs_home`
 

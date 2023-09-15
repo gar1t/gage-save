@@ -723,3 +723,85 @@ Use `max_matches` to limit result count for a pattern.
     A/a.txt
     A/b.bin
     A/B/c.txt
+
+### Common exclude patterns
+
+It's common to exclude hidden files and virtual environments in file
+select patterns.
+
+Create a directory structure with typically excluded files.
+
+    >>> src = make_src([
+    ...     empty(".venv/a"),
+    ...     empty(".venv/b/c"),
+    ...     empty("a/.nocopy"),
+    ...     empty("venv/bin/activate"),
+    ...     empty("venv/a"),
+    ...     empty("venv/b/c"),
+    ...     empty("venv/b/.hidden"),
+    ...     empty(".priv"),
+    ... ])
+
+    >>> ls(src)
+    .priv
+    .venv/a
+    .venv/b/c
+    a/.nocopy
+    venv/a
+    venv/b/.hidden
+    venv/b/c
+    venv/bin/activate
+
+Select everything.
+
+    >>> preview(["**/*"], [])
+    .priv
+    .venv/a
+    .venv/b/c
+    a/.nocopy
+    venv/a
+    venv/b/.hidden
+    venv/b/c
+    venv/bin/activate
+
+Exclude `.venv`.
+
+    >>> preview(["**/*"], [".venv dir"])
+    .priv
+    a/.nocopy
+    venv/a
+    venv/b/.hidden
+    venv/b/c
+    venv/bin/activate
+
+Exclude `.venv` `venv` with a pattern.
+
+    >>> preview(["**/*"], ["?venv dir"])
+    .priv
+    a/.nocopy
+
+Exclude any private files or directories.
+
+FIXME: `.venv` should be excluded here:
+
+    >>> preview(["**/*"], ["**/.*"])
+    .venv/a
+    .venv/b/c
+    venv/a
+    venv/b/c
+    venv/bin/activate
+
+FIXME: This is the workaround:
+
+    >>> preview(["**/*"], ["**/.*", "**/.* dir"])
+    venv/a
+    venv/b/c
+    venv/bin/activate
+
+Exclude dirs with the sentinel `bin/activate`.
+
+    >>> preview(["**/*"], ["**/* dir sentinel=bin/activate"])
+    .priv
+    .venv/a
+    .venv/b/c
+    a/.nocopy

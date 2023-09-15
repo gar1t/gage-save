@@ -21,16 +21,16 @@ def operations():
 def operations_table():
     gf = gagefile.gagefile_for_dir(config.cwd())
     table = cli.Table(header=["operation", "description"])
-    for name, opdef in sorted(gf.operations.items()):
+    for name, opdef in sorted(gf.get_operations().items()):
         table.add_row(cli.label(name), _opdef_desc(opdef))
     return table
 
 
 def _opdef_desc(opdef: OpDef):
-    if not opdef.description:
+    if not opdef.get_description:
         return ""
     return (
-        f"{opdef.description} [dim](default)[/dim]"
-        if opdef.default
-        else opdef.description
+        f"{opdef.get_description()} [dim](default)[/dim]"
+        if opdef.get_default()
+        else opdef.get_description()
     )

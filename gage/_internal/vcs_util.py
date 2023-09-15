@@ -4,7 +4,6 @@ from typing import *
 
 from .file_select import FileSelectRule
 
-import collections
 import logging
 import re
 import os
@@ -12,6 +11,24 @@ import subprocess
 
 from . import file_util
 from . import util
+
+__all__ = [
+    "CommitReadError",
+    "FileStatus",
+    "GitCheckResult",
+    "GitNotInstalled",
+    "NoCommit",
+    "NoVCS",
+    "Scheme",
+    "UnsupportedRepo",
+    "check_git_ls_files",
+    "commit_for_dir",
+    "git_project_select_rules",
+    "git_version",
+    "ls_files",
+    "project_select_rules",
+    "status",
+]
 
 # See https://github.com/guildai/guildai/issues/471 for details
 GIT_LS_FILES_TARGET_VER = (2, 32, 0)
@@ -71,24 +88,24 @@ COMMIT_INFO_SCHEMES = [
     )
 ]
 
-FileStatus = collections.namedtuple("FileStatus", ["status", "path", "orig_path"])
-FileStatus.__doc__ = """
-Represents a file in the result of `status()`.
 
-`status` is a two character status code. This follows the git
-convention as documented in `git status --help` with the exception
-that an empty space char (' ') in the git spec becomes an underscore
-char ('_') in this spec.
+class FileStatus(NamedTuple):
+    """Represents a file in the result of `status()`.
 
-  - _ = unmodified
-  - M = modified
-  - A = added
-  - D = deleted
-  - R = renamed
-  - C = copied
-  - U = updated but unmerged
+    `status` is a two character status code. This follows the git
+    convention as documented in `git status --help` with the exception
+    that an empty space char (' ') in the git spec becomes an underscore
+    char ('_') in this spec.
 
-    X          Y     Meaning
+      _ = unmodified
+      M = modified
+      A = added
+      D = deleted
+      R = renamed
+      C = copied
+      U = updated but unmerged
+
+    X           Y    Meaning
     -------------------------------------------------
     _        [AMD]   not updated
     M        [ MD]   updated in index
@@ -113,7 +130,12 @@ char ('_') in this spec.
     ?           ?    untracked
     !           !    ignored
 
-"""
+    """
+
+    status: str
+    path: str
+    orig_path: str | None
+
 
 log = logging.getLogger("guild")
 

@@ -26,11 +26,11 @@ Help for `check`:
 Default output:
 
     >>> run("gage check")  # -space +parse
-    gage_version           0.1.0
-    gage_install_location  {:path}
-    python_version         {:ver} {}
-    python_exe             {:path}
-    platform               {}
+    | gage_version          | 0.1.0     |
+    | gage_install_location | {:path}   |
+    | python_version        | {:ver} {} |
+    | python_exe            | {:path}   |
+    | platform              | {}        |
     <0>
 
 Verbose output shows default output plus additional settings. As some
@@ -40,12 +40,12 @@ directory for control.
     >>> tmp = make_temp_dir()
 
     >>> run(f"gage -C {tmp} check -v")  # -space +parse
-    gage_version           {:ver}
+    | gage_version          | {:ver}   |
     {}
-    platform               {}
-    command_directory      {x:path}
-    project_directory      <none>
-    gagefile               <none>
+    | platform              | {}       |
+    | command_directory     | {x:path} |
+    | project_directory     | <none>   |
+    | gagefile              | <none>   |
     <0>
 
     >>> assert x == tmp

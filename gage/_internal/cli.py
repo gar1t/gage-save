@@ -9,6 +9,7 @@ import shlex
 import click
 
 import rich.box
+import rich.columns
 import rich.console
 import rich.json
 import rich.markdown
@@ -21,6 +22,8 @@ import typer.core
 
 __all__ = [
     "AliasGroup",
+    "Group",
+    "Panel",
     "Table",
     "err",
     "error_message",
@@ -116,14 +119,30 @@ def _pager_supports_styles(pager: str | None):
 def Table(header: list[str] | None = None, **kw: Any):
     t = rich.table.Table(
         show_header=header is not None,
-        box=rich.box.ROUNDED if not is_plain else None,
+        box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
         border_style=TABLE_BORDER_STYLE,
         header_style=TABLE_HEADER_STYLE,
-        **kw
+        **kw,
     )
     for col_name in header or []:
         t.add_column(col_name)
     return t
+
+
+def Panel(renderable: rich.console.RenderableType, **kw: Any):
+    return rich.panel.Panel(
+        renderable,
+        box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
+        **kw,
+    )
+
+
+def Group(*renderables: rich.console.RenderableType):
+    return rich.console.Group(*renderables)
+
+
+def Columns(renderables: Iterable[rich.console.RenderableType], **kw: Any):
+    return rich.columns.Columns(renderables, **kw)
 
 
 class AliasGroup(typer.core.TyperGroup):

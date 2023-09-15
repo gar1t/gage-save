@@ -30,6 +30,14 @@ def run(
             show_default=False,
         ),
     ] = False,
+    json: Annotated[
+        bool,
+        Option(
+            "--json",
+            help="Output preview information as JSON.",
+            show_default=False,
+        ),
+    ] = False,
 ):
     """Start or stage an operation.
 
@@ -44,5 +52,6 @@ def run(
             operation=operation,
             preview_sourcecode=preview_sourcecode,
             preview_all=preview_all,
+            json=json,
         )
     )

@@ -553,7 +553,9 @@ def _file_type_for_tokens(tokens: list[str]) -> FileSelectRuleType | None:
             return type
     return None
 
+
 _FILE_SIZE_TOKEN_P = re.compile(r"size([<>])(\d+)$")
+
 
 def _file_size_for_tokens(tokens: list[str]) -> tuple[int | None, int | None]:
     size_lt = None
@@ -575,7 +577,9 @@ def _sentinel_for_tokens(tokens: list[str]) -> str:
             return t[9:]
     return ""
 
+
 _MAX_MATCHES_TOKEN_P = re.compile(r"max-matches=(\d+)$")
+
 
 def _max_matches_for_tokens(tokens: list[str]) -> int | None:
     for t in tokens:
@@ -597,11 +601,11 @@ def _glob_to_re_pattern(pattern: str):
         re_parts.append(re.escape(pattern[pos:start]))
         matcher = pattern[start:end]
         if matcher == "*":
-            re_parts.append(rf"[^{path_sep}]+")
+            re_parts.append(rf"[^{path_sep}]*")
         elif matcher in ("**/", "**"):
             re_parts.append(r"(?:.+/)*")
         elif matcher == "?":
-            re_parts.append(rf"[^{path_sep}]")
+            re_parts.append(rf"[^{path_sep}]?")
         else:
             assert False, (matcher, pattern)
         pos = end
@@ -635,7 +639,9 @@ class _PreviewHandler(FileCopyHandler):
 
 
 def preview_copytree(
-    src: str, select: FileSelect | None = None, follow_links: bool = True
+    src: str,
+    select: FileSelect | None = None,
+    follow_links: bool = True,
 ):
     handler = _PreviewHandler(src)
     copytree(src, "", select, handler, follow_links)

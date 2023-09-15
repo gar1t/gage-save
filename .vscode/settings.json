@@ -108,6 +108,8 @@
     "readlines",
     "relpath",
     "relroot",
+    "renderable",
+    "renderables",
     "repls",
     "rmtempdir",
     "rmtree",

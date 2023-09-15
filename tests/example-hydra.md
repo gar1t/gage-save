@@ -15,11 +15,33 @@
     ./gage.toml is a valid Gage file
     <0>
 
-    >>> run("gage ops")  # -space
-    operation  description
-     my_app     Replicates the Hydra Get Started example.
+    >>> run("gage ops")
+    | operation | description                               |
+    |-----------|-------------------------------------------|
+    | my_app    | Replicates the Hydra Get Started example. |
     <0>
 
-    >>> run("gage run my_app --preview")
-    TODO: preview my_app
+    >>> run("gage run my_app --preview-sourcecode --json")  # +diff +parse
+    {
+      "sourcecode": {
+        "src": "{:path}/examples/hydra",
+        "include": [
+          "**/* text size<10000 max-matches=500"
+        ],
+        "exclude": [
+          "**/.* dir",
+          "**/* dir sentinel=bin/activate",
+          "**/* dir sentinel=.nocopy",
+          ".gitignore"
+        ],
+        "paths": [
+          "gage.toml",
+          "my_app.py",
+          "conf/__init__.py",
+          "conf/config.yaml",
+          "conf/db/mysql.yaml",
+          "conf/db/postgresql.yaml"
+        ]
+      }
+    }
     <0>

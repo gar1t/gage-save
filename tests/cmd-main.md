@@ -46,9 +46,9 @@ The `-C` runs the command in the specified directory.
 
     >>> run(f"gage -C {tmp} check -v")  # +parse -space
     {}
-    command_directory      {x:path}
-    project_directory      <none>
-    gagefile               <none>
+    | command_directory   | {x:path} |
+    | project_directory   | <none>   |
+    | gagefile            | <none>   |
     <0>
 
     >>> assert x == tmp

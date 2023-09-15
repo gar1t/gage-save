@@ -50,6 +50,7 @@
     gage._internal.python_util
     gage._internal.run_manifest
     gage._internal.run_output
+    gage._internal.run_sourcecode
     gage._internal.run_util
     gage._internal.shlex_util
     gage._internal.test

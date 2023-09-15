@@ -39,14 +39,14 @@ def _try_project_opdef(spec: Optional[str], cwd: str):
 
 def _opdef_for_name(name: str, gf: GageFile) -> OpDef | None:
     try:
-        return gf.operations[name]
+        return gf.get_operations().get(name)
     except KeyError:
         return None
 
 
 def _default_opdef(gf: GageFile):
-    for name, opdef in sorted(gf.operations.items()):
-        if opdef.default:
+    for name, opdef in sorted(gf.get_operations().items()):
+        if opdef.get_default:
             return opdef
     return None
 

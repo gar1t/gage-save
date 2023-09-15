@@ -14,6 +14,7 @@ class Args(NamedTuple):
     operation: str
     preview_sourcecode: bool
     preview_all: bool
+    json: bool
 
 
 def run(args: Args):
@@ -36,45 +37,45 @@ def _handle_opdef(opdef: OpDef, args: Args):
 # Preview
 # =================================================================
 
+
 def _preview_opts(args: Args):
     return args.preview_sourcecode or args.preview_all
 
 
 def _preview_and_exit(opdef: OpDef, args: Args) -> NoReturn:
-    if args.preview_sourcecode or args.preview_all:
-        _preview_sourcecode(opdef)
-    if args.preview_all:
-        _preview_config(opdef, args)
-        _preview_deps(opdef)
-        _preview_runtime_init(opdef)
-        _preview_run_exec(opdef)
-        _preview_run_finalize(opdef)
+    previews = _init_previews(opdef, args)
+    if args.json:
+        cli.out(
+            cli.json({name: as_json() for name, as_renderable, as_json in previews})
+        )
+    else:
+        cli.out(
+            cli.Group(*(as_renderable() for name, as_renderable, as_json in previews))
+        )
     raise SystemExit(0)
 
 
-def _preview_sourcecode(opdef: OpDef):
+class Preview(NamedTuple):
+    name: str
+    as_renderable: Callable[[], Any]
+    as_json: Callable[[], Any]
+
+
+def _init_previews(opdef: OpDef, args: Args):
+    previews: list[Preview] = []
+    if args.preview_sourcecode or args.preview_all:
+        previews.append(_init_sourcecode_preview(opdef))
+    # TODO: other previews
+    return previews
+
+
+def _init_sourcecode_preview(opdef: OpDef):
     sourcecode = run_sourcecode.init(opdef)
-    cli.out(run_sourcecode.preview(sourcecode))
-
-
-def _preview_config(opdef: OpDef, args: Args):
-    cli.out("TODO: preview config")
-
-
-def _preview_deps(opdef: OpDef):
-    cli.out("TODO: preview deps")
-
-
-def _preview_runtime_init(opdef: OpDef):
-    cli.out("TODO: preview runtime init")
-
-
-def _preview_run_exec(opdef: OpDef):
-    cli.out("TODO: preview run exec")
-
-
-def _preview_run_finalize(opdef: OpDef):
-    cli.out("TODO: preview finalize")
+    return Preview(
+        "sourcecode",
+        lambda: run_sourcecode.preview(sourcecode),
+        lambda: sourcecode.as_json(),
+    )
 
 
 # =================================================================

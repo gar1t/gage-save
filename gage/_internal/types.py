@@ -29,100 +29,98 @@ class OpCmd:
 
 
 class OpDef:
-    def __init__(self, name: str, data: Data):
+    def __init__(self, name: str, data: Data, src: str | None = None):
         self.name = name
         self._data = data
+        self.src = src
+
+    def get_src(self):
+        if self.src is None:
+            raise TypeError(
+                "OpDef was not created with src - read src attribute "
+                "directly to bypass this check"
+            )
+        return self.src
 
     def as_json(self) -> Data:
         return self._data
 
-    @property
-    def description(self) -> Optional[str]:
+    def get_description(self) -> Optional[str]:
         return self._data.get("description")
 
-    @property
-    def default(self):
+    def get_default(self):
         return bool(self._data.get("default"))
 
-    @property
-    def exec(self):
-        exec = self._data.get("exec")
-        if exec is None:
+    def get_exec(self):
+        val = self._data.get("exec")
+        if val is None:
             return None
-        if isinstance(exec, str):
-            return exec
-        return OpDefExec(self, exec)
+        if isinstance(val, str):
+            return val
+        return OpDefExec(self, val)
+
+    def get_sourcecode(self):
+        return OpDefSourceCode(self, self._data.get("sourcecode") or {})
 
 
 class OpDefExec:
     def __init__(self, opdef: OpDef, data: Data):
+        self.opdef = opdef
         self._data = data
 
-    @property
-    def copy_sourcecode(self) -> str | None:
+    def get_copy_sourcecode(self) -> str | None:
         return self._data.get("copy-sourcecode")
 
-    @property
-    def copy_deps(self) -> str | None:
+    def get_copy_deps(self) -> str | None:
         return self._data.get("copy-deps")
 
-    @property
-    def init_runtime(self) -> str | None:
+    def get_init_runtime(self) -> str | None:
         return self._data.get("init-runtime")
 
-    @property
-    def run(self) -> str | None:
+    def get_run(self) -> str | None:
         return self._data.get("run")
 
-    @property
-    def finalize_run(self) -> str | None:
+    def get_finalize_run(self) -> str | None:
         return self._data.get("finalize-run")
+
+
+class OpDefSourceCode:
+    def __init__(self, opdef: OpDef, data: Data):
+        self.opdef = opdef
+        self._data = data
+
+    def get_include(self) -> list[str] | None:
+        return _path_patterns(self._data.get("include"))
+
+    def get_exclude(self) -> list[str] | None:
+        return _path_patterns(self._data.get("exclude"))
+
+
+def _path_patterns(data: Any) -> list[str] | None:
+    if data is None:
+        return None
+    if isinstance(data, str):
+        return [data]
+    return data
 
 
 class GageFile:
     def __init__(self, filename: str, data: Data):
-        self._filename = filename
+        self.filename = filename
         self._data = data
 
-    @property
-    def filename(self):
-        return self._filename
-
-    @property
-    def operations(self):
-        return {name: OpDef(name, self._data[name]) for name in self._data}
+    def get_operations(self):
+        return {
+            name: OpDef(name, self._data[name], self.filename)  # \
+            for name in self._data
+        }
 
 
 class Run:
-    def __init__(self, run_id: str, run_dir: str):
+    def __init__(self, run_id: str, run_dir: str, name: str):
         self.id = run_id
         self.run_dir = run_dir
-        self.name = _run_name_for_id(run_id)
-
-
-def _run_name_for_id(run_id: str):
-    # An unusual case of implementation in this module but it's tied to
-    # Run construction. Run names are, by definition,
-    # [proquints](https://arxiv.org/html/0901.4016) of the first 32 bits
-    # of data in a hex-encoded UUID.
-    #
-    # In cases where a run ID is not a hex-encoded UUID, the proquint is
-    # generated from the 32 bit crc digest of the run ID.
-    from proquint import uint2quint_str
-
-    return uint2quint_str(_run_id_as_uint(run_id))
-
-
-def _run_id_as_uint(run_id: str):
-    if len(run_id) >= 32:
-        # Test for likely hex-encoded UUID
-        try:
-            return int(run_id[:8], 16)
-        except ValueError:
-            pass
-    from binascii import crc32
-
-    return crc32(run_id.encode())
+        self.name = name
 
 
 RunStatus = Literal["unknown", "foobar"]  # TODO!
