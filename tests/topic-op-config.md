@@ -1,3 +1,7 @@
+---
+test-options: +skip until implemented
+---
+
 # Operation config
 
 ``` toml
@@ -7,7 +11,7 @@ exec = "python train.py"
 
 [train.config]
 
-include = "train.py#*"
+include = "train.py"   # shorthand for train.py#*
 ```
 
 Multiple includes:

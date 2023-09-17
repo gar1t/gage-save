@@ -77,6 +77,7 @@
     "lastindex",
     "levelname",
     "levelno",
+    "libcst",
     "libcublas",
     "lineterm",
     "loglib",

@@ -47,6 +47,7 @@ __all__ = [
     "parse_ver",
     "path_exists",
     "path_join",
+    "printl",
     "quiet",
     "run",
     "sample",
@@ -418,3 +419,8 @@ def path_join(*path: str):
 
 def path_exists(path: str):
     return os.path.exists(path)
+
+
+def printl(l: list[Any]):
+    for x in l:
+        print(x)
