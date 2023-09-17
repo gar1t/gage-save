@@ -3,6 +3,7 @@
 from typing import *
 
 import datetime
+import difflib
 import fnmatch
 import errno
 import json
@@ -55,6 +56,7 @@ __all__ = [
     "set_var_home",
     "symlink",
     "touch",
+    "udiff",
     "use_example",
     "use_project",
     "write",
@@ -424,3 +426,9 @@ def path_exists(path: str):
 def printl(l: list[Any]):
     for x in l:
         print(x)
+
+
+def udiff(s1: str, s2: str, n: int = 3):
+    s1_lines = s1.splitlines(True)
+    s2_lines = s2.splitlines(True)
+    print("".join(difflib.unified_diff(s1_lines, s2_lines, n=n))[:-1])

@@ -46,16 +46,7 @@ Note that Gage is language independent in terms of what is run. The
 application of configuration to source code files, however, is dependent
 on support for specific file formats.
 
-The module `run_config` provides support for the following:
-
-- Abstract facility for loading, modifying, and saving supported file
-  formats
-- XXX
-
-File format specific config support is provide by `run_config_xxx`
-modules.
-
-### Helper functions
+Create some helper functions.
 
     >>> def print_config(config):
     ...     if not config:
@@ -73,15 +64,49 @@ Python config support is provided by `run_config_py`.
 A Python config file is a Python module that defines configuration
 variables as top-level name assignments.
 
-    >>> config = PythonConfig("""
+Create a sample Python script `greet.py`.
+
+    >>> source = """
     ... name = "Joe"
-    ... print(f"Hello Joe")
-    ... """)
+    ... print(f"Hello {name}")
+    ... """.strip()
+
+    >>> cd(make_temp_dir())
+
+    >>> write("greet.py", source)
+
+Run the script.
+
+    >>> run("python greet.py")
+    Hello Joe
+    <0>
+
+Create configuration for the source.
+
+    >>> config = PythonConfig(source)
+
+The configuration has the source `name` value.
 
     >>> print_config(config)
     name: Joe
 
-TODO: demo set + render
+Apply a new value to the configuration.
+
+    >>> config["name"] = "Mike"
+
+Call `apply()` to apply the new configuration.
+
+    >>> print(config.apply())
+    name = "Mike"
+    print(f"Hello {name}")
+
+Use `apply()` to update the script and re-run it.
+
+    >>> write("greet.py", config.apply())
+
+    >>> run("python greet.py")
+    Hello Mike
+    <0>
 
 ### Keys
 
@@ -106,9 +131,9 @@ lists and dictionaries.
     ...     "s": "Hi",
     ...     "b": False
     ... }
-    ... """)
+    ... """.strip())
 
-    >>> print_config(config)
+    >>> print_config(config)  # +diff
     b: True
     d.b: False
     d.f: 1.0
@@ -123,9 +148,41 @@ lists and dictionaries.
     n: None
     s: Hello
 
+Apply different configuration.
+
+    >>> config.update({
+    ...     "i":  11,
+    ...     "f": 2.22,
+    ...     "s": "Hola",
+    ...     "l.1": 22.44,
+    ...     "l.2": "Buenos días",
+    ...     "d.b": True,
+    ...     "d.s": "Buenas",
+    ... })
+
+    >>> print(config.apply())  # +diff
+    i = 11
+    f = 2.22
+    b = True
+    s = "Hola"
+    n = None
+    l = [1, 22.44, "Buenos días", False]
+    d = {
+        "i": 1,
+        "f": 1.0,
+        "s": "Buenas",
+        "b": True
+    }
+
+New keys can be added to config but they aren't applied.
+
+    >>> config["Z"] = "This value won't appear in applied config"
+
+    >>> assert "Z" not in config.apply()
+
 Assignments inside functions and class defs are not treated as keys.
 
-    >>> config = PythonConfig("""
+    >>> print_config(PythonConfig("""
     ... def foo():
     ...     x = 1
     ...
@@ -134,16 +191,55 @@ Assignments inside functions and class defs are not treated as keys.
     ...
     ...     def __init__(self):
     ...         self.z = 3
-    ... """)
-
-    >>> print_config(config)
+    ... """))
     <none>
 
 Assignments to tuples are not treated as config value assignments.
 
-    >>> config = PythonConfig("""
+    >>> print_config(PythonConfig("""
     ... x, y = 1, 2
-    ... """)
-
-    >>> print_config(config)
+    ... """))
     <none>
+
+## Preserving comments and whitespace
+
+Python config preserves comments whitespace across applications.
+
+    >>> source = """
+    ... import something
+    ...
+    ... # Hyper params
+    ... x = 1
+    ... y = 2
+    ...
+    ... # Derived
+    ... z = x + 1
+    ...
+    ... # Training loop
+    ... while True:
+    ...     train(x, y)  # Where the magic happens
+    ...
+    ... # Results
+    ... print(f"loss: {loss()}")
+    ... """.strip()
+
+    >>> config = PythonConfig(source)
+
+Without changes to config, the source is preserved.
+
+    >>> assert source == config.apply()
+
+Changes to config only affect the applied values.
+
+    >>> config["x"] = 123
+    >>> config["y"] = 765
+    >>> applied = config.apply()
+
+    >>> udiff(source, applied, 0)  # not sure but we need -space here
+    ---
+    +++
+    @@ -4,2 +4,2 @@
+    -x = 1
+    -y = 2
+    +x = 123
+    +y = 765

@@ -16,5 +16,6 @@ RunConfigValue = (
 
 
 class RunConfig(dict[str, RunConfigValue]):
-    def render(self) -> str:
+    def apply(self) -> str:
+        """Applies config returning the new source."""
         raise NotImplementedError()
