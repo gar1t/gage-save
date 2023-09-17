@@ -47,6 +47,7 @@
     gage._internal.opref_util
     gage._internal.project_util
     gage._internal.python_util
+    gage._internal.run_config
     gage._internal.run_output
     gage._internal.run_sourcecode
     gage._internal.run_util

@@ -348,20 +348,6 @@ def _run_meta_schema(run: Run):
 
 
 def _apply_log_files(run: Run, type: LoggedFileType):
-    """
-    TODO:
-    - Read <meta>/log/files to infer a list of pre-existing files
-    - Scan the run dir
-    - For any pre-existing file that isn't in cur list, mark as deleted
-    - For any new file in run dir
-
-    Log fields:
-
-    - 'a' for added 'd' for deleted 'm' for modified
-    - type (arg)
-    - modified timestamp
-    - path
-    """
     pre_files = _init_pre_files_index(run)
     seen = set()
     with _open_files_log(run) as f:
