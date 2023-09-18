@@ -14,9 +14,11 @@ KeyNodes = dict[str, cst.CSTNode]
 
 class PythonConfig(RunConfig):
     def __init__(self, source: str):
+        super().__init__()
         self._cst = cst.parse_module(source)
         self._key_nodes: KeyNodes = {}
         _init_config(self._cst, self, self._key_nodes)
+        self._initialized = True
 
     def apply(self):
         modified = _apply_config(self._cst, self, self._key_nodes)

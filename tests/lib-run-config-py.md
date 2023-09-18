@@ -174,11 +174,11 @@ Apply different configuration.
         "b": True
     }
 
-New keys can be added to config but they aren't applied.
+New keys cannot be added to config.
 
     >>> config["Z"] = "This value won't appear in applied config"
-
-    >>> assert "Z" not in config.apply()
+    Traceback (most recent call last):
+    ValueError: key does not exist: 'Z'
 
 Assignments inside functions and class defs are not treated as keys.
 
