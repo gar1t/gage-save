@@ -77,15 +77,19 @@ various stages of a run lifecycle.
     'cp * $run_dir'
 
     >>> train.get_exec().get_copy_deps()
-    'echo pass'
+    ''
+
+    >>> train.get_exec().get_resolve_deps()
+    ''
 
     >>> train.get_exec().get_init_runtime()
+    ''
 
     >>> train.get_exec().get_run()
     'dir .'
 
     >>> train.get_exec().get_finalize_run()
-    ['echo', 'pass']
+    ''
 
 ## Invalid full exec
 
@@ -115,23 +119,22 @@ resolved dependency must be written, the dependency may specify
 
 ## Missing config binding target
 
-When specifying a binding, `target` is required.
+When specifying a binding, `target` or `include` is required.
 
-    >>> run("gage check missing-bind-target.json")  # +wildcard
-    ERROR: missing-bind-target.json has problems
+    >>> run("gage check empty-config.json")  # +wildcard
+    ERROR: empty-config.json has problems
     Properties ['train'] are invalid
     Properties ['config'] are invalid
     ...
-    Properties ['bind'] are invalid
-    ...
     The object is missing required properties ['target']
+    The object is missing required properties ['include']
     ...
     <1>
 
 ## Kitchen sink
 
-`kitchen-sink.json` is intended to demonstrate every configuration
-option.
+`kitchen-sink.json` is intended to demonstrate a variety of
+configurations.
 
     >>> run("gage check kitchen-sink.toml")
     kitchen-sink.toml is a valid Gage file

@@ -5,15 +5,8 @@ exec = "python my_app.py"
 
 [my_app.sourcecode]
 
-#include = "**/*"
-#exclude = ".venv dir"
-
 exclude = ".gitignore"
 
 [my_app.config]
 
-include = "conf/**/*.yaml"
-
-[my_app.config.bind]
-
-target = "*"
+include = "conf/**/*.yaml#**.*"
