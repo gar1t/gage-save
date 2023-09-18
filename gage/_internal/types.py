@@ -56,7 +56,7 @@ class OpDef:
     def get_default(self):
         return bool(self._data.get("default"))
 
-    def get_exec(self):
+    def get_exec(self) -> "str | OpDefExec | None":
         val = self._data.get("exec")
         if val is None:
             return None
@@ -66,6 +66,14 @@ class OpDef:
 
     def get_sourcecode(self):
         return OpDefSourceCode(self, self._data.get("sourcecode") or {})
+
+    def get_config(self) -> "list[OpDefConfig]":
+        val = self._data.get("config")
+        if val is None:
+            return []
+        if isinstance(val, dict):
+            val = [val]
+        return [OpDefConfig(self, item) for item in val]
 
 
 class OpDefExec:
@@ -78,6 +86,9 @@ class OpDefExec:
 
     def get_copy_deps(self) -> str | None:
         return self._data.get("copy-deps")
+
+    def get_resolve_deps(self) -> str | None:
+        return self._data.get("resolve-deps")
 
     def get_init_runtime(self) -> str | None:
         return self._data.get("init-runtime")
@@ -110,6 +121,12 @@ def _path_patterns(data: Any) -> list[str] | None:
     if isinstance(data, str):
         return [data]
     return data
+
+
+class OpDefConfig:
+    def __init__(self, opdef: OpDef, data: Data):
+        self.opdef = opdef
+        self._data = data
 
 
 class GageFile:

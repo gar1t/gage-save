@@ -19,3 +19,7 @@ class RunConfigBase(RunConfig):
     def apply(self) -> str:
         """Applies config returning the new source."""
         raise NotImplementedError()
+
+
+def read_config(src_dir: str):
+    pass

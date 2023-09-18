@@ -28,32 +28,32 @@ DEFAULT_EXCLUDE = [
 class RunSourceCode:
     def __init__(
         self,
-        src: str,
+        src_dir: str,
         include: list[str],
         exclude: list[str],
         paths: list[str],
     ):
-        self.src = src
+        self.src_dir = src_dir
         self.include = include
         self.exclude = exclude
         self.paths = paths
 
     def as_json(self) -> dict[str, Any]:
         return {
-            "src": self.src,
+            "src_dir": self.src_dir,
             "include": self.include,
             "exclude": self.exclude,
             "paths": self.paths,
         }
 
 
-def init(src: str, opdef: OpDef):
+def init(src_dir: str, opdef: OpDef):
     sourcecode = opdef.get_sourcecode()
     include = _sourcecode_include(sourcecode)
     exclude = _sourcecode_exclude(sourcecode)
     select = parse_patterns(include, exclude)
-    paths = [path for path, _result in preview_copytree(src, select)]
-    return RunSourceCode(src, include, exclude, paths)
+    paths = [path for path, _result in preview_copytree(src_dir, select)]
+    return RunSourceCode(src_dir, include, exclude, paths)
 
 
 def _sourcecode_include(sc: OpDefSourceCode | None):

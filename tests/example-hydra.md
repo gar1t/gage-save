@@ -24,7 +24,7 @@
     >>> run("gage run my_app --preview-sourcecode --json")  # +diff +parse
     {
       "sourcecode": {
-        "src": "{:path}/examples/hydra",
+        "src_dir": "{:path}/examples/hydra",
         "include": [
           "**/* text size<10000 max-matches=500"
         ],

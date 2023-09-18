@@ -6,8 +6,7 @@
   "$defs": {
     "shell-cmd": {
       "type": "string",
-      "title": "Shell command",
-      "minLength": 1
+      "title": "Shell command"
     },
     "cmd-args": {
       "type": "array",
@@ -16,8 +15,7 @@
         "title": "Command argument",
         "type": "string",
         "minLength": 1
-      },
-      "minItems": 1
+      }
     },
     "exec-cmd": {
       "oneOf": [
@@ -62,62 +60,47 @@
         }
       ]
     },
-    "binding": {
-      "oneOf": [
-        {
-          "type": "string",
-          "title": "Simplified configuration binding"
-        },
-        {
-          "type": "object",
-          "title": "Full configuration binding",
-          "additionalProperties": false,
-          "properties": {
-            "target": {
-              "type": "string",
-              "title": "Binding target path"
-            },
-            "name": {
-              "type": "string",
-              "title": "Binding name"
-            }
-          },
-          "required": ["target"]
-        }
-      ]
-    },
     "config": {
       "type": "object",
       "title": "Run configuration",
       "additionalProperties": false,
+      "anyOf": [
+        {"required": ["target"]},
+        {"required": ["include"]}
+      ],
+      "allOf": [
+        {
+          "not": {
+            "required": ["target", "include"]
+          }
+        }
+      ],
+      "dependentRequired": {
+        "exclude": ["include"]
+      },
       "properties": {
-        "path": {
+        "name": {
           "type": "string",
-          "title": "Path to configuration file"
+          "title": "Configuration name or name pattern"
+        },
+        "description": {
+          "type": "string",
+          "title": "Configuration description"
+        },
+        "target": {
+          "$ref": "#/$defs/path-pattern",
+          "title": "Path to a single configuration value",
+          "minLength": 1
         },
         "include": {
           "$ref": "#/$defs/path-patterns"
         },
         "exclude": {
           "$ref": "#/$defs/path-patterns"
-        },
-        "bind": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/binding"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/binding"
-              }
-            }
-          ]
         }
       }
     }
   },
-
   "type": "object",
   "additionalProperties": false,
   "patternProperties": {
@@ -147,19 +130,22 @@
               "additionalProperties": false,
               "properties": {
                 "copy-sourcecode": {
-                  "$ref": "#/$defs/exec-cmd"
+                  "$ref": "#/$defs/shell-cmd"
                 },
                 "copy-deps": {
-                  "$ref": "#/$defs/exec-cmd"
+                  "$ref": "#/$defs/shell-cmd"
+                },
+                "resolve-deps": {
+                  "$ref": "#/$defs/shell-cmd"
                 },
                 "init-runtime": {
-                  "$ref": "#/$defs/exec-cmd"
+                  "$ref": "#/$defs/shell-cmd"
                 },
                 "run": {
-                  "$ref": "#/$defs/exec-cmd"
+                  "$ref": "#/$defs/shell-cmd"
                 },
                 "finalize-run": {
-                  "$ref": "#/$defs/exec-cmd"
+                  "$ref": "#/$defs/shell-cmd"
                 }
               }
             }

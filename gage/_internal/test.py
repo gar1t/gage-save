@@ -8,6 +8,7 @@ import fnmatch
 import errno
 import json
 import os
+import pprint
 import re
 import signal
 import stat
@@ -37,6 +38,7 @@ __all__ = [
     "delete_temp_dir",
     "lsl",
     "json",
+    "json_pprint",
     "ls",
     "make_dir",
     "make_temp_dir",
@@ -52,6 +54,7 @@ __all__ = [
     "parse_ver",
     "path_exists",
     "path_join",
+    "pprint",
     "printl",
     "quiet",
     "re",
@@ -72,10 +75,11 @@ __all__ = [
 LogCapture = util.LogCapture
 StderrCapture = util.StderrCapture
 basename = os.path.basename
+delete_temp_dir = file_util.rmtempdir
 lsl = file_util.ls
+pprint = pprint.pprint
 symlink = os.symlink
 touch = file_util.touch
-delete_temp_dir = file_util.rmtempdir
 
 
 def parse_type(name: str, pattern: str, group_count: int = 0):
@@ -457,3 +461,7 @@ def datetime_now():
 
 def datetime_fromiso(s: str):
     return datetime.datetime.fromisoformat(s)
+
+
+def json_pprint(data: Any):
+    print(json.dumps(data, indent=2, sort_keys=True))
