@@ -7,7 +7,7 @@ from .types import *
 from . import cli
 
 from .file_select import parse_patterns
-from .file_select import preview_copytree
+from .file_select import select_files
 
 __all__ = [
     "init",
@@ -52,7 +52,7 @@ def init(src_dir: str, opdef: OpDef):
     include = _sourcecode_include(sourcecode)
     exclude = _sourcecode_exclude(sourcecode)
     select = parse_patterns(include, exclude)
-    paths = [path for path, _result in preview_copytree(src_dir, select)]
+    paths = select_files(src_dir, select)
     return RunSourceCode(src_dir, include, exclude, paths)
 
 

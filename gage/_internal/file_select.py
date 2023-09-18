@@ -33,7 +33,7 @@ __all__ = [
     "exclude",
     "include",
     "parse_patterns",
-    "preview_copytree",
+    "select_files",
 ]
 
 log = logging.getLogger(__name__)
@@ -638,11 +638,7 @@ class _PreviewHandler(FileCopyHandler):
         pass
 
 
-def preview_copytree(
-    src: str,
-    select: FileSelect | None = None,
-    follow_links: bool = True,
-):
+def select_files(src: str, select: FileSelect | None = None, follow_links: bool = True):
     handler = _PreviewHandler(src)
     copy_tree(src, "", select, handler, follow_links)
-    return handler.to_copy
+    return [path for path, _result in handler.to_copy]

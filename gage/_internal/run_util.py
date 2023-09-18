@@ -14,6 +14,7 @@ import uuid
 
 from . import config
 from . import run_sourcecode
+from . import run_config
 
 from .file_select import copy_files
 
@@ -29,6 +30,7 @@ from .opref_util import encode_opref
 __all__ = [
     "META_SCHEMA",
     "RunManifest",
+    "apply_config",
     "copy_sourcecode",
     "finalize_staged_run",
     "init_run_meta",
@@ -305,6 +307,11 @@ def meta_opdef(run: Run) -> OpDef:
     return OpDef(opref.get_full_name(), data)
 
 
+def meta_config(run: Run) -> RunConfig:
+    with open(run_meta_path(run, "config.json")) as f:
+        return json.load(f)
+
+
 # =================================================================
 # Stage run
 # =================================================================
@@ -345,6 +352,13 @@ def _reduce_files_log(run: Run):
             paths.pop(path, None)
     for path, type in paths.items():
         yield type, path
+
+
+def apply_config(run: Run):
+    log = _runner_log(run)
+    config = meta_config(run)
+    opdef = meta_opdef(run)
+    run_config.apply_config(config, opdef, run.run_dir)
 
 
 # =================================================================

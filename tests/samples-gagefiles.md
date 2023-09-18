@@ -113,7 +113,7 @@ assumption that dependencies are not modified by a run. In cases where a
 resolved dependency must be written, the dependency may specify
 `writeable` as a boolean or as an array of paths.
 
-    >>> run("gage check writeable-deps.json")  # +skip - might not use requires
+    >>> run("gage check writeable-deps.json")  # +skip - deps pending
     writeable-deps.json is a valid Gage file
     <0>
 

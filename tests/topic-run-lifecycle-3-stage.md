@@ -185,19 +185,21 @@ and consist of an event, a file type, a modified timestamp, and a path.
 In this case, "a" means the file was added. "s" means it's a source code
 type.
 
-    >>> cat(run_meta_path(run, "log", "runner"))  # +parse -space
-    {}
-    {:date} Copying source code (see log/files for details)
-    {:date} Source code include:
-      ['**/* text size<10000 max-matches=500']
-    {:date} Source code exclude:
-      ['**/.* dir',
-       '**/* dir sentinel=bin/activate',
-       '**/* dir sentinel=.nocopy']
+The runner log contains the applied include and exclude patterns.
+
+    >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard -space
+    Writing id
+    ...
+    Copying source code (see log/files for details)
+    Source code include: ['**/* text size<10000 max-matches=500']
+    Source code exclude: ['**/.* dir', '**/* dir sentinel=bin/activate',
+                          '**/* dir sentinel=.nocopy']
 
 ## Apply config
 
-TODO: `apply_config()`
+`apply_config()` applies configuration in meta to run files.
+
+    >>> apply_config(run)
 
 ## Init runtime
 

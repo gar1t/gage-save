@@ -498,7 +498,7 @@ Preview various copy tree select rules.
     >>> def preview(rules):
     ...     any = False
     ...     select = FileSelect(rules)
-    ...     for path, select_results in preview_copytree(src, select):
+    ...     for path in select_files(src, select):
     ...         print(path)
     ...         any = True
     ...     if not any:
@@ -576,7 +576,7 @@ Create a preview function that parses include and exclude patterns.
     >>> def preview(include, exclude):
     ...     any = False
     ...     select = parse_patterns(include, exclude)
-    ...     for path, results in preview_copytree(src, select):
+    ...     for path in select_files(src, select):
     ...         print(path)
     ...         any = True
     ...     if not any:

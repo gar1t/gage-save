@@ -2,6 +2,21 @@
 
 from typing import *
 
+__all__ = [
+    "GageFile",
+    "OpCmd",
+    "OpDef",
+    "OpDefNotFound",
+    "OpRef",
+    "OpDefExec",
+    "OpDefConfig",
+    "OpDefSourceCode",
+    "Run",
+    "RunConfig",
+    "RunConfigValue",
+    "RunStatus",
+]
+
 Data = dict[str, Any]
 
 # NO IMPORTS ALLOWED
@@ -127,6 +142,21 @@ class OpDefConfig:
     def __init__(self, opdef: OpDef, data: Data):
         self.opdef = opdef
         self._data = data
+
+    def get_name(self) -> str | None:
+        return self._data.get("name")
+
+    def get_description(self) -> str | None:
+        return self._data.get("description")
+
+    def get_target(self) -> str | None:
+        return self._data.get("target")
+
+    def get_include(self) -> list[str] | None:
+        return _path_patterns(self._data.get("include"))
+
+    def get_exclude(self) -> list[str] | None:
+        return _path_patterns(self._data.get("exclude"))
 
 
 class GageFile:
