@@ -16,7 +16,7 @@ def check(
         Argument(
             help="Check Gage file for issues. Cannot be used with --version.",
             metavar="[PATH]",
-            callback=cli.excludes("version"),
+            callback=cli.incompatible_with("version"),
         ),
     ] = "",
     version: Annotated[

@@ -54,14 +54,18 @@ Define inputs to the init function.
 
     >>> opdef = OpDef("test", {})
 
+    >>> config = {
+    ...     "x": 123,
+    ...     "y": 1.23
+    ... }
+
     >>> cmd = OpCmd(
     ...     ["echo", "hello"],
     ...     {"foo": "123", "bar": "abc"}
     ... )
 
     >>> user_attrs = {
-    ...     "label": "A test run",
-    ...     "params": {"x": 1.1, "y": True},
+    ...     "label": "A test run"
     ... }
 
     >>> system_attrs = {
@@ -74,6 +78,7 @@ Initialize the run meta with `init_run_meta()`.
     ...     run,
     ...     opref,
     ...     opdef,
+    ...     config,
     ...     cmd,
     ...     user_attrs,
     ...     system_attrs
@@ -83,6 +88,7 @@ Gage creates the following files:
 
     >>> ls(meta_dir, include_dirs=True, permissions=True)  # +diff
     -r--r--r-- __schema__
+    -r--r--r-- config.json
     -r--r--r-- id
     -r--r--r-- initialized
     drwxrwxr-x log
@@ -97,7 +103,6 @@ Gage creates the following files:
     -r--r--r-- sys/platform
     drwxrwxr-x user
     -r--r--r-- user/label
-    -r--r--r-- user/params
 
 Files are read only with the exception of the runner log, which is
 assumed to be writable until the run is finalized (see below).
@@ -170,22 +175,30 @@ process.
 
 The runner log contains log entries for the actions performed.
 
-    >>> cat(path_join(meta_dir, "log", "runner"))  # +parse
-    {:date} Writing id
-    {:date} Writing name
-    {:date} Writing opdef.json
-    {:date} Writing proc/cmd
-    {:date} Writing proc/env
-    {:date} Writing user/label
-    {:date} Writing user/params
-    {:date} Writing sys/platform
-    {:date} Writing opref
-    {:date} Writing initialized
+Log entries are encoded in plain text, one per line. Lines are prefixed
+with an ISO 8601 formatted date.
 
-Sample runner format:
+    >>> logfile = path_join(meta_dir, "log", "runner")
 
-    2023-09-03T11:59:00-0500 Writing id
+    >>> cat(logfile)  # +parse
+    {x:date} Writing id
+    {}
 
-- Date is ISO 8016
-- No error level - all messages are equivalent
-- Messages start with a capital letter
+    >>> assert datetime_fromiso(x) <= datetime_now()
+
+The log contains a record of the changes made during init.
+
+    >>> cat_log(logfile)
+    Writing id
+    Writing name
+    Writing opdef.json
+    Writing config.json
+    Writing proc/cmd
+    Writing proc/env
+    Writing user/label
+    Writing sys/platform
+    Writing opref
+    Writing initialized
+
+Runner logs are not written with a log level. As a convention, messages
+start with a capital letter.

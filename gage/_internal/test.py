@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 
 import gage
 
@@ -29,7 +30,10 @@ __all__ = [
     "SysPath",
     "basename",
     "cat",
+    "cat_log",
     "cd",
+    "datetime_now",
+    "datetime_fromiso",
     "delete_temp_dir",
     "lsl",
     "json",
@@ -50,6 +54,7 @@ __all__ = [
     "path_join",
     "printl",
     "quiet",
+    "re",
     "run",
     "sample",
     "samples_dir",
@@ -127,7 +132,7 @@ def parse_run_name(s: str):
 
 @parse_type("date", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
 def parse_date(s: str):
-    return datetime.datetime.fromisoformat(_format_tz(s))
+    return datetime.datetime.fromisoformat(_format_tz(s)).isoformat()
 
 
 @parse_type("sha256", "[a-f0-9]{64}")
@@ -432,3 +437,23 @@ def udiff(s1: str, s2: str, n: int = 3):
     s1_lines = s1.splitlines(True)
     s2_lines = s2.splitlines(True)
     print("".join(difflib.unified_diff(s1_lines, s2_lines, n=n))[:-1])
+
+
+def cat_log(filename: str):
+    date_p = re.compile(parse_date.pattern)
+    for line in open(filename).readlines():
+        date, rest = line.split(" ", 1)
+        assert date_p.match(date)
+        print(rest, end="")
+
+
+def datetime_now():
+    now_local = time.localtime()
+    return datetime.datetime.fromtimestamp(
+        time.mktime(now_local),
+        datetime.timezone(datetime.timedelta(seconds=now_local.tm_gmtoff)),
+    )
+
+
+def datetime_fromiso(s: str):
+    return datetime.datetime.fromisoformat(s)

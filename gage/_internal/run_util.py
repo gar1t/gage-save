@@ -161,6 +161,7 @@ def init_run_meta(
     run: Run,
     opref: OpRef,
     opdef: OpDef,
+    config: RunConfig,
     cmd: OpCmd,
     user_attrs: Optional[dict[str, Any]] = None,
     system_attrs: Optional[dict[str, Any]] = None,
@@ -176,6 +177,7 @@ def init_run_meta(
     _write_run_id(run, meta_dir, log)
     _write_run_name(run, meta_dir, log)
     _write_opdef(opdef, meta_dir, log)
+    _write_config(config, meta_dir, log)
     _write_cmd_args(cmd, meta_dir, log)
     _write_cmd_env(cmd, meta_dir, log)
     if user_attrs:
@@ -217,8 +219,21 @@ def _write_run_name(run: Run, meta_dir: str, log: Logger):
 def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
     log.info("Writing opdef.json")
     filename = os.path.join(meta_dir, "opdef.json")
-    encoded = json.dumps(opdef.as_json())
-    write_file(filename, encoded, readonly=True)
+    write_file(filename, _encode_json(opdef), readonly=True)
+
+
+def _encode_json(val: Any):
+    try:
+        val = val.as_json()
+    except AttributeError:
+        pass
+    return json.dumps(val, indent=2, sort_keys=True)
+
+
+def _write_config(config: RunConfig, meta_dir: str, log: Logger):
+    log.info("Writing config.json")
+    filename = os.path.join(meta_dir, "config.json")
+    write_file(filename, _encode_json(config), readonly=True)
 
 
 def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):

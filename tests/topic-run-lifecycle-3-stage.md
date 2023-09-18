@@ -27,12 +27,10 @@ meta*](topic-run-lifecycle-2-init-meta.md).
 Create a run and initialize its meta.
 
     >>> from gage._internal.run_util import *
+    >>> from gage._internal.types import *
 
     >>> runs_home = make_temp_dir()
-
     >>> run = make_run(runs_home)
-
-    >>> from gage._internal.types import *
 
 Op ref identifies the run:
 
@@ -43,9 +41,24 @@ spec is empty, which applies the default include/exclude rules.
 
     >>> sourcecode = {}
 
+Config specifies how configuration values are applied to run source
+code.
+
+    >>> config = {"target": "train.py#msg"}
+
 Create the op def.
 
-    >>> opdef = OpDef("test", {"sourcecode": sourcecode})
+    >>> opdef = OpDef(
+    ...     "test",
+    ...     {
+    ...         "sourcecode": sourcecode,
+    ...         "config": config,
+    ...     })
+
+Create configuration. This is applied to the source code files according
+to `config` definitions in op def.
+
+    >>> config = {"msg": "Hola"}
 
 The command is what is run. As tests below only stage the run, this
 command is merely an example.
@@ -54,12 +67,13 @@ command is merely an example.
 
 Initialize the run meta.
 
-    >>> init_run_meta(run, opref, opdef, cmd, {}, {})
+    >>> init_run_meta(run, opref, opdef, {}, cmd, {}, {})
 
 List the generated files.
 
-    >>> ls(run_meta_dir(run))
+    >>> ls(run_meta_dir(run))  # +diff
     __schema__
+    config.json
     id
     initialized
     log/runner
@@ -81,10 +95,13 @@ Run staging consists of the following phases:
 
 The order of these phases is important:
 
-1. Source code must be copied before configuration is applied
-2. A runtime may require configured source code
-3. Dependency resolution may required an initialized runtime
+1. Source code must be copied before configuration is applied (source
+   code < config)
+2. A runtime may require configured source code (config < runtime)
+3. Dependency resolution may required an initialized runtime (runtime <
+   dependencies)
 4. All files must be written before a staged run is finalized
+   (everything < finalize)
 
 Each phase is implemented by a function in `run_util`:
 
@@ -104,12 +121,19 @@ runtime files.
 
 ## Copy source code
 
-`copy_sourcecode()` requires a source directory and a run.
+`copy_sourcecode()` requires a source directory and a run. The rules for
+source code copy are defined in the run op def or are applied as
+defaults if rules are not provided.
 
-Create a sample source code directory structure.
+Create a sample source code directory structure with a `train.py` script
+that will be used in the application of configuration later.
 
     >>> sourcecode_dir = make_temp_dir()
-    >>> touch(path_join(sourcecode_dir, "train.py"))
+    >>> write(
+    ...     path_join(sourcecode_dir, "train.py"), """
+    ... msg = "Hi"
+    ... print(msg)
+    ... """)
     >>> touch(path_join(sourcecode_dir, "eval.py"))
     >>> touch(path_join(sourcecode_dir, "gage.toml"))
     >>> make_dir(path_join(sourcecode_dir, "conf"))
@@ -123,7 +147,14 @@ Create a sample source code directory structure.
     gage.toml
     train.py
 
-Before copying anything, confirm the run directory is empty.
+Default source code copy rules are applied as the op def doesn't
+otherwise specify rules.
+
+    >>> opdef = meta_opdef(run)
+    >>> opdef.get_sourcecode().as_json()
+    {}
+
+Confirm the run directory is empty.
 
     >>> ls(run.run_dir)
     <empty>

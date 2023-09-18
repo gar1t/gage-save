@@ -24,7 +24,7 @@ as the same.
     >>> tmp = make_temp_dir()
     >>> run = make_run(tmp)
 
-    >>> init_run_meta(run, OpRef("test", "hi"), OpDef("bye", {}), OpCmd([], {}))
+    >>> init_run_meta(run, OpRef("test", "hi"), OpDef("bye", {}), {}, OpCmd([], {}))
     Traceback (most recent call last):
     ValueError: mismatched names in opref ('hi') and opdef ('bye')
 

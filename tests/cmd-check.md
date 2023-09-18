@@ -131,7 +131,7 @@ Non matching spec:
     See https://bit.ly/45AerAj for help with version specs.
     <1>
 
-## Exclusive params
+## Incompatible params
 
     >>> run("gage check --version xxx some-path")
     gage: path and version cannot both be specified

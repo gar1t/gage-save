@@ -28,7 +28,7 @@ __all__ = [
     "err",
     "error_message",
     "exit_with_error",
-    "excludes",
+    "incompatible_with",
     "label",
     "markdown",
     "out",
@@ -78,7 +78,8 @@ def markdown(md: str):
     return rich.markdown.Markdown(md)
 
 
-def excludes(*params: str):
+def incompatible_with(*params: str):
+    """Decorator to specify incompatible params."""
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
         if value:
             for other_name in params:

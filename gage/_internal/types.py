@@ -39,6 +39,9 @@ class OpDef:
         self._data = data
         self.src = src
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_src(self):
         if self.src is None:
             raise TypeError(
@@ -46,9 +49,6 @@ class OpDef:
                 "directly to bypass this check"
             )
         return self.src
-
-    def as_json(self) -> Data:
-        return self._data
 
     def get_description(self) -> Optional[str]:
         return self._data.get("description")
@@ -94,6 +94,9 @@ class OpDefSourceCode:
         self.opdef = opdef
         self._data = data
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_include(self) -> list[str] | None:
         return _path_patterns(self._data.get("include"))
 
@@ -131,6 +134,14 @@ class Run:
 RunStatus = Literal["unknown", "foobar"]  # TODO!
 
 
-class Op:
-    def __init__(self):
-        self.opdef: Optional[OpDef] = None
+RunConfigValue = (
+    None
+    | int
+    | float
+    | bool
+    | str
+    | list['RunConfigValue']
+    | dict[str, 'RunConfigValue']
+)
+
+RunConfig = dict[str, RunConfigValue]
