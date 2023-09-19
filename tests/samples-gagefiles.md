@@ -117,16 +117,16 @@ resolved dependency must be written, the dependency may specify
     writeable-deps.json is a valid Gage file
     <0>
 
-## Missing config binding target
+## Missing config binding path
 
-When specifying a binding, `target` or `include` is required.
+When specifying a binding, `path` or `include` is required.
 
     >>> run("gage check empty-config.json")  # +wildcard
     ERROR: empty-config.json has problems
     Properties ['train'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['target']
+    The object is missing required properties ['path']
     The object is missing required properties ['include']
     ...
     <1>

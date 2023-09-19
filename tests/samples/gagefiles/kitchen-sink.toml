@@ -1,43 +1,64 @@
 [a]
 
-description = "Baseline config"
+description = "Basic config"
 default = true
-exec = "echo hello"
 
-[a.sourcecode]
+exec = "python train.py"
 
-include = ["*.py", "*.yaml"]
-
-[a.config]
-
-target = "config.yaml#*"
+sourcecode = ["*.py", "*.yaml", "-*.tmp.*"]
+config = "config.yaml"
 
 [b]
 
-description = "Config bindings as array of strings"
+description = "Config as list of keys"
 
-[b.config]
-
-include = [
+config = [
   "config.yaml#lr",
   "config.yaml#epochs"
 ]
 
 [c]
 
-description = "Use include and exclude for config"
+description = "Config as include/exclude patterns"
 
-[c.config]
-
-include = "config/*.yaml"
-exclude = "config/example.yaml"
+c.config = [
+  "config/*.yaml",
+  "-config/example.yaml"
+]
 
 [d]
 
-description = "Specify execs for each life cycle stage"
+description = "Phase-specific exec"
 
 [d.exec]
 
 copy-sourcecode = """
 cp -r src $run_dir/src
+cp pyproject.toml $run_dir
 """
+
+init-runtime = """
+virtualenv venv
+venv/bin/pip install .
+"""
+
+run = """
+venv/bin/python python -m myapp
+"""
+
+[e]
+
+description = "Complex config"
+
+[[e.config]]
+
+name = "train.{}"
+path = "train.py"
+
+[[e.config]]
+
+name = "eval.{}"
+paths = [
+  "eval.py",
+  "-eval.py#priv*"
+]

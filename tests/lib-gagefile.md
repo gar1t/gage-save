@@ -280,9 +280,9 @@ A path expression cannot be empty.
 `config` defines operation configuration. It may be an object or a list
 of objects.
 
-Objects must define either `target` or `include`.
+Objects must define either `path` or `include`.
 
-    >>> validate_opdef({"config": {"target": "train.py"}})
+    >>> validate_opdef({"config": {"path": "train.py"}})
     ok
 
     >>> validate_opdef({"config": {"include": "train.py"}})
@@ -292,7 +292,7 @@ Objects must define either `target` or `include`.
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['target']
+    The object is missing required properties ['path']
     The object is missing required properties ['include']
     ...
 
@@ -303,14 +303,14 @@ Lists may be empty.
 
 Items in a list must be valid config objects.
 
-    >>> validate_opdef({"config": [{"target": "train.py"}]})
+    >>> validate_opdef({"config": [{"path": "train.py"}]})
     ok
 
     >>> validate_opdef({"config": [{}]})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['target']
+    The object is missing required properties ['path']
     The object is missing required properties ['include']
 
 `exclude` may be specified but only when `include` is defined.
@@ -319,7 +319,7 @@ Items in a list must be valid config objects.
     ok
 
     >>> validate_opdef({"config": {
-    ...     "target": "train.py",
+    ...     "path": "train.py",
     ...     "exclude": "*.txt"
     ... }})  # +wildcard
     Properties ['test'] are invalid
@@ -328,10 +328,10 @@ Items in a list must be valid config objects.
     The object is missing dependent properties {'exclude': [JSON('include')]}
     ...
 
-`target` and `include` cannot both be specified.
+`path` and `include` cannot both be specified.
 
     >>> validate_opdef({"config": {
-    ...     "target": "train.py",
+    ...     "path": "train.py",
     ...     "include": "*.txt"
     ... }})  # +wildcard
     Properties ['test'] are invalid
@@ -340,11 +340,11 @@ Items in a list must be valid config objects.
     The instance must not be valid against the subschema
     ...
 
-`name` specifies the name of a target value.
+`name` specifies the name of a path value.
 
     >>> validate_opdef({"config": {
     ...     "name": "x",
-    ...     "target": "train.py#x"
+    ...     "path": "train.py#x"
     ... }})
     ok
 
@@ -359,7 +359,7 @@ Items in a list must be valid config objects.
 `description` is used to describe the configuration.
 
     >>> validate_opdef({"config": {
-    ...     "target": "train.py#lr",
+    ...     "path": "train.py#lr",
     ...     "description": "Learning rate"
     ... }})
     ok

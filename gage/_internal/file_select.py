@@ -107,14 +107,14 @@ class FileSelectRule:
     def matches(self):
         return self._matches
 
-    def test(self, src_root: str, relpath: str) -> FileSelectResult:
+    def test(self, src_dir: str, relpath: str) -> FileSelectResult:
         """Returns a tuple of result and applicable test.
 
         Applicable test can be used as a reason for the result -
         e.g. to provide details to a user on why a particular file was
         selected or not.
         """
-        fullpath = os.path.join(src_root, relpath)
+        fullpath = os.path.join(src_dir, relpath)
         tests = [
             FileSelectTest("max matches", self._test_max_matches),
             FileSelectTest("pattern", self._test_patterns, relpath),
@@ -274,10 +274,10 @@ class FileSelect:
 
     def select_file(
         self,
-        src_root: str,
+        src_dir: str,
         relpath: str,
     ) -> tuple[bool, FileSelectResults]:
-        """Apply rules to file located under src_root with relpath.
+        """Apply rules to file located under a src dir with relpath.
 
         All rules are applied to the file. The last rule to apply
         (i.e. its `test` method returns a non-None value) determines
@@ -290,7 +290,7 @@ class FileSelect:
         of applied rules and their results (two-tuples).
         """
         test_results = [
-            (rule.test(src_root, relpath), rule)
+            (rule.test(src_dir, relpath), rule)
             for rule in self.rules
             if rule.type != "dir"
         ]
@@ -298,7 +298,7 @@ class FileSelect:
         return result is True, test_results
 
     def prune_dirs(
-        self, src_root: str, relroot: str, dirs: list[str]
+        self, root: str, relroot: str, dirs: list[str]
     ) -> list[tuple[str, FileSelectResults]]:
         """Deletes from dirs values that excluded as 'dir' type.
 
@@ -313,7 +313,7 @@ class FileSelect:
             for rule in self.rules:
                 if rule.type != "dir":
                     continue
-                selected, _ = select_result = rule.test(src_root, relpath)
+                selected, _ = select_result = rule.test(root, relpath)
                 if selected is not None:
                     last_select_result = select_result
                     last_select_result_rule = rule
@@ -355,26 +355,26 @@ def exclude(patterns: list[str], **kw: Any):
 class FileCopyHandler:
     def copy(
         self,
-        src: str,
-        dest: str,
+        src_dir: str,
+        dest_dir: str,
         select_results: FileSelectResults | None = None,
     ):
         if select_results:
-            log.debug("%s selected for copy: %s", src, select_results)
-        log.debug("copying %s to %s", src, dest)
-        ensure_dir(os.path.dirname(dest))
-        self._try_copy_file(src, dest)
+            log.debug("%s selected for copy: %s", src_dir, select_results)
+        log.debug("copying %s to %s", src_dir, dest_dir)
+        ensure_dir(os.path.dirname(dest_dir))
+        self._try_copy_file(src_dir, dest_dir)
 
-    def _try_copy_file(self, src: str, dest: str):
+    def _try_copy_file(self, src_filename: str, dest_filename: str):
         try:
-            shutil.copyfile(src, dest)
-            shutil.copymode(src, dest)
+            shutil.copyfile(src_filename, dest_filename)
+            shutil.copymode(src_filename, dest_filename)
         except IOError as e:
             if e.errno != errno.EEXIST:
-                if not self.handle_copy_error(e, src, dest):
+                if not self.handle_copy_error(e, src_filename, dest_filename):
                     raise
 
-    def ignore(self, src: str, results: FileSelectResults | None):
+    def ignore(self, filename: str, results: FileSelectResults | None):
         """Called when a file is ignored for copy.
 
         `results` is the file select results that caused the decision to
@@ -384,7 +384,12 @@ class FileCopyHandler:
         """
         pass
 
-    def handle_copy_error(self, error: Exception, src: str, dest: str):
+    def handle_copy_error(
+        self,
+        error: Exception,
+        src_filename: str,
+        dest_filename: str,
+    ):
         return False
 
     def close(self):
@@ -392,16 +397,16 @@ class FileCopyHandler:
 
 
 def copy_files(
-    src: str,
-    dest: str,
+    src_dir: str,
+    dest_dir: str,
     files: list[str],
     select: FileSelect | None = None,
     handler: FileCopyHandler | None = None,
 ):
     """Copies a list of files located under a source directory.
 
-    `files` is a list of relative paths under `src`. Files are copied to
-    `dest` as their relative paths.
+    `files` is a list of relative paths under `src_dir`. Files are
+    copied to `dest` as their relative paths.
 
     `handler_cls` is an optional class to create a `FileCopyHandler`
     instance. This is used to filter and otherwise handle a file copy.
@@ -412,25 +417,25 @@ def copy_files(
         return
     handler = handler or FileCopyHandler()
     try:
-        _copyfiles_impl(src, dest, files, select, handler)
+        _copyfiles_impl(src_dir, dest_dir, files, select, handler)
     finally:
         handler.close()
 
 
 def _copyfiles_impl(
-    src: str,
-    dest: str,
+    src_dir: str,
+    dest_dir: str,
     files: list[str],
     select: FileSelect | None,
     handler: FileCopyHandler,
 ):
     for path in files:
-        file_src = os.path.join(src, path)
-        file_dest = os.path.join(dest, path)
+        file_src = os.path.join(src_dir, path)
+        file_dest = os.path.join(dest_dir, path)
         if select is None:
             handler.copy(file_src, file_dest)
         else:
-            selected, results = select.select_file(src, path)
+            selected, results = select.select_file(src_dir, path)
             if selected:
                 handler.copy(file_src, file_dest, results)
             else:
@@ -438,13 +443,13 @@ def _copyfiles_impl(
 
 
 def copy_tree(
-    src: str,
-    dest: str,
+    src_dir: str,
+    dest_dir: str,
     select: FileSelect | None = None,
     handler: FileCopyHandler | None = None,
     follow_links: bool = True,
 ):
-    """Copies files from src to dest for a FileSelect.
+    """Copies files from src dir to dest dir for a FileSelect.
 
     If follow_links is True (default), follows linked directories when
     copying the tree.
@@ -460,27 +465,27 @@ def copy_tree(
         return
     handler = handler or FileCopyHandler()
     try:
-        _copytree_impl(src, dest, select, handler, follow_links)
+        _copytree_impl(src_dir, dest_dir, select, handler, follow_links)
     finally:
         handler.close()
 
 
 def _copytree_impl(
-    src: str,
-    dest: str,
+    src_dir: str,
+    dest_dir: str,
     select: FileSelect | None,
     handler: FileCopyHandler,
     follow_links: bool,
 ):
-    for root, dirs, files in os.walk(src, followlinks=follow_links):
+    for root, dirs, files in os.walk(src_dir, followlinks=follow_links):
         dirs.sort()
-        relroot = _relpath(root, src)
-        pruned = _prune_dirs(src, relroot, select, dirs)
+        relroot = _relpath(root, src_dir)
+        pruned = _prune_dirs(src_dir, relroot, select, dirs)
         for name, select_results in pruned:
             handler.ignore(os.path.join(root, name), select_results)
         for name in sorted(files):
             selected, file_src, file_dest, select_results = _select_file_for_copy(
-                src, relroot, name, dest, select
+                src_dir, relroot, name, dest_dir, select
             )
             if selected:
                 assert file_dest
@@ -496,28 +501,28 @@ def _relpath(path: str, start: str):
 
 
 def _prune_dirs(
-    src: str,
+    src_dir: str,
     relroot: str,
     select: FileSelect | None,
     dirs: list[str],
 ) -> list[tuple[str, FileSelectResults]]:
     if not select:
         return []
-    return select.prune_dirs(src, relroot, dirs) if select else []
+    return select.prune_dirs(src_dir, relroot, dirs) if select else []
 
 
 def _select_file_for_copy(
-    src_root: str,
+    src_dir: str,
     relroot: str,
     name: str,
     dest_root: str,
     select: FileSelect | None,
 ) -> tuple[bool, str, str | None, FileSelectResults | None]:
     relpath = os.path.join(relroot, name)
-    file_src = os.path.join(src_root, relroot, name)
+    file_src = os.path.join(src_dir, relroot, name)
     if not select:
         return True, file_src, os.path.join(dest_root, relroot, name), None
-    selected, results = select.select_file(src_root, relpath)
+    selected, results = select.select_file(src_dir, relpath)
     if selected:
         return True, file_src, os.path.join(dest_root, relroot, name), results
     return False, file_src, None, results
@@ -615,30 +620,39 @@ def _glob_to_re_pattern(pattern: str):
 
 
 class _PreviewHandler(FileCopyHandler):
-    def __init__(self, src: str):
-        self.src_root = src
+    def __init__(self, src_dir: str):
+        self.src_dir = src_dir
         self.to_copy: list[tuple[str, FileSelectResults | None]] = []
 
     def copy(
         self,
-        src: str,
-        dest: str,
+        src_filename: str,
+        dest_filename: str,
         select_results: FileSelectResults | None = None,
     ):
-        src_relpath = os.path.relpath(src, self.src_root)
+        src_relpath = os.path.relpath(src_filename, self.src_dir)
         self.to_copy.append((src_relpath, select_results))
 
-    def ignore(self, src: str, results: FileSelectResults | None):
+    def ignore(self, filename: str, results: FileSelectResults | None):
         pass
 
-    def handle_copy_error(self, error: Exception, src: str, dest: str):
+    def handle_copy_error(
+        self,
+        error: Exception,
+        src_filename: str,
+        dest_filename: str,
+    ):
         return False
 
     def close(self):
         pass
 
 
-def select_files(src: str, select: FileSelect | None = None, follow_links: bool = True):
-    handler = _PreviewHandler(src)
-    copy_tree(src, "", select, handler, follow_links)
+def select_files(
+    src_dir: str,
+    select: FileSelect | None = None,
+    follow_links: bool = True,
+):
+    handler = _PreviewHandler(src_dir)
+    copy_tree(src_dir, "", select, handler, follow_links)
     return [path for path, _result in handler.to_copy]

@@ -65,13 +65,13 @@
       "title": "Run configuration",
       "additionalProperties": false,
       "anyOf": [
-        {"required": ["target"]},
+        {"required": ["path"]},
         {"required": ["include"]}
       ],
       "allOf": [
         {
           "not": {
-            "required": ["target", "include"]
+            "required": ["path", "include"]
           }
         }
       ],

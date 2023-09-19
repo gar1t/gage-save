@@ -45,23 +45,23 @@ is how a scheme like Hydra is supported.
 include = "conf/**/*.yaml#**.*"
 ```
 
-Specific target - can be annotated with description, type, etc:
+Specific path - can be annotated with description, type, etc:
 
 ``` toml
 [[train.config]]
 
-target = "train.py#x"       # required when name is specified
+path = "train.py#x"       # required when name is specified
 description = "Some var x"  # optional
 type = "int"                # optional, inferred by value
 ```
 
-Renamed target:
+Renamed path:
 
 ``` toml
 [[train.config]]
 
 name = "train.x"
-target = "train.py#x"
+path = "train.py#x"
 description = "Some var x"
 type = "int"
 ```

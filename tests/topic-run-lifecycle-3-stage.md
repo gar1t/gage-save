@@ -44,7 +44,7 @@ spec is empty, which applies the default include/exclude rules.
 Config specifies how configuration values are applied to run source
 code.
 
-    >>> config = {"target": "train.py#msg"}
+    >>> config = {"path": "train.py#msg"}
 
 Create the op def.
 

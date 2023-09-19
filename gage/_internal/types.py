@@ -149,8 +149,8 @@ class OpDefConfig:
     def get_description(self) -> str | None:
         return self._data.get("description")
 
-    def get_target(self) -> str | None:
-        return self._data.get("target")
+    def get_path(self) -> str | None:
+        return self._data.get("path")
 
     def get_include(self) -> list[str] | None:
         return _path_patterns(self._data.get("include"))
@@ -181,14 +181,6 @@ class Run:
 RunStatus = Literal["unknown", "foobar"]  # TODO!
 
 
-RunConfigValue = (
-    None
-    | int
-    | float
-    | bool
-    | str
-    | list['RunConfigValue']
-    | dict[str, 'RunConfigValue']
-)
+RunConfigValue = None | int | float | bool | str
 
 RunConfig = dict[str, RunConfigValue]
