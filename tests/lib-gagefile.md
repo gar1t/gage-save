@@ -225,114 +225,118 @@ Invalid examples:
 
 ### `sourcecode`
 
-`sourcecode` specifies the source code for an operation using include
-and exclude patterns.
+`sourcecode` specifies the source code include/exclude patterns for the
+operation.
 
-`sourcecode` must be an object, which may be empty.
+`sourcecode` must be a string or a list of strings.
 
-    >>> validate_opdef({"sourcecode": {}})
+A string cannot be empty.
+
+    >>> validate_opdef({"sourcecode": ""})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['sourcecode'] are invalid
+    ...
+    The text is too short (minimum 1 characters)
+    ...
+
+    >>> validate_opdef({"sourcecode": "*"})
     ok
+
+A list my be empty.
 
     >>> validate_opdef({"sourcecode": []})
-    Properties ['test'] are invalid
-    Properties ['sourcecode'] are invalid
-    The instance must be of type "object"
-
-    >>> validate_opdef({"sourcecode": 123})
-    Properties ['test'] are invalid
-    Properties ['sourcecode'] are invalid
-    The instance must be of type "object"
-
-`include` and `exclude` both specify either a string or a list of
-strings.
-
-    >>> validate_opdef({"sourcecode": {
-    ...     "include": "*",
-    ...     "exclude": "*.bin"
-    ... }})
     ok
 
-    >>> validate_opdef({"sourcecode": {
-    ...     "include": ["*"],
-    ...     "exclude": ["*.bin"]
-    ... }})
-    ok
+Items in the list cannot be empty.
 
-A path expression cannot be empty.
-
-    >>> validate_opdef({"sourcecode": {"include": ""}})  # +wildcard
+    >>> validate_opdef({"sourcecode": [""]})  # +wildcard
     Properties ['test'] are invalid
     Properties ['sourcecode'] are invalid
-    Properties ['include'] are invalid
     ...
     The text is too short (minimum 1 characters)
-    ...
 
-    >>> validate_opdef({"sourcecode": {"include": [""]}})  # +wildcard
+Invalid values:
+
+    >>> validate_opdef({"sourcecode": 123})  # +wildcard
     Properties ['test'] are invalid
     Properties ['sourcecode'] are invalid
-    Properties ['include'] are invalid
     ...
-    The text is too short (minimum 1 characters)
+    The instance must be of type "string"
+    The instance must be of type "array"
+
+    >>> validate_opdef({"sourcecode": {}})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['sourcecode'] are invalid
+    ...
+    The instance must be of type "string"
+    The instance must be of type "array"
+
+    >>> validate_opdef({"sourcecode": [123]})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['sourcecode'] are invalid
+    ...
+    [0]
+    The instance must be of type "string"
 
 ### `config`
 
-`config` defines operation configuration. It may be an object or a list
-of objects.
+`config` defines operation configuration. It may be a string, a list of
+strings, an object or a list of objects.
 
-Objects must define either `path` or `include`.
+Strings must be non-empty.
 
-    >>> validate_opdef({"config": {"path": "train.py"}})
-    ok
+    >>> validate_opdef({"config": ""})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['config'] are invalid
+    ...
+    The text is too short (minimum 1 characters)
+    ...
 
-    >>> validate_opdef({"config": {"include": "train.py"}})
-    ok
+    >>> validate_opdef({"config": [""]})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['config'] are invalid
+    ...
+    [0]
+    The text is too short (minimum 1 characters)
+    ...
+
+Objects must provide either `path` or `paths` properties.
 
     >>> validate_opdef({"config": {}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
     The object is missing required properties ['path']
-    The object is missing required properties ['include']
+    The object is missing required properties ['paths']
     ...
 
-Lists may be empty.
 
-    >>> validate_opdef({"config": []})
-    ok
 
-Items in a list must be valid config objects.
+`path` (single string) and `paths` (list of strings) follow the same
+length requirements.
 
-    >>> validate_opdef({"config": [{"path": "train.py"}]})
-    ok
-
-    >>> validate_opdef({"config": [{}]})  # +wildcard
+    >>> validate_opdef({"config": {"path": ""}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['path']
-    The object is missing required properties ['include']
+    Properties ['path'] are invalid
+    The text is too short (minimum 1 characters)
+    ...
 
-`exclude` may be specified but only when `include` is defined.
-
-    >>> validate_opdef({"config": {"include": "*", "exclude": "*.txt"}})
-    ok
-
-    >>> validate_opdef({"config": {
-    ...     "path": "train.py",
-    ...     "exclude": "*.txt"
-    ... }})  # +wildcard
+    >>> validate_opdef({"config": {"paths": ["foo", ""]}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing dependent properties {'exclude': [JSON('include')]}
+    Properties ['paths'] are invalid
+    [1]
+    The text is too short (minimum 1 characters)
     ...
 
-`path` and `include` cannot both be specified.
+`path` and `paths` cannot both be specified.
 
     >>> validate_opdef({"config": {
-    ...     "path": "train.py",
-    ...     "include": "*.txt"
+    ...     "path": "foo",
+    ...     "paths": ["bar"]
     ... }})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
@@ -340,26 +344,14 @@ Items in a list must be valid config objects.
     The instance must not be valid against the subschema
     ...
 
-`name` specifies the name of a path value.
+TODO The above error message is impossible to get useful information
+from.
+
+Config objects may specify `name` and `description` properties.
 
     >>> validate_opdef({"config": {
     ...     "name": "x",
+    ...     "description": "Some var x",
     ...     "path": "train.py#x"
-    ... }})
-    ok
-
-`name` is used as a name pattern when include is specified.
-
-    >>> validate_opdef({"config": {
-    ...     "name": "train.{}",
-    ...     "include": "train.py"
-    ... }})
-    ok
-
-`description` is used to describe the configuration.
-
-    >>> validate_opdef({"config": {
-    ...     "path": "train.py#lr",
-    ...     "description": "Learning rate"
-    ... }})
+    ... }})  # +wildcard
     ok

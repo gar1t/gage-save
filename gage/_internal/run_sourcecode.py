@@ -14,94 +14,59 @@ __all__ = [
     "preview",
 ]
 
-DEFAULT_INCLUDE = [
+DEFAULT_PATTERNS = [
     "**/* text size<10000 max-matches=500",
-]
-
-DEFAULT_EXCLUDE = [
-    "**/.* dir",
-    "**/* dir sentinel=bin/activate",
-    "**/* dir sentinel=.nocopy",
+    "-**/.* dir",
+    "-**/* dir sentinel=bin/activate",
+    "-**/* dir sentinel=.nocopy",
 ]
 
 
 class RunSourceCode:
-    def __init__(
-        self,
-        src_dir: str,
-        include: list[str],
-        exclude: list[str],
-        paths: list[str],
-    ):
+    def __init__(self, src_dir: str, patterns: list[str], paths: list[str]):
         self.src_dir = src_dir
-        self.include = include
-        self.exclude = exclude
+        self.patterns = patterns
         self.paths = paths
 
     def as_json(self) -> dict[str, Any]:
         return {
             "src_dir": self.src_dir,
-            "include": self.include,
-            "exclude": self.exclude,
+            "patterns": self.patterns,
             "paths": self.paths,
         }
 
 
 def init(src_dir: str, opdef: OpDef):
-    sourcecode = opdef.get_sourcecode()
-    include = _sourcecode_include(sourcecode)
-    exclude = _sourcecode_exclude(sourcecode)
-    select = parse_patterns(include, exclude)
+    patterns = opdef_sourcecode_patterns(opdef)
+    select = parse_patterns(patterns)
     paths = select_files(src_dir, select)
-    return RunSourceCode(src_dir, include, exclude, paths)
+    return RunSourceCode(src_dir, patterns, paths)
 
 
-def _sourcecode_include(sc: OpDefSourceCode | None):
-    include = sc.get_include() if sc else None
-    if include is None:
-        return DEFAULT_INCLUDE
-    return include
-
-
-def _sourcecode_exclude(sourcecode: OpDefSourceCode | None):
-    include = sourcecode.get_include() if sourcecode else None
-    exclude = (sourcecode.get_exclude() if sourcecode else None) or []
-    if include is None:
-        return DEFAULT_EXCLUDE + exclude
-    return exclude
+def opdef_sourcecode_patterns(opdef: OpDef):
+    patterns = opdef.get_sourcecode()
+    any_includes = any(not p.startswith("-") for p in patterns)
+    if any_includes:
+        return patterns
+    return DEFAULT_PATTERNS + patterns
 
 
 def preview(sourcecode: RunSourceCode):
     return cli.Panel(
         cli.Group(
-            cli.Columns(
-                [
-                    _preview_include_patterns_table(sourcecode.include),
-                    _preview_exclude_patterns_table(sourcecode.exclude),
-                ]
-            ),
+            _preview_patterns_table(sourcecode.patterns),
             _preview_matched_files_table(sourcecode.paths),
         ),
         title="Source Code",
     )
 
 
-def _preview_include_patterns_table(include: list[str]):
-    table = cli.Table(["include patterns"])
-    if not include:
+def _preview_patterns_table(patterns: list[str]):
+    table = cli.Table(["patterns"])
+    if not patterns:
         table.add_row("[dim]<none>[/dim]")
     else:
-        for pattern in include:
-            table.add_row(pattern)
-    return table
-
-
-def _preview_exclude_patterns_table(exclude: list[str]):
-    table = cli.Table(["exclude patterns"])
-    if not exclude:
-        table.add_row("[dim]<none>[/dim]")
-    else:
-        for pattern in exclude:
+        for pattern in patterns:
             table.add_row(pattern)
     return table
 

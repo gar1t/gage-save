@@ -2,9 +2,7 @@
 
 ## CLI factor
 
-- Read up on command help formatting
 - Get -H and -C core opts working again
-- Migrate commands to typer - STRIP em down!
 - Drop Click
 - Add `__all__` to all modules
 
@@ -23,6 +21,11 @@
 
 - Make sure we're using the new uuid formats (with dashes)
 
+- Gagefile validation messages *suck* (see `lib-gagefile.md` tests) -
+  must clean up before shipping to anyone. These are being passed
+  through from the jschon library. Need to work with the low level error
+  and create intelligible reports (current reports mangle sub-schema
+  errors into a unqualified list and are nearly pointless)
 
 ``` toml
 "$namespace" = "my-project"

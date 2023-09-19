@@ -213,6 +213,12 @@ Create a sample directory structure.
     >>> touch("sample.txt")
     >>> touch("sample.bin")
 
+    >>> ls(target_dir)
+    config.json
+    hello.py
+    sample.bin
+    sample.txt
+
 Create an op def with config targeting various values.
 
     >>> from gage._internal.types import *
@@ -232,7 +238,6 @@ Create an op def with config targeting various values.
 
 Print targeted files and their associated config keys for the op def.
 
-    >>> ls(target_dir)
 
     >>> for path, keys, config in iter_config_paths(opdef, target_dir):
     ...     print(path, keys, config)

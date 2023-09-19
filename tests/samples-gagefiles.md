@@ -117,9 +117,9 @@ resolved dependency must be written, the dependency may specify
     writeable-deps.json is a valid Gage file
     <0>
 
-## Missing config binding path
+## Missing required config path
 
-When specifying a binding, `path` or `include` is required.
+When specifying a binding, `path` or `paths` is required.
 
     >>> run("gage check empty-config.json")  # +wildcard
     ERROR: empty-config.json has problems
@@ -127,7 +127,7 @@ When specifying a binding, `path` or `include` is required.
     Properties ['config'] are invalid
     ...
     The object is missing required properties ['path']
-    The object is missing required properties ['include']
+    The object is missing required properties ['paths']
     ...
     <1>
 

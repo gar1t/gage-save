@@ -528,10 +528,19 @@ def _select_file_for_copy(
     return False, file_src, None, results
 
 
-def parse_patterns(include: list[str], exclude: list[str]):
-    include_rules = [_parse_pattern(p, True) for p in include]
-    exclude_rules = [_parse_pattern(p, False) for p in exclude]
-    return FileSelect([*include_rules, *exclude_rules])
+def parse_patterns(patterns: list[str]):
+    rules = [_parse_pattern(*_split_pattern(p)) for p in patterns]
+    return FileSelect(rules)
+
+
+_PATTERN_EXCLUDE_P = re.compile(r"^- *")
+
+
+def _split_pattern(pattern: str):
+    if pattern.startswith("\\-"):
+        return pattern[1:], True
+    m = _PATTERN_EXCLUDE_P.match(pattern)
+    return (pattern[m.end() :], False) if m else (pattern, True)
 
 
 def _parse_pattern(spec: str, result: bool):

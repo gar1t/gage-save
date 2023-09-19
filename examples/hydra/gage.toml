@@ -2,11 +2,4 @@
 
 description = "Replicates the Hydra Get Started example."
 exec = "python my_app.py"
-
-[my_app.sourcecode]
-
-exclude = ".gitignore"
-
-[my_app.config]
-
-include = "conf/**/*.yaml#**.*"
+config = "conf/**/*.yaml#**.*"

@@ -37,9 +37,9 @@ Op ref identifies the run:
     >>> opref = OpRef("test", "test")
 
 Source code specifies what files to copy. In this test, the `sourcecode`
-spec is empty, which applies the default include/exclude rules.
+spec is empty.
 
-    >>> sourcecode = {}
+    >>> sourcecode = []
 
 Config specifies how configuration values are applied to run source
 code.
@@ -151,8 +151,8 @@ Default source code copy rules are applied as the op def doesn't
 otherwise specify rules.
 
     >>> opdef = meta_opdef(run)
-    >>> opdef.get_sourcecode().as_json()
-    {}
+    >>> opdef.get_sourcecode()
+    []
 
 Confirm the run directory is empty.
 
@@ -191,9 +191,11 @@ The runner log contains the applied include and exclude patterns.
     Writing id
     ...
     Copying source code (see log/files for details)
-    Source code include: ['**/* text size<10000 max-matches=500']
-    Source code exclude: ['**/.* dir', '**/* dir sentinel=bin/activate',
-                          '**/* dir sentinel=.nocopy']
+    Source code patterns:
+      ['**/* text size<10000 max-matches=500',
+       '-**/.* dir',
+       '-**/* dir sentinel=bin/activate',
+       '-**/* dir sentinel=.nocopy']
 
 ## Apply config
 

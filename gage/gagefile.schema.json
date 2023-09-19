@@ -45,39 +45,21 @@
         }
       ]
     },
-    "writeable": {
-      "oneOf": [
-        {
-          "type": "boolean",
-          "title": "Writeable flag"
-        },
-        {
-          "type": "array",
-          "title": "List of writeable paths",
-          "items": {
-            "type": "string"
-          }
-        }
-      ]
-    },
     "config": {
       "type": "object",
       "title": "Run configuration",
       "additionalProperties": false,
       "anyOf": [
         {"required": ["path"]},
-        {"required": ["include"]}
+        {"required": ["paths"]}
       ],
       "allOf": [
         {
           "not": {
-            "required": ["path", "include"]
+            "required": ["path", "paths"]
           }
         }
       ],
-      "dependentRequired": {
-        "exclude": ["include"]
-      },
       "properties": {
         "name": {
           "type": "string",
@@ -87,16 +69,18 @@
           "type": "string",
           "title": "Configuration description"
         },
-        "target": {
+        "path": {
           "$ref": "#/$defs/path-pattern",
-          "title": "Path to a single configuration value",
+          "title": "Configuration path",
           "minLength": 1
         },
-        "include": {
-          "$ref": "#/$defs/path-patterns"
-        },
-        "exclude": {
-          "$ref": "#/$defs/path-patterns"
+        "paths": {
+          "type": "array",
+          "title": "Configuration paths",
+          "items": {
+            "$ref": "#/$defs/path-pattern"
+          },
+          "minLength": 1
         }
       }
     }
@@ -152,21 +136,16 @@
           ]
         },
         "sourcecode": {
-          "type": "object",
-          "title": "Operation source code",
-          "additionalProperties": false,
-          "properties": {
-            "include": {
-              "$ref": "#/$defs/path-patterns"
-            },
-            "exclude": {
-              "$ref": "#/$defs/path-patterns"
-            }
-          }
+          "$ref": "#/$defs/path-patterns",
+          "title": "Operation source code"
         },
         "config": {
           "title": "Operation configuration",
           "oneOf": [
+            {
+              "$ref": "#/$defs/path-patterns",
+              "title": "Operation config paths"
+            },
             {
               "$ref": "#/$defs/config"
             },

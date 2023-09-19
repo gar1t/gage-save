@@ -24,17 +24,15 @@
     >>> run("gage run my_app --preview-sourcecode --json")  # +diff +parse
     {
       "sourcecode": {
-        "src_dir": "{:path}/examples/hydra",
-        "include": [
-          "**/* text size<10000 max-matches=500"
-        ],
-        "exclude": [
-          "**/.* dir",
-          "**/* dir sentinel=bin/activate",
-          "**/* dir sentinel=.nocopy",
-          ".gitignore"
+        "src_dir": "/home/garrett/Code/gar1t-gage/examples/hydra",
+        "patterns": [
+          "**/* text size<10000 max-matches=500",
+          "-**/.* dir",
+          "-**/* dir sentinel=bin/activate",
+          "-**/* dir sentinel=.nocopy"
         ],
         "paths": [
+          ".gitignore",
           "gage.toml",
           "my_app.py",
           "conf/__init__.py",

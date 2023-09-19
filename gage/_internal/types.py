@@ -10,7 +10,6 @@ __all__ = [
     "OpRef",
     "OpDefExec",
     "OpDefConfig",
-    "OpDefSourceCode",
     "Run",
     "RunConfig",
     "RunConfigValue",
@@ -80,7 +79,7 @@ class OpDef:
         return OpDefExec(self, val)
 
     def get_sourcecode(self):
-        return OpDefSourceCode(self, self._data.get("sourcecode") or {})
+        return _path_patterns(self._data.get("sourcecode"))
 
     def get_config(self) -> "list[OpDefConfig]":
         val = self._data.get("config")
@@ -89,6 +88,14 @@ class OpDef:
         if isinstance(val, dict):
             val = [val]
         return [OpDefConfig(self, item) for item in val]
+
+
+def _path_patterns(data: Any) -> list[str]:
+    if data is None:
+        return []
+    if isinstance(data, str):
+        return [data]
+    return data
 
 
 class OpDefExec:
@@ -115,29 +122,6 @@ class OpDefExec:
         return self._data.get("finalize-run")
 
 
-class OpDefSourceCode:
-    def __init__(self, opdef: OpDef, data: Data):
-        self.opdef = opdef
-        self._data = data
-
-    def as_json(self) -> Data:
-        return self._data
-
-    def get_include(self) -> list[str] | None:
-        return _path_patterns(self._data.get("include"))
-
-    def get_exclude(self) -> list[str] | None:
-        return _path_patterns(self._data.get("exclude"))
-
-
-def _path_patterns(data: Any) -> list[str] | None:
-    if data is None:
-        return None
-    if isinstance(data, str):
-        return [data]
-    return data
-
-
 class OpDefConfig:
     def __init__(self, opdef: OpDef, data: Data):
         self.opdef = opdef
@@ -149,14 +133,12 @@ class OpDefConfig:
     def get_description(self) -> str | None:
         return self._data.get("description")
 
-    def get_path(self) -> str | None:
-        return self._data.get("path")
-
-    def get_include(self) -> list[str] | None:
-        return _path_patterns(self._data.get("include"))
-
-    def get_exclude(self) -> list[str] | None:
-        return _path_patterns(self._data.get("exclude"))
+    def get_paths(self) -> list[str]:
+        # Expect path or paths
+        try:
+            return [self._data["path"]]
+        except KeyError:
+            return self._data.get("paths") or []
 
 
 class GageFile:

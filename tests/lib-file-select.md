@@ -542,7 +542,7 @@ Select under A.
 
 ## Parsing include/exclude patterns
 
-`parse_patterns` parses include and exclude patterns to create a
+`parse_patterns` parses include/exclude patterns to create a
 `FileSelect` instance.
 
 Create a directory structure to apply patterns to.
@@ -573,9 +573,9 @@ Create a directory structure to apply patterns to.
 
 Create a preview function that parses include and exclude patterns.
 
-    >>> def preview(include, exclude):
+    >>> def preview(patterns):
     ...     any = False
-    ...     select = parse_patterns(include, exclude)
+    ...     select = parse_patterns(patterns)
     ...     for path in select_files(src, select):
     ...         print(path)
     ...         any = True
@@ -584,25 +584,25 @@ Create a preview function that parses include and exclude patterns.
 
 Show various selections.
 
-    >>> preview([], [])
+    >>> preview([])
     <none>
 
-    >>> preview(["*"], [])
+    >>> preview(["*"])
     a.txt
     b.txt
 
-    >>> preview(["*.txt"], [])
+    >>> preview(["*.txt"])
     a.txt
     b.txt
 
 `**`` matches directories. When specified by itself, no files can match.
 
-    >>> preview(["**"], [])
+    >>> preview(["**"])
     <none>
 
 To select files, use `**/<pattern>``.
 
-    >>> preview(["**/*"], [])
+    >>> preview(["**/*"])
     a.txt
     b.txt
     A/a.txt
@@ -612,29 +612,29 @@ To select files, use `**/<pattern>``.
     C/b.txt
     C/c.bin
 
-    >>> preview(["**/a.txt"], [])
+    >>> preview(["**/a.txt"])
     a.txt
     A/a.txt
     C/a.txt
 
-    >>> preview(["**/C/a.txt"], [])
+    >>> preview(["**/C/a.txt"])
     C/a.txt
 
-    >>> preview(["**/c.txt"], [])
+    >>> preview(["**/c.txt"])
     A/B/c.txt
 
-    >>> preview(["**/A/**/c.txt"], [])
+    >>> preview(["**/A/**/c.txt"])
     A/B/c.txt
 
-    >>> preview(["**/A/B/c.txt"], [])
+    >>> preview(["**/A/B/c.txt"])
     A/B/c.txt
 
-    >>> preview(["**/A/B/**/c.txt"], [])
+    >>> preview(["**/A/B/**/c.txt"])
     A/B/c.txt
 
-Use exclude to exclude included matches.
+Exclude patterns are specified with a "-" prefix.
 
-    >>> preview(["**/*"], ["a.txt"])
+    >>> preview(["**/*", "-a.txt"])
     b.txt
     A/a.txt
     A/b.bin
@@ -643,7 +643,7 @@ Use exclude to exclude included matches.
     C/b.txt
     C/c.bin
 
-    >>> preview(["**/*"], ["**/*.bin"])
+    >>> preview(["**/*", "-**/*.bin"])
     a.txt
     b.txt
     A/a.txt
@@ -654,7 +654,7 @@ Use exclude to exclude included matches.
 Use `text` or `binary` as a pattern annotation to indicate the match
 type.
 
-    >>> preview(["**/* text"], [])
+    >>> preview(["**/* text"])
     a.txt
     b.txt
     A/a.txt
@@ -662,14 +662,14 @@ type.
     C/a.txt
     C/b.txt
 
-    >>> preview(["**/* binary"], [])
+    >>> preview(["**/* binary"])
     A/b.bin
     C/c.bin
 
 Use `dir` to exclude dirs. This applies the performance optimization
 described above.
 
-    >>> preview(["**/*"], ["A dir"])
+    >>> preview(["**/*", "-A dir"])
     a.txt
     b.txt
     C/a.txt
@@ -678,11 +678,11 @@ described above.
 
 Use `size>N` or `size<N` to include or exclude by size.
 
-    >>> preview(["**/* size>1"], [])
+    >>> preview(["**/* size>1"])
     A/b.bin
     C/c.bin
 
-    >>> preview(["**/* size<20"], [])
+    >>> preview(["**/* size<20"])
     a.txt
     b.txt
     A/a.txt
@@ -690,7 +690,7 @@ Use `size>N` or `size<N` to include or exclude by size.
     C/a.txt
     C/b.txt
 
-    >>> preview(["**/*"], ["**/b.* size<20"])
+    >>> preview(["**/*", "-**/b.* size<20"])
     a.txt
     A/a.txt
     A/b.bin
@@ -700,7 +700,7 @@ Use `size>N` or `size<N` to include or exclude by size.
 
 Use `sentinel` to skip directories containing sentinels.
 
-    >>> preview(["**/*"], ["**/* dir sentinel=c.txt"])
+    >>> preview(["**/*", "-**/* dir sentinel=c.txt"])
     a.txt
     b.txt
     A/a.txt
@@ -711,14 +711,14 @@ Use `sentinel` to skip directories containing sentinels.
 
 Use `max_matches` to limit result count for a pattern.
 
-    >>> preview(["**/* max-matches=5"], [])
+    >>> preview(["**/* max-matches=5"])
     a.txt
     b.txt
     A/a.txt
     A/b.bin
     A/B/c.txt
 
-    >>> preview(["**/* max-matches=5"], ["a.*"])
+    >>> preview(["**/* max-matches=5", "-a.*"])
     b.txt
     A/a.txt
     A/b.bin
@@ -754,7 +754,7 @@ Create a directory structure with typically excluded files.
 
 Select everything.
 
-    >>> preview(["**/*"], [])
+    >>> preview(["**/*"])
     .priv
     .venv/a
     .venv/b/c
@@ -766,7 +766,7 @@ Select everything.
 
 Exclude `.venv`.
 
-    >>> preview(["**/*"], [".venv dir"])
+    >>> preview(["**/*", "-.venv dir"])
     .priv
     a/.nocopy
     venv/a
@@ -776,7 +776,7 @@ Exclude `.venv`.
 
 Exclude `.venv` `venv` with a pattern.
 
-    >>> preview(["**/*"], ["?venv dir"])
+    >>> preview(["**/*", "-?venv dir"])
     .priv
     a/.nocopy
 
@@ -784,7 +784,7 @@ Exclude any private files or directories.
 
 FIXME: `.venv` should be excluded here:
 
-    >>> preview(["**/*"], ["**/.*"])
+    >>> preview(["**/*", "-**/.*"])
     .venv/a
     .venv/b/c
     venv/a
@@ -793,14 +793,14 @@ FIXME: `.venv` should be excluded here:
 
 FIXME: This is the workaround:
 
-    >>> preview(["**/*"], ["**/.*", "**/.* dir"])
+    >>> preview(["**/*", "-**/.*", "-**/.* dir"])
     venv/a
     venv/b/c
     venv/bin/activate
 
 Exclude dirs with the sentinel `bin/activate`.
 
-    >>> preview(["**/*"], ["**/* dir sentinel=bin/activate"])
+    >>> preview(["**/*", "-**/* dir sentinel=bin/activate"])
     .priv
     .venv/a
     .venv/b/c

@@ -55,12 +55,8 @@ def iter_config_paths(
     opdef: OpDef, dest_dir: str
 ) -> Generator[tuple[str, list[str], RunConfig | None], Any, None]:
     for c in opdef.get_config():
-        include = c.get_include()
-        if not include:
-            if not c.get_path():
-                continue
-            include = [c.get_path()]
-        exclude = c.get_exclude() or []
+        paths = c.get_paths()
+        assert False, paths
         include_file_patterns, include_key_patterns = _split_config_paths(include)
         exclude_file_patterns, exclude_key_patterns = _split_config_paths(exclude)
         select = file_select.parse_patterns(

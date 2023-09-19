@@ -328,8 +328,7 @@ def copy_sourcecode(project_dir: str, run: Run):
     opdef = meta_opdef(run)
     sourcecode = run_sourcecode.init(project_dir, opdef)
     log.info("Copying source code (see log/files for details)")
-    log.info("Source code include: %s", sourcecode.include)
-    log.info("Source code exclude: %s", sourcecode.exclude)
+    log.info("Source code patterns: %s", sourcecode.patterns)
     copy_files(project_dir, run.run_dir, sourcecode.paths)
     _apply_log_files(run, "s")
 

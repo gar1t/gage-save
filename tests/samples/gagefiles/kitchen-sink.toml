@@ -21,7 +21,7 @@ config = [
 
 description = "Config as include/exclude patterns"
 
-c.config = [
+config = [
   "config/*.yaml",
   "-config/example.yaml"
 ]
