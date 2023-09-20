@@ -51,46 +51,6 @@ Existing keys can be updated.
     >>> config  # +pprint
     {'x': 321, 'y': 456, 'z': 789}
 
-
-## Config paths
-
-A config path is a string comprised of a file path pattern and an
-optional key path pattern. If a key path pattern is included it must be
-appended to the file path using a hash (`#`) separator.
-
-Examples of config paths:
-
-- `train.py`
-- `train.py#x`
-- `*.py`
-- `*.py#*`
-
-If config path doesn't specify a key pattern, the pattern is assumed to
-be `*`.
-
-The private function `_split_config_path` splits a config path into its
-file and key patterns.
-
-    >>> from gage._internal.run_config import _split_config_path as split
-
-    >>> split("")
-    ('', '*')
-
-    >>> split("train.py")
-    ('train.py', '*')
-
-    >>> split("train.py#x")
-    ('train.py', 'x')
-
-    >>> split("conf/*.yml#**.*")
-    ('conf/*.yml', '**.*')
-
-If `#` is included in the path more than once, subsequent hash
-delimiters are included in the key path.
-
-    >>> split("foo#bar#baz")
-    ('foo', 'bar#baz')
-
 ## Matching keys
 
 `match_keys()` applies a list of include and exclude patterns to a list
@@ -187,20 +147,106 @@ Multiple excludes extend the excluded results.
     ...            ["a", "a.b", "a.b.c", "a.b.c.d"])
     ['a.b']
 
-## Configuration paths
+## Parsing paths
 
-`iter_config_paths()` yields tuples of path and applicable run config
-for files that should be modified.
+The private function `_parse_path()` converts a a path into
+`ParsedPath`.
+
+    >>> from gage._internal.run_config import _parse_path
+
+A parsed path consists of four parts: file pattern, file excluded flag,
+key pattern, and key excluded flag.
+
+Parse a path with both a file and key part.
+
+    >>> _parse_path("train.py#x")  # -space
+    ParsedPath(file_pattern='train.py',
+               file_exclude=False,
+               key_pattern='x',
+               key_exclude=False)
+
+A file part without a key part implies '*' for the key (matches
+top-level keys).
+
+    >>> _parse_path("train.py")  # -space
+    ParsedPath(file_pattern='train.py',
+               file_exclude=False,
+               key_pattern='*',
+               key_exclude=False)
+
+A key part without a file part implies no file-select pattern. This path
+is not used to select files but is used to select keys.
+
+    >>> _parse_path("#x")  # -space
+    ParsedPath(file_pattern=None,
+               file_exclude=False,
+               key_pattern='x',
+               key_exclude=False)
+
+When a key part is specified in an excluded path, the file is not
+excluded. The excluded flag applies only to matched keys.
+
+    >>> _parse_path("-train.py#x")  # -space
+    ParsedPath(file_pattern='train.py',
+               file_exclude=False,
+               key_pattern='x',
+               key_exclude=True)
+
+When a file is excluded without a key part, the file is excluded as
+expected.
+
+    >>> _parse_path("-train.py")  # -space
+    ParsedPath(file_pattern='train.py',
+               file_exclude=True,
+               key_pattern=None,
+               key_exclude=True)
+
+When a key part is excluded, the pattern is not applied to file
+selection but is used to remove keys from matching config.
+
+    >>> _parse_path("-#x")  # -space
+    ParsedPath(file_pattern=None,
+               file_exclude=False,
+               key_pattern='x',
+               key_exclude=True)
+
+Paths can't be empty.
+
+    >>> _parse_path("")
+    Traceback (most recent call last):
+    ValueError: path cannot be empty
+
+## Selecting config files
+
+The private function `_select_files()` selects files from a directory
+given a list of parsed paths. See **Parsing paths** above for details
+about parsed paths.
+
+    >>> from gage._internal.run_config import _select_files
 
 Create a sample directory structure.
 
     >>> target_dir = make_temp_dir()
     >>> cd(target_dir)
 
-    >>> write("hello.py", """
+    >>> write("op.py", """
     ... x = 1
     ... y = 2
-    ... op = "add"
+    ... op = "+"
+    ... expr = f"{x} {op} {y}"
+    ... print(f"{expr} = {eval(expr)}")
+    ... """)
+
+    >>> write("greet.py", """
+    ... name = "Bob"
+    ... opts = {
+    ...     "loud": False,
+    ...     "short": True
+    ... }
+    ... if opts['loud']:
+    ...     name = name.upper()
+    ... greeting = "Hi" if opts["short"] else "Hello"
+    ... print(f"{greeting} {name}")
     ... """)
 
     >>> write("config.json", """
@@ -215,29 +261,237 @@ Create a sample directory structure.
 
     >>> ls(target_dir)
     config.json
-    hello.py
+    greet.py
+    op.py
     sample.bin
     sample.txt
 
-Create an op def with config targeting various values.
+Create a function to print selected paths from `target_dir` for a list
+of config paths.
 
-    >>> from gage._internal.types import *
+    >>> def select_files(paths):
+    ...     any = False
+    ...     parsed = [_parse_path(path) for path in paths]
+    ...     for path in sorted(_select_files(target_dir, parsed)):
+    ...         any = True
+    ...         print(path)
+    ...     if not any:
+    ...         print("<none>")
 
-    >>> opdef = OpDef("test", {
-    ...   "config": [
-    ...     {
-    ...       "include": "hello.py",
-    ...       "exclude": "hello.py#op"
-    ...     },
-    ...     {
-    ...       "name": "A",
-    ...       "path": "config.json#a"
-    ...     }
-    ...   ]
-    ... })
+    >>> select_files([])
+    <none>
 
-Print targeted files and their associated config keys for the op def.
+    >>> select_files(["greet.py"])
+    greet.py
 
+    >>> select_files(["greet.py", "-greet.py"])
+    <none>
 
-    >>> for path, keys, config in iter_config_paths(opdef, target_dir):
-    ...     print(path, keys, config)
+    >>> select_files(["*.py", "*.txt"])
+    greet.py
+    op.py
+    sample.txt
+
+    >>> select_files(["*.*", "-*.txt", "-op*"])
+    config.json
+    greet.py
+    sample.bin
+
+Excluding paths still includes selected files. In this case, keys are
+excluded but files they apply to are not.
+
+    >>> select_files(["*.py", "-greet.py#msg"])
+    greet.py
+    op.py
+
+    >>> select_files(["op.py", "*.json", "-#y"])
+    config.json
+    op.py
+
+## Loading file config
+
+The function `load_config()` loads config for file. If the file format
+is not supported, the function raises `UnsupportedFileFormat`.
+
+    >>> load_config(path_join(target_dir, "greet.py"))  # +pprint
+    {'name': 'Bob', 'opts.loud': False, 'opts.short': True}
+
+    >>> load_config(path_join(target_dir, "op.py"))  # +pprint
+    {'op': '+', 'x': 1, 'y': 2}
+
+    >>> load_config(path_join(target_dir, "config.json"))  # +parse
+    Traceback (most recent call last):
+    gage._internal.run_config.UnsupportedFileFormat: {:path}/config.json
+
+Raises `FileNotFoundError` if the specified file doesn't exist.
+
+    >>> load_config(path_join(target_dir, "not-here.py"))  # +parse
+    Traceback (most recent call last):
+    FileNotFoundError: [Errno 2] No such file or directory: '{:path}/not-here.py'
+
+## Selecting keys
+
+The private function `_selected_keys()` returns a list of config keys
+that apply to a list of selected files.
+
+    >>> from gage._internal.run_config import _select_keys
+
+`_select_keys()` requires the following:
+
+- A list of selected files (see **Selecting config files** above) and
+  associated config (see **Loading config** above)
+- A list of of parsed paths (see **Parsing paths** above)
+
+Create a function to select keys.
+
+    >>> def select_keys(paths):
+    ...     parsed = [_parse_path(path) for path in paths]
+    ...     selected = []
+    ...     for path in _select_files(target_dir, parsed):
+    ...         try:
+    ...             file_config = load_config(path_join(target_dir, path))
+    ...         except Exception as e:
+    ...             print(f"WARNING: {e}")
+    ...         else:
+    ...             selected.append((path, file_config))
+    ...     print(sorted(_select_keys(target_dir, selected, parsed)))
+
+Without a pattern, nothing is selected.
+
+    >>> select_keys([])
+    []
+
+If no files match, nothing is selected.
+
+    >>> select_keys(["not-matching-pattern"])
+    []
+
+By default, top-level keys are selected for a file.
+
+    >>> select_keys(["op.py"])
+    ['op', 'x', 'y']
+
+    >>> select_keys(["greet.py"])
+    ['name']
+
+Individual keys can be selected.
+
+    >>> select_keys(["op.py#x"])
+    ['x']
+
+    >>> select_keys(["op.py#op"])
+    ['op']
+
+    >>> select_keys(["p[.py#x", "op.py#y"])
+    ['x', 'y']
+
+An empty key does not select keys.
+
+    >>> select_keys(["op.py#"])
+    []
+
+An empty key, however, selects the file, to which other patterns apply.
+
+    >>> select_keys(["op.py#", "#x"])
+    ['x']
+
+    >>> select_keys(["op.py#", "#x", "#y"])
+    ['x', 'y']
+
+Wildcards are used to select multiple files.
+
+    >>> select_keys(["*.py"])
+    ['name', 'op', 'x', 'y']
+
+Wildcards in file patterns can be used with keys.
+
+    >>> select_keys(["*.py#x"])
+    ['x']
+
+Keys may also include wildcards.
+
+    >>> select_keys(["*.py#*"])
+    ['name', 'op', 'x', 'y']
+
+`**` used in a key pattern selects nested keys.
+
+    >>> select_keys(["*.py#**.*"])
+    ['name', 'op', 'opts.loud', 'opts.short', 'x', 'y']
+
+    >>> select_keys(["*.py#**.loud"])
+    ['opts.loud']
+
+To exclude a file, use a `-` prefix.
+
+    >>> select_keys(["*.py", "-op.py"])
+    ['name']
+
+Other examples:
+
+    >>> select_keys(["op.py", "-op.py#op", "greet.py"])
+    ['name', 'x', 'y']
+
+    >>> select_keys([
+    ...     "op.py",
+    ...     "-op.py#op",
+    ...     "greet.py#opts.*",
+    ...     "-#opts.loud"
+    ... ])
+    ['name', 'opts.short', 'x', 'y']
+
+## Applying configuration
+
+## To Do / Notes
+
+TODO: namespace maybe wants to be 'prefix'.
+
+TODO: want to strip prefix - so maybe 'strip-prefix' or similar -- e.g.
+to expose deeply nested config
+
+TODO: maybe a 'rename', which is short hand for prefix/strip-prefix
+
+For example:
+
+``` toml
+[a.config]
+
+path = "config.json#resnet50.train.hparams.*"
+prefix = "train."
+strip-prefix = "resnet50.train.hparams."
+```
+
+Could be written as:
+
+``` toml
+[a.config]
+
+path = "config.json#resnet50.train.hparams.*"
+rename = "resnet50.train.hparams. train."
+```
+
+Rename could be a list.
+
+``` toml
+[a.config]
+
+path = "train.py"
+rename = ["x X", "y Y"]
+```
+
+Rename could used on a single key.
+
+``` toml
+[a.config]
+
+path = "train.py#x"
+rename = ["x X"]  # equiv to prefix = "X" + strip-prefix = "x"
+```
+
+TODO: edge case: two config files with the same key, different values -
+show how they'll end up with the same value based on `config.json`,
+which may be surprising.
+
+TODO: show how namespace is used to deal with that edge case.
+
+TODO: application of config needs to be per `config` section due to
+namespace potential.

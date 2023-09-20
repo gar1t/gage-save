@@ -201,7 +201,7 @@ The runner log contains the applied include and exclude patterns.
 
 `apply_config()` applies configuration in meta to run files.
 
-    >>> apply_config(run)
+    >>> apply_config(run)  # +skip still under development
 
 ## Init runtime
 

@@ -533,7 +533,7 @@ def parse_patterns(patterns: list[str]):
     return FileSelect(rules)
 
 
-_PATTERN_EXCLUDE_P = re.compile(r"^- *")
+_PATTERN_EXCLUDE_P = re.compile(r"- *")
 
 
 def _split_pattern(pattern: str):
