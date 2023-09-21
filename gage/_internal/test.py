@@ -64,6 +64,7 @@ __all__ = [
     "sample",
     "samples_dir",
     "set_var_home",
+    "sha256",
     "symlink",
     "touch",
     "udiff",
@@ -81,6 +82,7 @@ delete_temp_dir = file_util.rmtempdir
 copytree = file_util.copytree
 lsl = file_util.ls
 pprint = pprint.pprint
+sha256 = file_util.file_sha256
 symlink = os.symlink
 touch = file_util.touch
 

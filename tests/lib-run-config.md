@@ -445,7 +445,8 @@ Other examples:
 to a destination directory according to opdef config paths.
 
 Create a function that copies `target_dir` and applies config to its
-files according to opdef config paths.
+files according to opdef config paths. It prints the diffs of applied
+config.
 
     >>> def apply(config, paths):
     ...     from gage._internal.types import OpDef
@@ -456,26 +457,15 @@ files according to opdef config paths.
     ...             "paths": paths
     ...         }
     ...     })
-    ...     apply_config(config, opdef, copy_dir)
+    ...     diffs = apply_config(config, opdef, copy_dir)
+    ...     for path, diff in sorted(diffs):
+    ...         for line in diff:
+    ...             print(line, end="")
     ...     return copy_dir
 
 Change name used in `greet.py`
 
     >>> applied = apply({"name": "Mary"}, ["greet.py"])
-
-`apply_config()` writes patch files that show applied diffs of affected
-files. These are written as hidden files named `.<name>.patch` along
-side modified file `<name>`.
-
-    >>> ls(applied)
-    .applied-config.greet.py.patch
-    config.json
-    greet.py
-    op.py
-    sample.bin
-    sample.txt
-
-    >>> cat(path_join(applied, ".applied-config.greet.py.patch"))
     --- greet.py
     +++ greet.py
     @@ -1,4 +1,4 @@
@@ -485,7 +475,7 @@ side modified file `<name>`.
          "loud": False,
          "short": True
 
-Diffing the original and copied source code files shows the same result.
+Compare the original and modified versions of `greet.py`.
 
     >>> diff(path_join(target_dir, "greet.py"), path_join(applied, "greet.py"))
     @@ -1,4 +1,4 @@
@@ -508,8 +498,6 @@ Change name, loudness, and shortness.
     ...     "opts.loud": True,
     ...     "opts.short": False
     ... }, ["greet.py#**.*"])
-
-    >>> cat(path_join(applied, ".applied-config.greet.py.patch"))
     --- greet.py
     +++ greet.py
     @@ -1,7 +1,7 @@
@@ -540,8 +528,8 @@ Missing config is ignored.
 
     >>> diff(path_join(target_dir, "greet.py"), path_join(applied, "greet.py"))
 
-If applied config does not change a file, the file isn't modified and a
-patch file isn't created.
+If applied config doesn't change a file because the values are
+unchanged, the file isn't modified.
 
     >>> applied = apply({"name": "Bob", "op": "+", "x": 1}, ["*.py"])
 
@@ -559,16 +547,6 @@ patch file isn't created.
 Run a modified `op.py` script.
 
     >>> applied = apply({"op": "-", "x": 10, "y": 7}, ["*.py"])
-
-    >>> ls(applied)
-    .applied-config.op.py.patch
-    config.json
-    greet.py
-    op.py
-    sample.bin
-    sample.txt
-
-    >>> cat(path_join(applied, ".applied-config.op.py.patch"))
     --- op.py
     +++ op.py
     @@ -1,5 +1,5 @@

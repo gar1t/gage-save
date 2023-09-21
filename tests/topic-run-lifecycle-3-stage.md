@@ -62,7 +62,7 @@ command is merely an example.
 
 Initialize the run meta.
 
-    >>> init_run_meta(run, opref, opdef, {}, cmd, {}, {})
+    >>> init_run_meta(run, opref, opdef, config, cmd, {}, {})
 
 List the generated files.
 
@@ -145,6 +145,7 @@ Default source code copy rules are applied as the op def doesn't
 otherwise specify rules.
 
     >>> opdef = meta_opdef(run)
+
     >>> opdef.get_sourcecode()
     []
 
@@ -159,7 +160,7 @@ Copy the source code to the run directory.
 
 Source code files are copied and left in a writeable state.
 
-    >>> ls(sourcecode_dir, permissions=True)
+    >>> ls(run.run_dir, permissions=True)
     -rw-rw-r-- conf/eval.yaml
     -rw-rw-r-- conf/train.yaml
     -rw-rw-r-- eval.py
@@ -193,22 +194,53 @@ The runner log contains the applied include and exclude patterns.
 
 ## Apply config
 
-`apply_config()` applies configuration in meta to run files.
+`apply_config()` applies configuration defined in meta `config.json` to
+run files. Config values are applied according to the config paths in
+the opdef.
 
-According to the op def, config is a applied to `train.py`.
+The config values to apply:
+
+    >>> cat(run_meta_path(run, "config.json"))
+    {
+      "x": 2
+    }
+
+The op def:
+
+    >>> cat(run_meta_path(run, "opdef.json"))
+    {
+      "config": {
+        "path": "train.py"
+      },
+      "sourcecode": []
+    }
+
+The target for config is `train.py`. Prior to the application of config,
+`x` is 1 in `train.py`.
 
     >>> cat(path_join(run.run_dir, "train.py"))
     x = 1
     print(f"loss = {x - 1}")
 
-Copy the run directory before applying config.
-
-
-
 Apply run config.
 
     >>> apply_config(run)
 
+Changes are logged in run meta under `log/patched`.
+
+    >>> cat(run_meta_path(run, "log/patched"))
+    --- train.py
+    +++ train.py
+    @@ -1,2 +1,2 @@
+    -x = 1
+    +x = 2
+     print(f"loss = {x - 1}")
+
+`train.py` is modified.
+
+    >>> cat(path_join(run.run_dir, "train.py"))
+    x = 2
+    print(f"loss = {x - 1}")
 
 ## Init runtime
 
@@ -236,6 +268,15 @@ status.
 The run manifest is written so that tools can rely on a list of input
 files (source code, dependencies, and runtime).
 
+Note that files are writable prior to finalizing.
+
+    >>> ls(run.run_dir, permissions=True)
+    -rw-rw-r-- conf/eval.yaml
+    -rw-rw-r-- conf/train.yaml
+    -rw-rw-r-- eval.py
+    -rw-rw-r-- gage.toml
+    -rw-rw-r-- train.py
+
 Finalize the staged run.
 
     >>> finalize_staged_run(run)
@@ -256,7 +297,14 @@ Show the run manifest.
     s {:sha256} conf/train.yaml
     s {:sha256} eval.py
     s {:sha256} gage.toml
-    s {:sha256} train.py
+    s {train_sha:sha256} train.py
+
+The manifest SHA digest for files is generated after the application of
+config.
+
+    >>> assert train_sha == sha256(path_join(run.run_dir, "train.py"))
+
+    >>> assert train_sha != sha256(path_join(sourcecode_dir, "train.py"))
 
 ## Errors
 

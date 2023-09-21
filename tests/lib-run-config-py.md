@@ -178,7 +178,7 @@ New keys cannot be added to config.
 
     >>> config["Z"] = "This value won't appear in applied config"
     Traceback (most recent call last):
-    ValueError: key does not exist: 'Z'
+    KeyError: 'Z'
 
 Assignments inside functions and class defs are not treated as keys.
 

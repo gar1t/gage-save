@@ -14,6 +14,7 @@ __all__ = [
     "RunConfig",
     "RunConfigValue",
     "RunStatus",
+    "UnifiedDiff",
 ]
 
 Data = dict[str, Any]
@@ -176,3 +177,6 @@ class RunConfig(dict[str, RunConfigValue]):
     def apply(self) -> str:
         """Applies config returning the new source."""
         raise NotImplementedError()
+
+
+UnifiedDiff = list[str]

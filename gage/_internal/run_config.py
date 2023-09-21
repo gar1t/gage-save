@@ -33,17 +33,16 @@ def read_config(src_dir: str):
 
 
 def apply_config(config: RunConfig, opdef: OpDef, dest_dir: str):
+    applied: list[tuple[str, UnifiedDiff]] = []
     for opdef_config in opdef.get_config():
         parsed_paths = _parse_paths(opdef_config.get_paths())
         files_config = _selected_files_config(dest_dir, parsed_paths)
         keys = _select_keys(dest_dir, files_config, parsed_paths)
         for path, file_config in files_config:
-            _apply_file_config(
-                config,
-                keys,
-                file_config,
-                os.path.join(dest_dir, path),
-            )
+            diff = _apply_file_config(config, keys, file_config, path, dest_dir)
+            if diff:
+                applied.append((path, diff))
+    return applied
 
 
 class ParsedPath(NamedTuple):
@@ -213,24 +212,20 @@ def _apply_file_config(
     config: RunConfig,
     keys: list[str],
     file_config: RunConfig,
-    filename: str,
+    path: str,
+    dest_dir: str,
 ):
     _apply_config_vals(config, keys, file_config)
-    file_dir, file_name = os.path.split(filename)
+    filename = os.path.join(dest_dir, path)
     v1_lines = _read_file_lines(filename)
     v2_lines = _applied_config_lines(file_config)
-    diff = list(difflib.unified_diff(v1_lines, v2_lines, file_name, file_name))
+    diff = _diff_lines(v1_lines, v2_lines, path)
     if diff:
-        patch_filename = os.path.join(file_dir, _applied_config_patch_name(file_name))
-        _write_lines(diff, patch_filename)
         _write_lines(v2_lines, filename)
+    return diff
 
 
-def _apply_config_vals(
-    config: RunConfig,
-    keys: list[str],
-    file_config: RunConfig,
-):
+def _apply_config_vals(config: RunConfig, keys: list[str], file_config: RunConfig):
     for key in keys:
         try:
             val = config[key]
@@ -254,8 +249,8 @@ def _applied_config_lines(config: RunConfig):
     return config.apply().splitlines(keepends=True)
 
 
-def _applied_config_patch_name(file_name: str):
-    return f".applied-config.{file_name}.patch"
+def _diff_lines(lines1: list[str], lines2: list[str], path: str):
+    return list(difflib.unified_diff(lines1, lines2, path, path))
 
 
 def _write_lines(lines: list[str], filename: str):

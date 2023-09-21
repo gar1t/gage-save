@@ -357,7 +357,9 @@ def apply_config(run: Run):
     log = _runner_log(run)
     config = meta_config(run)
     opdef = meta_opdef(run)
-    run_config.apply_config(config, opdef, run.run_dir)
+    log.info("Applying configuration (see log/patched for details)")
+    diffs = run_config.apply_config(config, opdef, run.run_dir)
+    _log_applied_config(run, diffs)
 
 
 # =================================================================
@@ -490,3 +492,10 @@ class RunManifest:
 
 def _encode_run_manifest_entry(type: RunFileType, digest: str, path: str):
     return f"{type} {digest} {path}\n"
+
+
+def _log_applied_config(run: Run, diffs: list[tuple[str, UnifiedDiff]]):
+    with open(run_meta_path(run, "log", "patched"), "a") as f:
+        for path, diff in sorted(diffs):
+            for line in diff:
+                f.write(line)
