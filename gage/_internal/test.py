@@ -37,6 +37,7 @@ __all__ = [
     "datetime_now",
     "datetime_fromiso",
     "delete_temp_dir",
+    "diff",
     "lsl",
     "json",
     "json_pprint",
@@ -467,3 +468,11 @@ def datetime_fromiso(s: str):
 
 def json_pprint(data: Any):
     print(json.dumps(data, indent=2, sort_keys=True))
+
+
+def diff(path1: str, path2: str):
+    lines1 = [s.rstrip() for s in open(path1).readlines()]
+    lines2 = [s.rstrip() for s in open(path2).readlines()]
+    diff_lines = list(difflib.unified_diff(lines1, lines2, path1, path2, lineterm=""))
+    for line in diff_lines[2:]:
+        print(line)

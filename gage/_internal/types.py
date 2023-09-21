@@ -170,7 +170,7 @@ class RunConfig(dict[str, RunConfigValue]):
 
     def __setitem__(self, key: str, item: RunConfigValue):
         if self._initialized and key not in self:
-            raise ValueError(f"key does not exist: {key!r}")
+            raise KeyError(key)
         super().__setitem__(key, item)
 
     def apply(self) -> str:

@@ -42,7 +42,7 @@ config keys form being added.
 
     >>> config["x2"] = 321
     Traceback (most recent call last):
-    ValueError: key does not exist: 'x2'
+    KeyError: 'x2'
 
 Existing keys can be updated.
 
@@ -235,7 +235,7 @@ Create a sample directory structure.
     ... op = "+"
     ... expr = f"{x} {op} {y}"
     ... print(f"{expr} = {eval(expr)}")
-    ... """)
+    ... """.lstrip())
 
     >>> write("greet.py", """
     ... name = "Bob"
@@ -247,14 +247,14 @@ Create a sample directory structure.
     ...     name = name.upper()
     ... greeting = "Hi" if opts["short"] else "Hello"
     ... print(f"{greeting} {name}")
-    ... """)
+    ... """.lstrip())
 
     >>> write("config.json", """
     ... {
     ...     "a": 3,
     ...     "b": 4
     ... }
-    ... """)
+    ... """.lstrip())
 
     >>> touch("sample.txt")
     >>> touch("sample.bin")
@@ -463,17 +463,39 @@ Change name used in `greet.py`
 
     >>> applied = apply({"name": "Mary"}, ["greet.py"])
 
-    >>> cat(path_join(applied, "greet.py"))
-    ⤶
-    name = "Mary"
-    opts = {
-        "loud": False,
-        "short": True
-    }
-    if opts['loud']:
-        name = name.upper()
-    greeting = "Hi" if opts["short"] else "Hello"
-    print(f"{greeting} {name}")
+`apply_config()` writes patch files that show applied diffs of affected
+files. These are written as hidden files named `.<name>.patch` along
+side modified file `<name>`.
+
+    >>> ls(applied)
+    .applied-config.greet.py.patch
+    config.json
+    greet.py
+    op.py
+    sample.bin
+    sample.txt
+
+    >>> cat(path_join(applied, ".applied-config.greet.py.patch"))
+    --- greet.py
+    +++ greet.py
+    @@ -1,4 +1,4 @@
+    -name = "Bob"
+    +name = "Mary"
+     opts = {
+         "loud": False,
+         "short": True
+
+Diffing the original and copied source code files shows the same result.
+
+    >>> diff(path_join(target_dir, "greet.py"), path_join(applied, "greet.py"))
+    @@ -1,4 +1,4 @@
+    -name = "Bob"
+    +name = "Mary"
+     opts = {
+         "loud": False,
+         "short": True
+
+Run the modified Python script.
 
     >>> run("python greet.py", cwd=applied)
     Hi Mary
@@ -487,20 +509,80 @@ Change name, loudness, and shortness.
     ...     "opts.short": False
     ... }, ["greet.py#**.*"])
 
-    >>> cat(path_join(applied, "greet.py"))
-    ⤶
-    name = "Jane"
-    opts = {
-        "loud": True,
-        "short": False
-    }
-    if opts['loud']:
-        name = name.upper()
-    greeting = "Hi" if opts["short"] else "Hello"
-    print(f"{greeting} {name}")
+    >>> cat(path_join(applied, ".applied-config.greet.py.patch"))
+    --- greet.py
+    +++ greet.py
+    @@ -1,7 +1,7 @@
+    -name = "Bob"
+    +name = "Jane"
+     opts = {
+    -    "loud": False,
+    -    "short": True
+    +    "loud": True,
+    +    "short": False
+     }
+     if opts['loud']:
+         name = name.upper()
 
     >>> run("python greet.py", cwd=applied)
     Hello JANE
+    <0>
+
+Config that doesn't apply to a file is ignored.
+
+    >>> applied = apply({"does-not-apply": 123}, ["greet.py"])
+
+    >>> diff(path_join(target_dir, "greet.py"), path_join(applied, "greet.py"))
+
+Missing config is ignored.
+
+    >>> applied = apply({}, ["greet.py"])
+
+    >>> diff(path_join(target_dir, "greet.py"), path_join(applied, "greet.py"))
+
+If applied config does not change a file, the file isn't modified and a
+patch file isn't created.
+
+    >>> applied = apply({"name": "Bob", "op": "+", "x": 1}, ["*.py"])
+
+    >>> ls(applied)
+    config.json
+    greet.py
+    op.py
+    sample.bin
+    sample.txt
+
+    >>> run("python op.py", cwd=applied)
+    1 + 2 = 3
+    <0>
+
+Run a modified `op.py` script.
+
+    >>> applied = apply({"op": "-", "x": 10, "y": 7}, ["*.py"])
+
+    >>> ls(applied)
+    .applied-config.op.py.patch
+    config.json
+    greet.py
+    op.py
+    sample.bin
+    sample.txt
+
+    >>> cat(path_join(applied, ".applied-config.op.py.patch"))
+    --- op.py
+    +++ op.py
+    @@ -1,5 +1,5 @@
+    -x = 1
+    -y = 2
+    -op = "+"
+    +x = 10
+    +y = 7
+    +op = "-"
+     expr = f"{x} {op} {y}"
+     print(f"{expr} = {eval(expr)}")
+
+    >>> run("python op.py", cwd=applied)
+    10 - 7 = 3
     <0>
 
 ## To Do / Notes

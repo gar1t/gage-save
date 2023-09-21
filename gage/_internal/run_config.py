@@ -2,6 +2,7 @@
 
 from typing import *
 
+import difflib
 import logging
 import os
 import re
@@ -214,6 +215,49 @@ def _apply_file_config(
     file_config: RunConfig,
     filename: str,
 ):
-    file_config.update({key: config[key] for key in keys})
+    _apply_config_vals(config, keys, file_config)
+    file_dir, file_name = os.path.split(filename)
+    v1_lines = _read_file_lines(filename)
+    v2_lines = _applied_config_lines(file_config)
+    diff = list(difflib.unified_diff(v1_lines, v2_lines, file_name, file_name))
+    if diff:
+        patch_filename = os.path.join(file_dir, _applied_config_patch_name(file_name))
+        _write_lines(diff, patch_filename)
+        _write_lines(v2_lines, filename)
+
+
+def _apply_config_vals(
+    config: RunConfig,
+    keys: list[str],
+    file_config: RunConfig,
+):
+    for key in keys:
+        try:
+            val = config[key]
+        except KeyError:
+            # key not provided in config, skip
+            pass
+        else:
+            try:
+                file_config[key] = val
+            except KeyError:
+                # key not in file config, skip
+                pass
+
+
+def _read_file_lines(filename: str):
+    with open(filename) as f:
+        return f.readlines()
+
+
+def _applied_config_lines(config: RunConfig):
+    return config.apply().splitlines(keepends=True)
+
+
+def _applied_config_patch_name(file_name: str):
+    return f".applied-config.{file_name}.patch"
+
+
+def _write_lines(lines: list[str], filename: str):
     with open(filename, "w") as f:
-        f.write(file_config.apply())
+        f.writelines(lines)

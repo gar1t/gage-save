@@ -36,29 +36,24 @@ Op ref identifies the run:
 
     >>> opref = OpRef("test", "test")
 
-Source code specifies what files to copy. In this test, the `sourcecode`
-spec is empty.
-
-    >>> sourcecode = []
-
-Config specifies how configuration values are applied to run source
-code.
-
-    >>> config = {"path": "train.py#msg"}
-
 Create the op def.
 
     >>> opdef = OpDef(
     ...     "test",
     ...     {
-    ...         "sourcecode": sourcecode,
-    ...         "config": config,
+    ...         "sourcecode": [],
+    ...         "config": {"path": "train.py"},
     ...     })
+
+With this, the run is configured with the following:
+
+- Default source code copy rules are applied (e.g. plain text files)
+- Configuration is applied to the top-level variables in `train.py`
 
 Create configuration. This is applied to the source code files according
 to `config` definitions in op def.
 
-    >>> config = {"msg": "Hola"}
+    >>> config = {"x": 2}
 
 The command is what is run. As tests below only stage the run, this
 command is merely an example.
@@ -129,11 +124,10 @@ Create a sample source code directory structure with a `train.py` script
 that will be used in the application of configuration later.
 
     >>> sourcecode_dir = make_temp_dir()
-    >>> write(
-    ...     path_join(sourcecode_dir, "train.py"), """
-    ... msg = "Hi"
-    ... print(msg)
-    ... """)
+    >>> write(path_join(sourcecode_dir, "train.py"), """
+    ... x = 1
+    ... print(f"loss = {x - 1}")
+    ... """.strip())
     >>> touch(path_join(sourcecode_dir, "eval.py"))
     >>> touch(path_join(sourcecode_dir, "gage.toml"))
     >>> make_dir(path_join(sourcecode_dir, "conf"))
@@ -201,7 +195,20 @@ The runner log contains the applied include and exclude patterns.
 
 `apply_config()` applies configuration in meta to run files.
 
-    >>> apply_config(run)  # +skip still under development
+According to the op def, config is a applied to `train.py`.
+
+    >>> cat(path_join(run.run_dir, "train.py"))
+    x = 1
+    print(f"loss = {x - 1}")
+
+Copy the run directory before applying config.
+
+
+
+Apply run config.
+
+    >>> apply_config(run)
+
 
 ## Init runtime
 
