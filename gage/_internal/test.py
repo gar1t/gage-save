@@ -33,6 +33,7 @@ __all__ = [
     "cat",
     "cat_log",
     "cd",
+    "copytree",
     "datetime_now",
     "datetime_fromiso",
     "delete_temp_dir",
@@ -76,6 +77,7 @@ LogCapture = util.LogCapture
 StderrCapture = util.StderrCapture
 basename = os.path.basename
 delete_temp_dir = file_util.rmtempdir
+copytree = file_util.copytree
 lsl = file_util.ls
 pprint = pprint.pprint
 symlink = os.symlink

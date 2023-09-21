@@ -13,10 +13,8 @@ from . import file_select
 __all__ = [
     "RunConfig",
     "RunConfigValue",
-    "RunConfigBase",
     "UnsupportedFileFormat",
     "apply_config",
-    "iter_config_files",
     "load_config",
     "match_keys",
     "read_config",
@@ -29,57 +27,22 @@ class UnsupportedFileFormat(Exception):
     pass
 
 
-class RunConfigBase(RunConfig):
-    _initialized = False
-
-    def __setitem__(self, key: str, item: RunConfigValue):
-        if self._initialized and key not in self:
-            raise ValueError(f"key does not exist: {key!r}")
-        super().__setitem__(key, item)
-
-    def apply(self) -> str:
-        """Applies config returning the new source."""
-        raise NotImplementedError()
-
-
 def read_config(src_dir: str):
     assert False, "TODO"
 
 
 def apply_config(config: RunConfig, opdef: OpDef, dest_dir: str):
-    for filename, keys, file_config in iter_config_files(opdef, dest_dir):
-        if file_config:
-            apply_file_config(keys, file_config, filename)
-
-
-def iter_config_files(
-    opdef: OpDef, dest_dir: str
-) -> Generator[tuple[str, list[str], RunConfig | None], Any, None]:
-    for c in opdef.get_config():
-        p_paths = _parse_paths(c.get_paths())
-        assert False, p_paths
-
-        file_patterns, *_ = split_config_paths(c.get_paths())
-        assert False, file_patterns
-        paths = c.get_paths()
-        assert False, paths
-        include_file_patterns, include_key_patterns = split_config_paths(include)
-        exclude_file_patterns, exclude_key_patterns = split_config_paths(exclude)
-        select = file_select.parse_patterns(
-            include_file_patterns, exclude_file_patterns
-        )
-        for path in file_select.select_files(dest_dir, select):
-            filename = os.path.join(dest_dir, path)
-            try:
-                file_config = load_config(filename)
-            except UnsupportedFileFormat as e:
-                yield path, [], None
-            else:
-                yield path, match_keys(
-                    include_key_patterns,
-                    exclude_key_patterns,
-                    file_config,
-                ), file_config
+    for opdef_config in opdef.get_config():
+        parsed_paths = _parse_paths(opdef_config.get_paths())
+        files_config = _selected_files_config(dest_dir, parsed_paths)
+        keys = _select_keys(dest_dir, files_config, parsed_paths)
+        for path, file_config in files_config:
+            _apply_file_config(
+                config,
+                keys,
+                file_config,
+                os.path.join(dest_dir, path),
+            )
 
 
 class ParsedPath(NamedTuple):
@@ -184,15 +147,29 @@ def _match_key(include: list[Pattern[str]], exclude: list[Pattern[str]], key: st
     return any(p.match(key) for p in include) and not any(p.match(key) for p in exclude)
 
 
+def _selected_files_config(dest_dir: str, parsed_paths: list[ParsedPath]):
+    files_config: list[tuple[str, RunConfig]] = []
+    for path in _select_files(dest_dir, parsed_paths):
+        filename = os.path.join(dest_dir, path)
+        try:
+            config = load_config(filename)
+        except Exception as e:
+            log.warning("Cannot load configuration for \"%s\": %s", filename)
+            print(f"WARNING: {e}")
+        else:
+            files_config.append((path, config))
+    return files_config
+
+
 def _select_keys(
     src_dir: str,
-    paths_config: tuple[str, RunConfig],
+    files_config: list[tuple[str, RunConfig]],
     parsed_paths: list[ParsedPath],
 ):
     file_select = _file_select_for_keys(src_dir, parsed_paths)
     key_select = _key_select(parsed_paths)
     keys: Set[str] = set()
-    for file_path, file_config in paths_config:
+    for file_path, file_config in files_config:
         if file_select(file_path):
             keys.update([key for key in file_config if key_select(key)])
     return list(keys)
@@ -231,5 +208,12 @@ def _key_select(paths: list[ParsedPath]):
     return f
 
 
-def apply_file_config(keys: list[str], config: RunConfig, filename: str):
-    pass
+def _apply_file_config(
+    config: RunConfig,
+    keys: list[str],
+    file_config: RunConfig,
+    filename: str,
+):
+    file_config.update({key: config[key] for key in keys})
+    with open(filename, "w") as f:
+        f.write(file_config.apply())

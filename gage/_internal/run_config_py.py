@@ -12,7 +12,7 @@ __all__ = ["PythonConfig"]
 KeyNodes = dict[str, cst.CSTNode]
 
 
-class PythonConfig(RunConfigBase):
+class PythonConfig(RunConfig):
     def __init__(self, source: str):
         super().__init__()
         self._cst = cst.parse_module(source)

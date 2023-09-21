@@ -165,4 +165,14 @@ RunStatus = Literal["unknown", "foobar"]  # TODO!
 
 RunConfigValue = None | int | float | bool | str
 
-RunConfig = dict[str, RunConfigValue]
+class RunConfig(dict[str, RunConfigValue]):
+    _initialized = False
+
+    def __setitem__(self, key: str, item: RunConfigValue):
+        if self._initialized and key not in self:
+            raise ValueError(f"key does not exist: {key!r}")
+        super().__setitem__(key, item)
+
+    def apply(self) -> str:
+        """Applies config returning the new source."""
+        raise NotImplementedError()

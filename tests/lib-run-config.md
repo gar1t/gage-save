@@ -9,7 +9,7 @@
 The class `RunConfigBase` is an abstract class that provides dict
 support for format-specific run config.
 
-    >>> config = RunConfigBase()
+    >>> config = RunConfig()
 
 Concrete classes should implement config init in their constructors and
 implement the `apply()` method.
@@ -441,6 +441,68 @@ Other examples:
 
 ## Applying configuration
 
+`apply_config()` orchestrates the functions above to apply configuration
+to a destination directory according to opdef config paths.
+
+Create a function that copies `target_dir` and applies config to its
+files according to opdef config paths.
+
+    >>> def apply(config, paths):
+    ...     from gage._internal.types import OpDef
+    ...     copy_dir = make_temp_dir()
+    ...     copytree(target_dir, copy_dir)
+    ...     opdef = OpDef("test", {
+    ...         "config": {
+    ...             "paths": paths
+    ...         }
+    ...     })
+    ...     apply_config(config, opdef, copy_dir)
+    ...     return copy_dir
+
+Change name used in `greet.py`
+
+    >>> applied = apply({"name": "Mary"}, ["greet.py"])
+
+    >>> cat(path_join(applied, "greet.py"))
+    ⤶
+    name = "Mary"
+    opts = {
+        "loud": False,
+        "short": True
+    }
+    if opts['loud']:
+        name = name.upper()
+    greeting = "Hi" if opts["short"] else "Hello"
+    print(f"{greeting} {name}")
+
+    >>> run("python greet.py", cwd=applied)
+    Hi Mary
+    <0>
+
+Change name, loudness, and shortness.
+
+    >>> applied = apply({
+    ...     "name": "Jane",
+    ...     "opts.loud": True,
+    ...     "opts.short": False
+    ... }, ["greet.py#**.*"])
+
+    >>> cat(path_join(applied, "greet.py"))
+    ⤶
+    name = "Jane"
+    opts = {
+        "loud": True,
+        "short": False
+    }
+    if opts['loud']:
+        name = name.upper()
+    greeting = "Hi" if opts["short"] else "Hello"
+    print(f"{greeting} {name}")
+
+    >>> run("python greet.py", cwd=applied)
+    Hello JANE
+    <0>
+
 ## To Do / Notes
 
 TODO: namespace maybe wants to be 'prefix'.
@@ -487,11 +549,44 @@ path = "train.py#x"
 rename = ["x X"]  # equiv to prefix = "X" + strip-prefix = "x"
 ```
 
-TODO: edge case: two config files with the same key, different values -
+TODO: Edge case: two config files with the same key, different values -
 show how they'll end up with the same value based on `config.json`,
 which may be surprising.
 
-TODO: show how namespace is used to deal with that edge case.
+TODO: Show how namespace is used to deal with that edge case.
 
-TODO: application of config needs to be per `config` section due to
+TODO: Application of config needs to be per `config` section due to
 namespace potential.
+
+TODO: Note somewhere the idea of a *path prefix*, which is a config
+setting that indicates that a path-based prefix should be used with
+selected keys. This would be handle for Hydra main config, which is
+setup with a `config_path`, under which files and subdirectories form
+key prefixes.
+
+`path-prefix-root` specifies the root directory from which prefixes are
+applied to selected keys.
+
+``` toml
+[a.config]
+
+path = "conf/**.*#**.*"
+path-prefix-root = "conf"
+```
+
+This is a feature we can add later. There's a chance this won't be
+useful in practice as a Hydra scheme is for huge, complex config that's
+not likely all exposed as operation config. E.g. a MySQL port or
+selection of database is not something a model training operation cares
+about tracking. These can be passed along as args using `gage run ... --
+ARGS` as needed and applied as config via Hydra and not something Gage
+cares to track.
+
+OTOH, learning rate for a model training run is something the user cares
+about. But this can be more specifically exposed via op config.
+
+``` toml
+[a.config]
+
+path = "conf/resnet50/train.yaml"
+```
