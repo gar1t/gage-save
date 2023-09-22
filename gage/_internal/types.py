@@ -58,9 +58,6 @@ class OpDefExec:
     def get_copy_deps(self) -> str | None:
         return self._data.get("copy-deps")
 
-    def get_resolve_deps(self) -> str | None:
-        return self._data.get("resolve-deps")
-
     def get_init_runtime(self) -> str | None:
         return self._data.get("init-runtime")
 
@@ -120,8 +117,11 @@ class OpDef:
             val = {"run": val}
         return OpDefExec(val)
 
-    def get_sourcecode(self):
-        return _path_patterns(self._data.get("sourcecode"))
+    def get_sourcecode(self) -> list[str] | bool | None:
+        val = self._data.get("sourcecode")
+        if val in (True, False, None):
+            return val
+        return _path_patterns(val)
 
     def get_config(self) -> list[OpDefConfig]:
         val = self._data.get("config")

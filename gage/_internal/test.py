@@ -51,8 +51,8 @@ __all__ = [
     "parse_path",
     "parse_run_id",
     "parse_run_name",
-    "parse_run_timestamp",
     "parse_sha256",
+    "parse_timestamp",
     "parse_ver",
     "path_exists",
     "path_join",
@@ -136,8 +136,8 @@ def parse_run_name(s: str):
     return s
 
 
-@parse_type("run_timestamp", r"1[6-7]\d{14}")  # epoch microseconds
-def parse_run_timestamp(s: str):
+@parse_type("timestamp", r"1[6-7]\d{14}")  # epoch microseconds
+def parse_timestamp(s: str):
     return int(s)
 
 

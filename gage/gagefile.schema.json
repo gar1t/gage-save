@@ -49,10 +49,7 @@
       "type": "object",
       "title": "Run configuration",
       "additionalProperties": false,
-      "anyOf": [
-        {"required": ["path"]},
-        {"required": ["paths"]}
-      ],
+      "anyOf": [{ "required": ["path"] }, { "required": ["paths"] }],
       "allOf": [
         {
           "not": {
@@ -103,10 +100,7 @@
           "title": "Exec spec",
           "oneOf": [
             {
-              "$ref": "#/$defs/shell-cmd"
-            },
-            {
-              "$ref": "#/$defs/cmd-args"
+              "$ref": "#/$defs/exec-cmd"
             },
             {
               "type": "object",
@@ -114,37 +108,41 @@
               "additionalProperties": false,
               "properties": {
                 "copy-sourcecode": {
-                  "$ref": "#/$defs/shell-cmd"
+                  "$ref": "#/$defs/exec-cmd"
                 },
                 "copy-deps": {
-                  "$ref": "#/$defs/shell-cmd"
-                },
-                "resolve-deps": {
-                  "$ref": "#/$defs/shell-cmd"
+                  "$ref": "#/$defs/exec-cmd"
                 },
                 "init-runtime": {
-                  "$ref": "#/$defs/shell-cmd"
+                  "$ref": "#/$defs/exec-cmd"
                 },
                 "run": {
-                  "$ref": "#/$defs/shell-cmd"
+                  "$ref": "#/$defs/exec-cmd"
                 },
                 "finalize-run": {
-                  "$ref": "#/$defs/shell-cmd"
+                  "$ref": "#/$defs/exec-cmd"
                 }
               }
             }
           ]
         },
         "sourcecode": {
-          "$ref": "#/$defs/path-patterns",
-          "title": "Operation source code"
+          "title": "Operation source code",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/path-patterns"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         },
         "config": {
           "title": "Operation configuration",
           "oneOf": [
             {
-              "$ref": "#/$defs/path-patterns",
-              "title": "Operation config paths"
+              "title": "Operation config paths",
+              "$ref": "#/$defs/path-patterns"
             },
             {
               "$ref": "#/$defs/config"

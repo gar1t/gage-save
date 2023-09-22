@@ -41,7 +41,6 @@ Create the op def.
     >>> opdef = OpDef(
     ...     "test",
     ...     {
-    ...         "sourcecode": [],
     ...         "config": {"path": "train.py"},
     ...     })
 
@@ -146,8 +145,8 @@ otherwise specify rules.
 
     >>> opdef = meta_opdef(run)
 
-    >>> opdef.get_sourcecode()
-    []
+    >>> opdef.get_sourcecode()  # +pprint
+    None
 
 Confirm the run directory is empty.
 
@@ -211,8 +210,7 @@ The op def:
     {
       "config": {
         "path": "train.py"
-      },
-      "sourcecode": []
+      }
     }
 
 The target for config is `train.py`. Prior to the application of config,

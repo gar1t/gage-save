@@ -3,8 +3,7 @@
         "exec": {
             "copy-sourcecode": "cp * $run_dir",
             "copy-deps": "",
-            "resolve-deps": "",
-            "init-runtime": "",
+            "init-runtime": ["python", "-m", "venv"],
             "run": "dir .",
             "finalize-run": ""
         }

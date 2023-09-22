@@ -79,11 +79,8 @@ various stages of a run lifecycle.
     >>> train.get_exec().get_copy_deps()
     ''
 
-    >>> train.get_exec().get_resolve_deps()
-    ''
-
     >>> train.get_exec().get_init_runtime()
-    ''
+    ['python', '-m', 'venv']
 
     >>> train.get_exec().get_run()
     'dir .'
@@ -99,11 +96,16 @@ Exec commands must be either strings or arrays of strings.
     ERROR: invalid-exec.json has problems
     Properties ['train'] are invalid
     Properties ['exec'] are invalid
-    The instance must be valid against exactly one subschema; it is valid against [] and invalid against [0, 1, 2]
+    ...
     The instance must be of type "string"
     The instance must be of type "array"
-    Properties ['copy-deps', 'init-runtime', 'finalize-run'] are invalid
+    Properties ['copy-deps', 'init-runtime', 'run'] are invalid
     ...
+    The instance must be of type "string"
+    [0]
+    ...
+    The instance must be of type "string"
+    The instance must be of type "array"
     <1>
 
 ## Writeable dependencies

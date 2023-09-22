@@ -62,3 +62,18 @@ paths = [
   "eval.py",
   "-eval.py#priv*"
 ]
+
+[f]
+
+description = "Disabled sourcecode"
+sourcecode = false
+
+[g]
+
+description = "Disabled sourcecode v2"
+sourcecode = []
+
+[h]
+
+description = "Default source code rules"
+sourcecode = true

@@ -199,7 +199,6 @@ for a run.
     ...     "copy-sourcecode": "cp *.py $run_dir",
     ...     "copy-deps": "cp *.data $run_dir",
     ...     "init-runtime": "virtualenv .venv",
-    ...     "resolve-deps": "wget https://mydata.org/train.csv",
     ...     "run": "python train.py",
     ...     "finalize-run": "rm *.temp"
     ... }})
@@ -254,6 +253,7 @@ Items in the list cannot be empty.
     Properties ['sourcecode'] are invalid
     ...
     The text is too short (minimum 1 characters)
+    The instance must be of type "boolean"
 
 Invalid values:
 
@@ -263,6 +263,7 @@ Invalid values:
     ...
     The instance must be of type "string"
     The instance must be of type "array"
+    The instance must be of type "boolean"
 
     >>> validate_opdef({"sourcecode": {}})  # +wildcard
     Properties ['test'] are invalid
@@ -270,6 +271,7 @@ Invalid values:
     ...
     The instance must be of type "string"
     The instance must be of type "array"
+    The instance must be of type "boolean"
 
     >>> validate_opdef({"sourcecode": [123]})  # +wildcard
     Properties ['test'] are invalid
@@ -277,6 +279,7 @@ Invalid values:
     ...
     [0]
     The instance must be of type "string"
+    The instance must be of type "boolean"
 
 ### `config`
 

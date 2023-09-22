@@ -8,13 +8,15 @@ from os import DirEntry
 import json
 import logging
 import os
+import subprocess
 import threading
 import time
 import uuid
 
 from . import config
-from . import run_sourcecode
 from . import run_config
+from . import run_sourcecode
+from . import run_output
 
 from .file_select import copy_files
 
@@ -328,11 +330,22 @@ def stage_run(run: Run, project_dir: str):
 def copy_sourcecode(project_dir: str, run: Run):
     log = _runner_log(run)
     opdef = meta_opdef(run)
+    _copy_sourcecode_patterns(project_dir, run, opdef, log)
+    _copy_sourcecode_exec(project_dir, run, opdef, log)
+    _apply_log_files(run, "s")
+
+
+def _copy_sourcecode_patterns(project_dir: str, run: Run, opdef: OpDef, log: Logger):
     sourcecode = run_sourcecode.init(project_dir, opdef)
     log.info("Copying source code (see log/files for details)")
     log.info("Source code patterns: %s", sourcecode.patterns)
     copy_files(project_dir, run.run_dir, sourcecode.paths)
-    _apply_log_files(run, "s")
+
+
+def _copy_sourcecode_exec(project_dir: str, run: Run, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_copy_sourcecode()
+    if exec:
+        _run_phase_exec(run, "copy-sourcecode", exec, project_dir, "10_sourcecode", log)
 
 
 def apply_config(run: Run):
@@ -380,7 +393,6 @@ def _reduce_files_log(run: Run):
 
 def initialize_runtime(run: Run):
     opdef = meta_opdef(run)
-
 
 
 def resolve_deps(run: Run):
@@ -524,3 +536,48 @@ def _log_applied_config(run: Run, diffs: list[tuple[str, UnifiedDiff]]):
         for path, diff in sorted(diffs):
             for line in diff:
                 f.write(line)
+
+
+class RunExecError(Exception):
+    pass
+
+
+def _run_phase_exec(
+    run: Run,
+    phase_name: str,
+    exec_cmd: str | list[str],
+    project_dir: str,
+    output_name: str,
+    log: Logger,
+):
+    log.info(f"Running {phase_name} (see output/{output_name} for output): {exec_cmd}")
+
+    proc_args, use_shell = _proc_args(exec_cmd)
+    proc_env = {**os.environ, "run_dir": run.run_dir}
+    p = subprocess.Popen(
+        proc_args,
+        shell=use_shell,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=project_dir,
+        env=proc_env,
+    )
+    output_filename = run_meta_path(run, "output", output_name)
+    output = run_output.RunOutput(output_filename)
+    ensure_dir(os.path.dirname(output_filename))
+    output.open(p)
+    exit_code = p.wait()
+    output.wait_and_close()
+    log.info(f"Exit code for {phase_name}: {exit_code}")
+    if exit_code != 0:
+        raise RunExecError(phase_name, proc_args, exit_code)
+
+
+def _proc_args(exec_cmd: str | list[str]) -> tuple[str | list[str], bool]:
+    if isinstance(exec_cmd, list):
+        return exec_cmd, False
+    line1, *rest = exec_cmd.splitlines()
+    if line1.startswith("#!"):
+        return [line1[2:].rstrip(), "-c", "".join(rest)], False
+    else:
+        return exec_cmd, True

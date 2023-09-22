@@ -169,7 +169,7 @@ was initialized. This is written at the end of the initialization
 process.
 
     >>> cat(path_join(meta_dir, "initialized"))  # +parse
-    {:run_timestamp}
+    {:timestamp}
 
 ### Runner log
 

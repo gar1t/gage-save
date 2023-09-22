@@ -43,8 +43,12 @@ def init(src_dir: str, opdef: OpDef):
     return RunSourceCode(src_dir, patterns, paths)
 
 
-def opdef_sourcecode_patterns(opdef: OpDef):
+def opdef_sourcecode_patterns(opdef: OpDef) -> list[str]:
     patterns = opdef.get_sourcecode()
+    if patterns in (True, None):
+        return DEFAULT_PATTERNS
+    if not patterns:
+        return []
     any_includes = any(not p.startswith("-") for p in patterns)
     if any_includes:
         return patterns
