@@ -30,6 +30,7 @@
     "autoprint",
     "batchfile",
     "Bools",
+    "bufsize",
     "chardet",
     "compgen",
     "configparser",

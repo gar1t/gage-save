@@ -25,6 +25,7 @@ Create a sample script to generate output.
     ...     sys.stdout.write(f"stdout line {i}\\n")
     ...     sys.stdout.flush()
     ...     sys.stderr.write(f"stderr line {i}\\n")
+    ...     sys.stderr.flush()
     ... """)
 
 Create a run output instance.
@@ -42,9 +43,17 @@ to read from. To read both stdout and stderr, use pipes for each stream.
     ...     stderr=subprocess.PIPE,
     ... )
 
+Prior to calling `open()` the output is considered closed.
+
+    >>> output.closed
+    True
+
 Open run output with the process.
 
     >>> output.open(proc)
+
+    >>> output.closed
+    False
 
 Process output is read using background threads.
 
@@ -56,6 +65,9 @@ Wait for the process to exit.
 Wait for output to be written.
 
     >>> output.wait_and_close(timeout=1.0)
+
+    >>> output.closed
+    True
 
 Two files are generated.
 
@@ -78,6 +90,13 @@ The output log contains process output.
     stderr line 3
     stderr line 4
 
+Note that output is not synchronized as might be expected. The test
+script writes to stdout and stderr, which are separate streams and
+appear as such in captured output.
+
+To ensure that output is synchronized, the process should be configured
+to use stdout for the stderr stream (see below).
+
 While output can be read directly from `output_filename` as a text file,
 a run output reader provides timestamp and stream type information for
 each line.
@@ -95,3 +114,56 @@ each line.
     {:timestamp} 1 stderr line 2
     {:timestamp} 1 stderr line 3
     {:timestamp} 1 stderr line 4
+
+To synchronize stdout and stderr streams, open the process as follows:
+
+    >>> proc = subprocess.Popen(
+    ...     [sys.executable, "test.py"],
+    ...     stdout=subprocess.PIPE,
+    ...     stderr=subprocess.STDOUT,
+    ... )
+
+Open output for the process.
+
+    >>> output.open(proc)
+
+    >>> output.closed
+    False
+
+    >>> proc.wait()
+    0
+
+    >>> output.wait_and_close()
+
+    >>> output.closed
+    True
+
+Show captured output.
+
+    >>> cat("output")
+    stdout line 0
+    stderr line 0
+    stdout line 1
+    stderr line 1
+    stdout line 2
+    stderr line 2
+    stdout line 3
+    stderr line 3
+    stdout line 4
+    stderr line 4
+
+The order is the same using an output reader.
+
+    >>> with RunOutputReader("output") as reader:  # +parse
+    ...     for timestamp, stream, line in reader:
+    ...         print(timestamp, stream, line)
+    {:timestamp} 0 stdout line 0
+    {:timestamp} 0 stderr line 0
+    {:timestamp} 0 stdout line 1
+    {:timestamp} 0 stderr line 1
+    {:timestamp} 0 stdout line 2
+    {:timestamp} 0 stderr line 2
+    {:timestamp} 0 stdout line 3
+    {:timestamp} 0 stderr line 3
+    {:timestamp} 0 stdout line 4
+    {:timestamp} 0 stderr line 4

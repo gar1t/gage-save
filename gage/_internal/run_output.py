@@ -119,7 +119,11 @@ class RunOutput:
     def _err_tee_run(self):
         assert self._proc
         assert self._proc.stderr
+        self._err_tee_offset()
         self._gen_tee_run(self._proc.stderr, self._err_fileno, 1)
+
+    def _err_tee_offset(self):
+        time.sleep(0.1)
 
     def _gen_tee_run(
         self,

@@ -60,6 +60,7 @@ __all__ = [
     "printl",
     "quiet",
     "re",
+    "rm",
     "run",
     "sample",
     "samples_dir",
@@ -479,3 +480,9 @@ def diff(path1: str, path2: str):
     diff_lines = list(difflib.unified_diff(lines1, lines2, path1, path2, lineterm=""))
     for line in diff_lines[2:]:
         print(line)
+
+
+def rm(filename: str, force: bool = False):
+    if force and not os.path.exists(filename):
+        return
+    os.remove(filename)
