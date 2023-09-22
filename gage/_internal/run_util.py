@@ -33,6 +33,7 @@ __all__ = [
     "META_SCHEMA",
     "RunManifest",
     "apply_config",
+    "copy_deps",
     "copy_sourcecode",
     "finalize_staged_run",
     "init_run_meta",
@@ -320,32 +321,39 @@ def meta_config(run: Run) -> RunConfig:
 
 
 def stage_run(run: Run, project_dir: str):
-    copy_sourcecode(project_dir, run)
+    copy_sourcecode(run, project_dir)
     apply_config(run)
-    initialize_runtime(run)
-    resolve_deps(run)
+    initialize_runtime(run, project_dir)
+    copy_deps(run, project_dir)
     finalize_staged_run(run)
 
 
-def copy_sourcecode(project_dir: str, run: Run):
+def copy_sourcecode(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _copy_sourcecode_patterns(project_dir, run, opdef, log)
-    _copy_sourcecode_exec(project_dir, run, opdef, log)
+    _copy_sourcecode_patterns(run, project_dir, opdef, log)
+    _copy_sourcecode_exec(run, project_dir, opdef, log)
     _apply_log_files(run, "s")
 
 
-def _copy_sourcecode_patterns(project_dir: str, run: Run, opdef: OpDef, log: Logger):
+def _copy_sourcecode_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     sourcecode = run_sourcecode.init(project_dir, opdef)
-    log.info("Copying source code (see log/files for details)")
-    log.info("Source code patterns: %s", sourcecode.patterns)
+    log.info(f"Copying source code (see log/files for details): {sourcecode.patterns}")
     copy_files(project_dir, run.run_dir, sourcecode.paths)
 
 
-def _copy_sourcecode_exec(project_dir: str, run: Run, opdef: OpDef, log: Logger):
+def _copy_sourcecode_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     exec = opdef.get_exec().get_copy_sourcecode()
     if exec:
-        _run_phase_exec(run, "copy-sourcecode", exec, project_dir, "10_sourcecode", log)
+        _run_phase_exec(
+            run,
+            "copy-sourcecode",
+            exec,
+            project_dir,
+            _phase_exec_env(run, project_dir),
+            "10_sourcecode",
+            log,
+        )
 
 
 def apply_config(run: Run):
@@ -391,12 +399,55 @@ def _reduce_files_log(run: Run):
         yield type, path
 
 
-def initialize_runtime(run: Run):
+def initialize_runtime(run: Run, project_dir: str):
+    log = _runner_log(run)
     opdef = meta_opdef(run)
+    _init_runtime_exec(run, project_dir, opdef, log)
+    _apply_log_files(run, "r")
 
 
-def resolve_deps(run: Run):
+def _init_runtime_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_init_runtime()
+    if exec:
+        _run_phase_exec(
+            run,
+            "init-runtime",
+            exec,
+            project_dir,
+            _phase_exec_env(run, project_dir),
+            "20_runtime",
+            log,
+        )
+
+
+def copy_deps(run: Run, project_dir: str):
+    log = _runner_log(run)
+    opdef = meta_opdef(run)
+    _copy_deps_patterns(run, project_dir, opdef, log)
+    _copy_deps_exec(run, project_dir, opdef, log)
+    _apply_log_files(run, "d")
+
+
+def _copy_deps_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     pass
+    # TODO
+    # deps = run_deps.init(project_dir, opdef)
+    # log.info(f"Copying dependencies (see log/files for details): {deps.patterns}")
+    # copy_files(project_dir, run.run_dir, deps.paths)
+
+
+def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_copy_deps()
+    if exec:
+        _run_phase_exec(
+            run,
+            "copy-deps",
+            exec,
+            project_dir,
+            _phase_exec_env(run, project_dir),
+            "30_deps",
+            log,
+        )
 
 
 # =================================================================
@@ -546,20 +597,21 @@ def _run_phase_exec(
     run: Run,
     phase_name: str,
     exec_cmd: str | list[str],
-    project_dir: str,
+    cwd: str,
+    env: dict[str, str],
     output_name: str,
     log: Logger,
 ):
     log.info(f"Running {phase_name} (see output/{output_name} for output): {exec_cmd}")
 
     proc_args, use_shell = _proc_args(exec_cmd)
-    proc_env = {**os.environ, "run_dir": run.run_dir}
+    proc_env = {**os.environ, **env}
     p = subprocess.Popen(
         proc_args,
         shell=use_shell,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=project_dir,
+        cwd=cwd,
         env=proc_env,
     )
     output_filename = run_meta_path(run, "output", output_name)
@@ -581,3 +633,10 @@ def _proc_args(exec_cmd: str | list[str]) -> tuple[str | list[str], bool]:
         return [line1[2:].rstrip(), "-c", "".join(rest)], False
     else:
         return exec_cmd, True
+
+
+def _phase_exec_env(run: Run, project_dir: str):
+    return {
+        "run_dir": run.run_dir,
+        "project_dir": project_dir,
+    }
