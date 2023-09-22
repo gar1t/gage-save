@@ -110,7 +110,8 @@ Use `apply()` to update the script and re-run it.
 
 ### Keys
 
-Keys correspond to top-level assignments of config values. Keys are comprised of the top-level variable and nested keys separated by dots.
+Keys correspond to top-level assignments of config values. Keys are
+comprised of the top-level variable and nested keys separated by dots.
 
 Create a function to list keys for module source.
 

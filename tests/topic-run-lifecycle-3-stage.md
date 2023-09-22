@@ -183,7 +183,7 @@ type.
 The runner log contains the applied include and exclude patterns.
 
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard -space
-    Writing id
+    Writing meta id
     ...
     Copying source code (see log/files for details)
     Source code patterns:
@@ -228,7 +228,7 @@ Apply run config.
 
 Changes are logged in run meta under `log/patched`.
 
-    >>> cat(run_meta_path(run, "log/patched"))
+    >>> cat(run_meta_path(run, "log", "patched"))
     --- train.py
     +++ train.py
     @@ -1,2 +1,2 @@
@@ -256,6 +256,7 @@ As the last phase of staging, two changes are made:
 
 - Run directory files are made read-only
 - Run manifest is written
+- Meta `staged` timestamp is written
 
 Files copied to the run directory for staging are typically inputs only
 and are not modified by the run.
@@ -305,6 +306,32 @@ config.
     >>> assert train_sha == sha256(path_join(run.run_dir, "train.py"))
 
     >>> assert train_sha != sha256(path_join(sourcecode_dir, "train.py"))
+
+List meta runs.
+
+    >>> ls(run_meta_dir(run))  # +diff
+    __schema__
+    config.json
+    id
+    initialized
+    log/files
+    log/patched
+    log/runner
+    manifest
+    name
+    opdef.json
+    opref
+    proc/cmd
+    proc/env
+    staged
+
+Show logged events.
+
+    >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard
+    Writing meta id
+    ...
+    Finalizing staged files (see manifest for details)
+    Writing meta staged
 
 ## Errors
 

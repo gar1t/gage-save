@@ -207,19 +207,19 @@ def _ensure_meta_log_dir(meta_dir: str):
 
 
 def _write_run_id(run: Run, meta_dir: str, log: Logger):
-    log.info("Writing id")
+    log.info("Writing meta id")
     filename = os.path.join(meta_dir, "id")
     write_file(filename, run.id, readonly=True)
 
 
 def _write_run_name(run: Run, meta_dir: str, log: Logger):
-    log.info("Writing name")
+    log.info("Writing meta name")
     filename = os.path.join(meta_dir, "name")
     write_file(filename, run.name, readonly=True)
 
 
 def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
-    log.info("Writing opdef.json")
+    log.info("Writing meta opdef.json")
     filename = os.path.join(meta_dir, "opdef.json")
     write_file(filename, _encode_json(opdef), readonly=True)
 
@@ -233,13 +233,13 @@ def _encode_json(val: Any):
 
 
 def _write_config(config: RunConfig, meta_dir: str, log: Logger):
-    log.info("Writing config.json")
+    log.info("Writing meta config.json")
     filename = os.path.join(meta_dir, "config.json")
     write_file(filename, _encode_json(config), readonly=True)
 
 
 def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
-    log.info("Writing proc/cmd")
+    log.info("Writing meta proc/cmd")
     ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "cmd")
     write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
@@ -250,7 +250,7 @@ def _encode_cmd_args(args: list[str]):
 
 
 def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
-    log.info("Writing proc/env")
+    log.info("Writing meta proc/env")
     ensure_dir(os.path.join(meta_dir, "proc"))
     filename = os.path.join(meta_dir, "proc", "env")
     write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
@@ -271,20 +271,20 @@ def _write_system_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
 def _gen_write_attrs(dir: str, attrs: dict[str, Any], meta_dir: str, log: Logger):
     ensure_dir(os.path.join(meta_dir, dir))
     for name in attrs:
-        log.info("Writing %s/%s", dir, name)
+        log.info("Writing meta %s/%s", dir, name)
         filename = os.path.join(meta_dir, dir, name)
         encoded = json.dumps(attrs[name])
         write_file(filename, encoded, readonly=True)
 
 
 def _write_opref(opref: OpRef, meta_dir: str, log: Logger):
-    log.info("Writing opref")
+    log.info("Writing meta opref")
     filename = os.path.join(meta_dir, "opref")
     write_file(filename, encode_opref(opref), readonly=True)
 
 
 def _write_initialized_timestamp(meta_dir: str, log: Logger):
-    log.info("Writing initialized")
+    log.info("Writing meta initialized")
     filename = os.path.join(meta_dir, "initialized")
     timestamp = run_timestamp()
     write_file(filename, str(timestamp), readonly=True)
@@ -317,10 +317,12 @@ def meta_config(run: Run) -> RunConfig:
 # =================================================================
 
 
-def stage_run(run: Run):
-    assert False, "TODO: need a ref to a project dir"
-    opdef = meta_opdef(run)
-    copy_sourcecode(run, opdef)
+def stage_run(run: Run, project_dir: str):
+    copy_sourcecode(project_dir, run)
+    apply_config(run)
+    initialize_runtime(run)
+    resolve_deps(run)
+    finalize_staged_run(run)
 
 
 def copy_sourcecode(project_dir: str, run: Run):
@@ -333,13 +335,36 @@ def copy_sourcecode(project_dir: str, run: Run):
     _apply_log_files(run, "s")
 
 
+def apply_config(run: Run):
+    log = _runner_log(run)
+    config = meta_config(run)
+    opdef = meta_opdef(run)
+    log.info("Applying configuration (see log/patched for details)")
+    diffs = run_config.apply_config(config, opdef, run.run_dir)
+    _log_applied_config(run, diffs)
+
+
 def finalize_staged_run(run: Run):
+    log = _runner_log(run)
+    _finalize_staged_files(run, log)
+    _write_staged_timestamp(run_meta_dir(run), log)
+
+
+def _finalize_staged_files(run: Run, log: Logger):
+    log.info("Finalizing staged files (see manifest for details)")
     with RunManifest(run, "w") as m:
         for type, path in _reduce_files_log(run):
             filename = os.path.join(run.run_dir, path)
             set_readonly(filename)
             digest = file_sha256(filename)
             m.add(type, digest, path)
+
+
+def _write_staged_timestamp(meta_dir: str, log: Logger):
+    log.info("Writing meta staged")
+    filename = os.path.join(meta_dir, "staged")
+    timestamp = run_timestamp()
+    write_file(filename, str(timestamp), readonly=True)
 
 
 def _reduce_files_log(run: Run):
@@ -353,13 +378,13 @@ def _reduce_files_log(run: Run):
         yield type, path
 
 
-def apply_config(run: Run):
-    log = _runner_log(run)
-    config = meta_config(run)
+def initialize_runtime(run: Run):
     opdef = meta_opdef(run)
-    log.info("Applying configuration (see log/patched for details)")
-    diffs = run_config.apply_config(config, opdef, run.run_dir)
-    _log_applied_config(run, diffs)
+
+
+
+def resolve_deps(run: Run):
+    pass
 
 
 # =================================================================

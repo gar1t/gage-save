@@ -1,55 +1,97 @@
-# Run utils
+---
+parse-types:
+  timestamp: 1[6-7]\d{11}
+---
 
-General run utilities are provided by `gage._internal.run_util`.
+# Run output
 
-## Run output
+Run output is logged and read using facilities in
+`gage._internal.run_output`.
 
-Run output can be read using util.RunOutputReader.
+    >>> from gage._internal.run_output import *
 
-    >>> from gage._internal.run_output import RunOutputReader
+Output is written to two files: a plain text file containing merged
+stderr and stdout output and an index, which annotates each logged line
+with a timestamp and a stream time (err or out).
 
-For these tests, we'll use a sample run:
+Create a sample script to generate output.
 
-    >>> run_dir = sample("runs/7d145216ae874020b735f001a7bfd27d")
+    >>> cd(make_temp_dir())
 
-Our reader:
+    >>> write("test.py", """
+    ... import sys
+    ...
+    ... for i in range(5):
+    ...     sys.stdout.write(f"stdout line {i}\\n")
+    ...     sys.stdout.flush()
+    ...     sys.stderr.write(f"stderr line {i}\\n")
+    ... """)
 
-    >>> reader = RunOutputReader(run_dir)
+Create a run output instance.
 
-We use the `read` method to read output. By default `read` returns all
-available output.
+    >>> output = RunOutput("output")
 
-    >>> reader.read()  # +pprint
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018'),
-     (1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018'),
-     (1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
+Output is read from process output via `output.open()`. Create a process
+to read from. To read both stdout and stderr, use pipes for each stream.
 
-We can alternatively read using start and end indices.
+    >>> import subprocess
 
-    >>> reader.read(0, 0)
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018')]
+    >>> proc = subprocess.Popen(
+    ...     [sys.executable, "test.py"],
+    ...     stdout=subprocess.PIPE,
+    ...     stderr=subprocess.PIPE,
+    ... )
 
-    >>> reader.read(1, 1)
-    [(1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018')]
+Open run output with the process.
 
-    >>> reader.read(2, 3)  # +pprint
-    [(1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
+    >>> output.open(proc)
 
-If start is omitted, output is read form the start.
+Process output is read using background threads.
 
-    >>> reader.read(end=2)  # +pprint
-    [(1524584359781, 0, 'Tue Apr 24 10:39:19 CDT 2018'),
-     (1524584364782, 0, 'Tue Apr 24 10:39:24 CDT 2018'),
-     (1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018')]
+Wait for the process to exit.
 
-If end is omitted, output is read to the end.
+    >>> proc.wait()
+    0
 
-    >>> reader.read(start=2)  # +pprint
-    [(1524584369785, 0, 'Tue Apr 24 10:39:29 CDT 2018'),
-     (1524584374790, 0, 'Tue Apr 24 10:39:34 CDT 2018')]
+Wait for output to be written.
 
-When we're run reading we can close the reader:
+    >>> output.wait_and_close(timeout=1.0)
 
-    >>> reader.close()
+Two files are generated.
+
+    >>> ls()
+    output
+    output.index
+    test.py
+
+The output log contains process output.
+
+    >>> cat("output")
+    stdout line 0
+    stdout line 1
+    stdout line 2
+    stdout line 3
+    stdout line 4
+    stderr line 0
+    stderr line 1
+    stderr line 2
+    stderr line 3
+    stderr line 4
+
+While output can be read directly from `output_filename` as a text file,
+a run output reader provides timestamp and stream type information for
+each line.
+
+    >>> with RunOutputReader("output") as reader:  # +parse
+    ...     for timestamp, stream, line in reader:
+    ...         print(timestamp, stream, line)
+    {:timestamp} 0 stdout line 0
+    {:timestamp} 0 stdout line 1
+    {:timestamp} 0 stdout line 2
+    {:timestamp} 0 stdout line 3
+    {:timestamp} 0 stdout line 4
+    {:timestamp} 1 stderr line 0
+    {:timestamp} 1 stderr line 1
+    {:timestamp} 1 stderr line 2
+    {:timestamp} 1 stderr line 3
+    {:timestamp} 1 stderr line 4

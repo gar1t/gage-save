@@ -169,7 +169,7 @@ was initialized. This is written at the end of the initialization
 process.
 
     >>> cat(path_join(meta_dir, "initialized"))  # +parse
-    {:timestamp}
+    {:run_timestamp}
 
 ### Runner log
 
@@ -181,24 +181,24 @@ with an ISO 8601 formatted date.
     >>> logfile = path_join(meta_dir, "log", "runner")
 
     >>> cat(logfile)  # +parse
-    {x:date} Writing id
+    {x:date} Writing meta id
     {}
 
     >>> assert datetime_fromiso(x) <= datetime_now()
 
 The log contains a record of the changes made during init.
 
-    >>> cat_log(logfile)
-    Writing id
-    Writing name
-    Writing opdef.json
-    Writing config.json
-    Writing proc/cmd
-    Writing proc/env
-    Writing user/label
-    Writing sys/platform
-    Writing opref
-    Writing initialized
+    >>> cat_log(logfile)  # +diff
+    Writing meta id
+    Writing meta name
+    Writing meta opdef.json
+    Writing meta config.json
+    Writing meta proc/cmd
+    Writing meta proc/env
+    Writing meta user/label
+    Writing meta sys/platform
+    Writing meta opref
+    Writing meta initialized
 
 Runner logs are not written with a log level. As a convention, messages
 start with a capital letter.

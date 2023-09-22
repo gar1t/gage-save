@@ -39,7 +39,7 @@ A minimal configuration is one operation with an exec attribute.
 
     >>> train = gf.get_operations()["train"]
 
-    >>> train.get_exec()
+    >>> train.get_exec().get_run()
     'echo hello'
 
 ## Missing exec
@@ -52,7 +52,7 @@ An operation does not need an exec attribute.
 
     >>> gf = load_gagefile("missing-exec.json")
 
-    >>> gf.get_operations()["train"].get_exec()
+    >>> gf.get_operations()["train"].get_exec().get_run()
 
 ## Full exec spec
 

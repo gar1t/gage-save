@@ -48,6 +48,47 @@ class OpCmd:
         self.env = env
 
 
+class OpDefExec:
+    def __init__(self, data: Data):
+        self._data = data
+
+    def get_copy_sourcecode(self) -> str | None:
+        return self._data.get("copy-sourcecode")
+
+    def get_copy_deps(self) -> str | None:
+        return self._data.get("copy-deps")
+
+    def get_resolve_deps(self) -> str | None:
+        return self._data.get("resolve-deps")
+
+    def get_init_runtime(self) -> str | None:
+        return self._data.get("init-runtime")
+
+    def get_run(self) -> str | None:
+        return self._data.get("run")
+
+    def get_finalize_run(self) -> str | None:
+        return self._data.get("finalize-run")
+
+
+class OpDefConfig:
+    def __init__(self, data: Data):
+        self._data = data
+
+    def get_name(self) -> str | None:
+        return self._data.get("name")
+
+    def get_description(self) -> str | None:
+        return self._data.get("description")
+
+    def get_paths(self) -> list[str]:
+        # Expect path or paths
+        try:
+            return [self._data["path"]]
+        except KeyError:
+            return self._data.get("paths") or []
+
+
 class OpDef:
     def __init__(self, name: str, data: Data, src: str | None = None):
         self.name = name
@@ -71,75 +112,32 @@ class OpDef:
     def get_default(self):
         return bool(self._data.get("default"))
 
-    def get_exec(self) -> "str | OpDefExec | None":
+    def get_exec(self) -> OpDefExec:
         val = self._data.get("exec")
         if val is None:
-            return None
-        if isinstance(val, str):
-            return val
-        return OpDefExec(self, val)
+            val = {}
+        elif isinstance(val, str) or isinstance(val, list):
+            val = {"run": val}
+        return OpDefExec(val)
 
     def get_sourcecode(self):
         return _path_patterns(self._data.get("sourcecode"))
 
-    def get_config(self) -> "list[OpDefConfig]":
+    def get_config(self) -> list[OpDefConfig]:
         val = self._data.get("config")
         if val is None:
-            return []
-        if isinstance(val, dict):
+            val = []
+        elif isinstance(val, dict):
             val = [val]
-        return [OpDefConfig(self, item) for item in val]
+        return [OpDefConfig(item) for item in val]
 
 
 def _path_patterns(data: Any) -> list[str]:
     if data is None:
-        return []
-    if isinstance(data, str):
-        return [data]
+        data = []
+    elif isinstance(data, str):
+        data = [data]
     return data
-
-
-class OpDefExec:
-    def __init__(self, opdef: OpDef, data: Data):
-        self.opdef = opdef
-        self._data = data
-
-    def get_copy_sourcecode(self) -> str | None:
-        return self._data.get("copy-sourcecode")
-
-    def get_copy_deps(self) -> str | None:
-        return self._data.get("copy-deps")
-
-    def get_resolve_deps(self) -> str | None:
-        return self._data.get("resolve-deps")
-
-    def get_init_runtime(self) -> str | None:
-        return self._data.get("init-runtime")
-
-    def get_run(self) -> str | None:
-        return self._data.get("run")
-
-    def get_finalize_run(self) -> str | None:
-        return self._data.get("finalize-run")
-
-
-class OpDefConfig:
-    def __init__(self, opdef: OpDef, data: Data):
-        self.opdef = opdef
-        self._data = data
-
-    def get_name(self) -> str | None:
-        return self._data.get("name")
-
-    def get_description(self) -> str | None:
-        return self._data.get("description")
-
-    def get_paths(self) -> list[str]:
-        # Expect path or paths
-        try:
-            return [self._data["path"]]
-        except KeyError:
-            return self._data.get("paths") or []
 
 
 class GageFile:
@@ -165,6 +163,7 @@ RunStatus = Literal["unknown", "foobar"]  # TODO!
 
 
 RunConfigValue = None | int | float | bool | str
+
 
 class RunConfig(dict[str, RunConfigValue]):
     _initialized = False

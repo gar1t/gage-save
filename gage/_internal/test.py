@@ -51,8 +51,8 @@ __all__ = [
     "parse_path",
     "parse_run_id",
     "parse_run_name",
+    "parse_run_timestamp",
     "parse_sha256",
-    "parse_timestamp",
     "parse_ver",
     "path_exists",
     "path_join",
@@ -66,6 +66,7 @@ __all__ = [
     "set_var_home",
     "sha256",
     "symlink",
+    "sys",
     "touch",
     "udiff",
     "use_example",
@@ -119,11 +120,6 @@ def parse_ver(s: str):
     return m.groups()
 
 
-@parse_type("timestamp", r"1[6-7]\d{14}")
-def parse_timestamp(s: str):
-    return int(s)
-
-
 @parse_type("path", r"/[/\w_\-.:]*")
 def parse_path(s: str):
     return s
@@ -137,6 +133,11 @@ def parse_run_id(s: str):
 @parse_type("run_name", r"[a-z]{5}-[a-z]{5}")
 def parse_run_name(s: str):
     return s
+
+
+@parse_type("run_timestamp", r"1[6-7]\d{14}")  # epoch microseconds
+def parse_run_timestamp(s: str):
+    return int(s)
 
 
 @parse_type("date", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")

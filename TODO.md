@@ -27,6 +27,13 @@
   and create intelligible reports (current reports mangle sub-schema
   errors into a unqualified list and are nearly pointless)
 
+- How to handle invalid Gage file content? It's temping to add this to
+  `types.py` but it's maybe not great there. Types is a light weight
+  data-to-py mapper. Right now it's not handling type validation at all
+  -- it coerces lightly and let's bad data through. I think a validation
+  error is in order but we should load and use as much as we can and not
+  blow up at the slightest problem. For now bad data leaks.
+
 ``` toml
 "$namespace" = "my-project"
 "$project-id" = "24e17ef2-4e6b-49bd-af59-f7ba0ca79349"

@@ -80,6 +80,7 @@ def markdown(md: str):
 
 def incompatible_with(*params: str):
     """Decorator to specify incompatible params."""
+
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
         if value:
             for other_name in params:
