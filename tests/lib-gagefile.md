@@ -151,8 +151,8 @@ validate this.
 
 When `exec` an object, it may have any of the following properties:
 
-- `copy-sourcecode`
-- `copy-deps`
+- `init-sourcecode`
+- `init-deps`
 - `resolve-deps`
 - `init-runtime`
 - `run`
@@ -196,8 +196,8 @@ An object is used to provide fine-grained control over what is executed
 for a run.
 
     >>> validate_opdef({"exec": {
-    ...     "copy-sourcecode": "cp *.py $run_dir",
-    ...     "copy-deps": "cp *.data $run_dir",
+    ...     "init-sourcecode": "cp *.py $run_dir",
+    ...     "init-deps": "cp *.data $run_dir",
     ...     "init-runtime": "virtualenv .venv",
     ...     "run": "python train.py",
     ...     "finalize-run": "rm *.temp"

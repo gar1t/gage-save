@@ -18,19 +18,19 @@ decription = "Use a virtual env for a run"
 
 [virtualenv.exec]
 
-copy-sourcecode = """
+init-sourcecode = """
 cp -r **/*.py $run_dir
 cp pyproject.toml $run_dir
-"""
-
-copy-deps = """
-dvc pull
-cp data.txt $run_dir
 """
 
 init-runtime = """
 virtualenv .venv
 .venv/bin/pip install .
+"""
+
+init-deps = """
+dvc pull
+cp data.txt $run_dir
 """
 
 run = """

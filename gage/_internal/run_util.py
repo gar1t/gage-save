@@ -33,8 +33,8 @@ __all__ = [
     "META_SCHEMA",
     "RunManifest",
     "apply_config",
-    "copy_deps",
-    "copy_sourcecode",
+    "init_deps",
+    "init_sourcecode",
     "finalize_staged_run",
     "init_run_meta",
     "make_run",
@@ -321,14 +321,14 @@ def meta_config(run: Run) -> RunConfig:
 
 
 def stage_run(run: Run, project_dir: str):
-    copy_sourcecode(run, project_dir)
+    init_sourcecode(run, project_dir)
     apply_config(run)
     initialize_runtime(run, project_dir)
-    copy_deps(run, project_dir)
+    init_deps(run, project_dir)
     finalize_staged_run(run)
 
 
-def copy_sourcecode(run: Run, project_dir: str):
+def init_sourcecode(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     _copy_sourcecode_patterns(run, project_dir, opdef, log)
@@ -343,11 +343,11 @@ def _copy_sourcecode_patterns(run: Run, project_dir: str, opdef: OpDef, log: Log
 
 
 def _copy_sourcecode_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_copy_sourcecode()
+    exec = opdef.get_exec().get_init_sourcecode()
     if exec:
         _run_phase_exec(
             run,
-            "copy-sourcecode",
+            "init-sourcecode",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),
@@ -420,7 +420,7 @@ def _init_runtime_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
         )
 
 
-def copy_deps(run: Run, project_dir: str):
+def init_deps(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     _copy_deps_patterns(run, project_dir, opdef, log)
@@ -437,11 +437,11 @@ def _copy_deps_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
 
 
 def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_copy_deps()
+    exec = opdef.get_exec().get_init_deps()
     if exec:
         _run_phase_exec(
             run,
-            "copy-deps",
+            "init-deps",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),

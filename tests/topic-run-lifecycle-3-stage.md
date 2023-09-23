@@ -99,7 +99,7 @@ The order of these phases is important:
 
 Each phase is implemented by a function in `run_util`:
 
-- `copy_sourcecode`
+- `init_sourcecode`
 - `apply_config`
 - `init_runtime`
 - `resolve_deps`
@@ -115,7 +115,7 @@ runtime files.
 
 ## Copy source code
 
-`copy_sourcecode()` requires a source directory and a run. The rules for
+`init_sourcecode()` requires a source directory and a run. The rules for
 source code copy are defined in the run op def or are applied as
 defaults if rules are not provided.
 
@@ -155,7 +155,7 @@ Confirm the run directory is empty.
 
 Copy the source code to the run directory.
 
-    >>> copy_sourcecode(sourcecode_dir, run)
+    >>> init_sourcecode(run, sourcecode_dir)
 
 Source code files are copied and left in a writeable state.
 
@@ -184,8 +184,7 @@ The runner log contains the applied include and exclude patterns.
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard -space
     Writing meta id
     ...
-    Copying source code (see log/files for details)
-    Source code patterns:
+    Copying source code (see log/files for details):
       ['**/* text size<10000 max-matches=500',
        '-**/.* dir',
        '-**/* dir sentinel=bin/activate',

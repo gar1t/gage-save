@@ -32,7 +32,7 @@ description = "Phase-specific exec"
 
 [d.exec]
 
-copy-sourcecode = """
+init-sourcecode = """
 cp -r src $run_dir/src
 cp pyproject.toml $run_dir
 """

@@ -52,11 +52,11 @@ class OpDefExec:
     def __init__(self, data: Data):
         self._data = data
 
-    def get_copy_sourcecode(self) -> str | None:
-        return self._data.get("copy-sourcecode")
+    def get_init_sourcecode(self) -> str | None:
+        return self._data.get("init-sourcecode")
 
-    def get_copy_deps(self) -> str | None:
-        return self._data.get("copy-deps")
+    def get_init_deps(self) -> str | None:
+        return self._data.get("init-deps")
 
     def get_init_runtime(self) -> str | None:
         return self._data.get("init-runtime")

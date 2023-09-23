@@ -1,8 +1,8 @@
 {
   "train": {
     "exec": {
-      "copy-sourcecode": "cp * $run_dir",
-      "copy-deps": null,
+      "init-sourcecode": "cp * $run_dir",
+      "init-deps": null,
       "init-runtime": [123],
       "run": {
         "foo": "bar"

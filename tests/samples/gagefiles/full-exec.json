@@ -1,8 +1,8 @@
 {
     "train": {
         "exec": {
-            "copy-sourcecode": "cp * $run_dir",
-            "copy-deps": "",
+            "init-sourcecode": "cp * $run_dir",
+            "init-deps": "",
             "init-runtime": ["python", "-m", "venv"],
             "run": "dir .",
             "finalize-run": ""

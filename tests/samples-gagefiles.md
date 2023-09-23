@@ -73,10 +73,10 @@ various stages of a run lifecycle.
     >>> train.get_exec()  # +wildcard
     <gage._internal.types.OpDefExec ...>
 
-    >>> train.get_exec().get_copy_sourcecode()
+    >>> train.get_exec().get_init_sourcecode()
     'cp * $run_dir'
 
-    >>> train.get_exec().get_copy_deps()
+    >>> train.get_exec().get_init_deps()
     ''
 
     >>> train.get_exec().get_init_runtime()
@@ -99,7 +99,7 @@ Exec commands must be either strings or arrays of strings.
     ...
     The instance must be of type "string"
     The instance must be of type "array"
-    Properties ['copy-deps', 'init-runtime', 'run'] are invalid
+    Properties ['init-deps', 'init-runtime', 'run'] are invalid
     ...
     The instance must be of type "string"
     [0]

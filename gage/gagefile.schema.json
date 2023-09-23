@@ -107,13 +107,13 @@
               "title": "Full exec spec",
               "additionalProperties": false,
               "properties": {
-                "copy-sourcecode": {
-                  "$ref": "#/$defs/exec-cmd"
-                },
-                "copy-deps": {
+                "init-sourcecode": {
                   "$ref": "#/$defs/exec-cmd"
                 },
                 "init-runtime": {
+                  "$ref": "#/$defs/exec-cmd"
+                },
+                "init-deps": {
                   "$ref": "#/$defs/exec-cmd"
                 },
                 "run": {
