@@ -56,14 +56,14 @@ Validate `hello` example.
 
     >>> use_example("hello")
 
-    >>> run("gage check gage.json")
-    gage.json is a valid Gage file
+    >>> run("gage check gage.toml")
+    gage.toml is a valid Gage file
     <0>
 
 If a directory is specified, `check` looks for a Gage file.
 
     >>> run("gage check .")
-    ./gage.json is a valid Gage file
+    ./gage.toml is a valid Gage file
     <0>
 
 If a specified path doesn't exist, `check` exits with an error.

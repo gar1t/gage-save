@@ -9,13 +9,11 @@ possible Gage project.
 - No language-specific features
 - No parameter bindings
 
-    >>> cat("gage.json")
-    {
-      "hello": {
-        "description": "Say hello to my friend",
-        "exec": ["python", "-c", "print('Hello Gage!')"]
-      }
-    }
+    >>> cat("gage.toml")
+    [hello]
+    ⤶
+    description = "Say hello to my friend"
+    exec = "python -c print('Hello Gage!')"
 
 List operations.
 
