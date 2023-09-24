@@ -74,7 +74,7 @@ exec = "python train.py"
 - Implement runs list using `.meta`
 - Implement `stage_run` function
   - Copy source code to `.run` + update manifest
-  - Resolve deps + update manifest
+  - Resolve dependencies + update manifest
 - Implement `start_run`
   - Start process
   - Launch output summaries

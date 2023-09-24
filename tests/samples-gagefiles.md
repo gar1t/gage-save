@@ -76,7 +76,7 @@ various stages of a run lifecycle.
     >>> train.get_exec().get_stage_sourcecode()
     'cp * $run_dir'
 
-    >>> train.get_exec().get_stage_deps()
+    >>> train.get_exec().get_stage_dependencies()
     ''
 
     >>> train.get_exec().get_stage_runtime()
@@ -99,7 +99,7 @@ Exec commands must be either strings or arrays of strings.
     ...
     The instance must be of type "string"
     The instance must be of type "array"
-    Properties ['stage-deps', 'stage-runtime', 'run'] are invalid
+    Properties ['stage-dependencies', 'stage-runtime', 'run'] are invalid
     ...
     The instance must be of type "string"
     [0]
@@ -115,8 +115,8 @@ assumption that dependencies are not modified by a run. In cases where a
 resolved dependency must be written, the dependency may specify
 `writeable` as a boolean or as an array of paths.
 
-    >>> run("gage check writeable-deps.json")  # +skip - deps pending
-    writeable-deps.json is a valid Gage file
+    >>> run("gage check writeable-dependencies.json")  # +skip - dependencies pending
+    writeable-dependencies.json is a valid Gage file
     <0>
 
 ## Missing required keys

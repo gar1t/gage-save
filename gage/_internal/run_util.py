@@ -43,7 +43,7 @@ __all__ = [
     "run_meta_path",
     "run_status",
     "run_timestamp",
-    "stage_deps",
+    "stage_dependencies",
     "stage_run",
     "stage_runtime",
     "stage_sourcecode",
@@ -54,26 +54,6 @@ META_SCHEMA = "1"
 
 __last_ts = None
 __last_ts_lock = threading.Lock()
-
-# =================================================================
-# Runner log
-# =================================================================
-
-
-def _runner_log(run: Run):
-    filename = _runner_log_filename(run)
-    filename_parent = os.path.dirname(filename)
-    assert os.path.exists(filename_parent), filename_parent
-    log = logging.Logger("runner")
-    handler = logging.FileHandler(filename)
-    log.addHandler(handler)
-    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
-    handler.setFormatter(formatter)
-    return log
-
-
-def _runner_log_filename(run: Run):
-    return run_meta_path(run, "log", "runner")
 
 
 # =================================================================
@@ -108,6 +88,28 @@ def run_attr(run: Run, name: str):
         return getattr(run, name)
     except AttributeError:
         assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
+
+
+# =================================================================
+# Meta API
+# =================================================================
+
+
+def meta_opref(run: Run) -> OpRef:
+    with open(run_meta_path(run, "opref")) as f:
+        return decode_opref(f.read())
+
+
+def meta_opdef(run: Run) -> OpDef:
+    opref = meta_opref(run)
+    with open(run_meta_path(run, "opdef.json")) as f:
+        data = json.load(f)
+    return OpDef(opref.get_full_name(), data)
+
+
+def meta_config(run: Run) -> RunConfig:
+    with open(run_meta_path(run, "config.json")) as f:
+        return json.load(f)
 
 
 # =================================================================
@@ -159,7 +161,7 @@ def run_timestamp():
 
 
 # =================================================================
-# Meta dir init
+# Meta init
 # =================================================================
 
 
@@ -295,28 +297,6 @@ def _write_initialized_timestamp(meta_dir: str, log: Logger):
 
 
 # =================================================================
-# Meta API
-# =================================================================
-
-
-def meta_opref(run: Run) -> OpRef:
-    with open(run_meta_path(run, "opref")) as f:
-        return decode_opref(f.read())
-
-
-def meta_opdef(run: Run) -> OpDef:
-    opref = meta_opref(run)
-    with open(run_meta_path(run, "opdef.json")) as f:
-        data = json.load(f)
-    return OpDef(opref.get_full_name(), data)
-
-
-def meta_config(run: Run) -> RunConfig:
-    with open(run_meta_path(run, "config.json")) as f:
-        return json.load(f)
-
-
-# =================================================================
 # Stage run
 # =================================================================
 
@@ -325,7 +305,7 @@ def stage_run(run: Run, project_dir: str):
     stage_sourcecode(run, project_dir)
     apply_config(run)
     stage_runtime(run, project_dir)
-    stage_deps(run, project_dir)
+    stage_dependencies(run, project_dir)
     finalize_staged_run(run)
 
 
@@ -387,32 +367,34 @@ def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
         )
 
 
-def stage_deps(run: Run, project_dir: str):
+def stage_dependencies(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _copy_deps_patterns(run, project_dir, opdef, log)
-    _copy_deps_exec(run, project_dir, opdef, log)
+    _resolve_dependencies(run, project_dir, opdef, log)
+    _stage_dependencies_hook(run, project_dir, opdef, log)
     _apply_log_files(run, "d")
 
 
-def _copy_deps_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    pass
+def _resolve_dependencies(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    for dep in opdef.get_dependencies():
+        pass
+
     # TODO
-    # deps = run_deps.init(project_dir, opdef)
-    # log.info(f"Copying dependencies (see log/files for details): {deps.patterns}")
-    # copy_files(project_dir, run.run_dir, deps.paths)
+    # dependencies = run_dependencies.init(project_dir, opdef)
+    # log.info(f"Copying dependencies (see log/files for details): {dependencies.patterns}")
+    # copy_files(project_dir, run.run_dir, dependencies.paths)
 
 
-def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_stage_deps()
+def _stage_dependencies_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_stage_dependencies()
     if exec:
         _run_phase_exec(
             run,
-            "stage-deps",
+            "stage-dependencies",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),
-            "30_deps",
+            "30_dependencies",
             log,
         )
 
@@ -452,13 +434,42 @@ def _reduce_files_log(run: Run):
 
 
 # =================================================================
+# Run
+# =================================================================
+
+
+def start_run(run: Run):
+    cmd = "xxx" # meta_cmd(run)
+    assert False, f"TODO start run with {cmd}"
+
+
+def finalize_run(run: Run, exit_status: int):
+    assert False, "TODO run finalize-run hook, make files readonly, finalize manifest"
+
+
+# =================================================================
 # Utils
 # =================================================================
 
 LoggedFileEvent = Literal["a", "d", "m"]
 LoggedFileType = Literal["s", "d", "r"]
-
 RunFileType = Literal["s", "d", "r", "g"]
+
+
+def _runner_log(run: Run):
+    filename = _runner_log_filename(run)
+    filename_parent = os.path.dirname(filename)
+    assert os.path.exists(filename_parent), filename_parent
+    log = logging.Logger("runner")
+    handler = logging.FileHandler(filename)
+    log.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
+    handler.setFormatter(formatter)
+    return log
+
+
+def _runner_log_filename(run: Run):
+    return run_meta_path(run, "log", "runner")
 
 
 def _run_meta_schema(run: Run):

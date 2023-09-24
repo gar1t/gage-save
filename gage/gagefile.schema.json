@@ -191,7 +191,7 @@
                 "stage-runtime": {
                   "$ref": "#/$defs/exec-cmd"
                 },
-                "stage-deps": {
+                "stage-dependencies": {
                   "$ref": "#/$defs/exec-cmd"
                 },
                 "run": {

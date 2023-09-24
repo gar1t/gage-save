@@ -152,8 +152,8 @@ validate this.
 When `exec` an object, it may have any of the following properties:
 
 - `stage-sourcecode`
-- `stage-deps`
-- `resolve-deps`
+- `stage-dependencies`
+- `resolve-dependencies`
 - `stage-runtime`
 - `run`
 - `finalize-run`
@@ -197,7 +197,7 @@ for a run.
 
     >>> validate_opdef({"exec": {
     ...     "stage-sourcecode": "cp *.py $run_dir",
-    ...     "stage-deps": "cp *.data $run_dir",
+    ...     "stage-dependencies": "cp *.data $run_dir",
     ...     "stage-runtime": "virtualenv .venv",
     ...     "run": "python train.py",
     ...     "finalize-run": "rm *.temp"

@@ -55,8 +55,8 @@ class OpDefExec:
     def get_stage_sourcecode(self) -> str | None:
         return self._data.get("stage-sourcecode")
 
-    def get_stage_deps(self) -> str | None:
-        return self._data.get("stage-deps")
+    def get_stage_dependencies(self) -> str | None:
+        return self._data.get("stage-dependencies")
 
     def get_stage_runtime(self) -> str | None:
         return self._data.get("stage-runtime")
@@ -82,6 +82,21 @@ class OpDefConfig:
         if isinstance(val, str):
             return [val]
         return val
+
+
+class OpDefDependency:
+    def __init__(self, data: Data):
+        self._data = data
+
+    def get_type(self):
+        type = self._data.get("type")
+        if type:
+            return type
+        if self._data.get("run-select"):
+            return "run-files"
+        if self._data.get("files"):
+            return "project-files"
+        return ""
 
 
 class OpDef:
@@ -130,6 +145,15 @@ class OpDef:
         elif isinstance(val, dict):
             val = [val]
         return [OpDefConfig(item) for item in val]
+
+    def get_dependencies(self) -> list[OpDefDependency]:
+        val = self._data.get("depends")
+        if val is None:
+            val = []
+        elif isinstance(val, dict):
+            val = [val]
+        return [OpDefDependency(item) for item in val]
+
 
 
 class GageFile:

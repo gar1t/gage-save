@@ -180,14 +180,14 @@ The list of source code files in `log/files` reflects the creation of
     s 5cc1441b4902cd35921288754e412e0eb949d44d81e4e0fcb281a913a7c3e820 config.json
     s e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 train.py
 
-## Copy deps
+## Copy dependencies
 
 Like source code, dependencies are resolved at two levels:
 
 - Copy files matching `requires` path patterns
-- Run `stage-deps` exec if specified
+- Run `stage-dependencies` exec if specified
 
-`requires` support is pending. We show how `stage-deps` is used to copy
+`requires` support is pending. We show how `stage-dependencies` is used to copy
 dependencies from a project directory to a run directory.
 
 Create a project structure.
@@ -213,40 +213,40 @@ Create a new run.
 
     >>> run = make_run(runs_root)
 
-The op def specifies `train.py` as source code and uses `stage-deps` to
+The op def specifies `train.py` as source code and uses `stage-dependencies` to
 run `setup.py` to generate `data.json`.
 
     >>> opdef = OpDef("test", {
     ...     "sourcecode": "train.py",
     ...     "exec": {
-    ...         "stage-deps": ["python", "setup.py", "456"]
+    ...         "stage-dependencies": ["python", "setup.py", "456"]
     ...     }
     ... })
 
     >>> init_run_meta(run, OpRef("test", "test"), opdef, {}, OpCmd([], {}))
 
-Use `stage_deps()` to run the copy deps exec command.
+Use `stage_dependencies()` to run the copy dependencies exec command.
 
-    >>> stage_deps(run, project_dir)
+    >>> stage_dependencies(run, project_dir)
 
-The runner log shows copy deps info.
+The runner log shows copy dependencies info.
 
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard
     Writing meta id
     ...
-    Running stage-deps (see output/30_deps for output): ['python', 'setup.py', '456']
-    Exit code for stage-deps: 0
+    Running stage-dependencies (see output/30_dependencies for output): ['python', 'setup.py', '456']
+    Exit code for stage-dependencies: 0
 
-Output for the copy command is in `output/30_deps`.
+Output for the copy command is in `output/30_dependencies`.
 
     >>> ls(run_meta_dir(run))  # +wildcard
     __schema__
     ...
-    output/30_deps
-    output/30_deps.index
+    output/30_dependencies
+    output/30_dependencies.index
     ...
 
-    >>> cat(run_meta_path(run, "output", "30_deps"))
+    >>> cat(run_meta_path(run, "output", "30_dependencies"))
     Creating data.json with x = 456
 
 Files logged:
@@ -261,7 +261,7 @@ List the run files.
     >>> ls(run.run_dir)
     data.json
 
-Note that source code is not copied - we only called `stage_deps()` up to
+Note that source code is not copied - we only called `stage_dependencies()` up to
 this point. To copy source code, use `stage_sourcecode()`.
 
     >>> stage_sourcecode(run, project_dir)

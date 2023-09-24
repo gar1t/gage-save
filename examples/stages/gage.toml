@@ -2,9 +2,9 @@
 
 description = "Shows "
 
-exec.sourcecode = "cp train.py $run_dir"
-exec.deps       = "cp data.txt $run_dir"
-exec.run        = "python -m train"
+exec.stage-sourcecode    = "cp train.py $run_dir"
+exec.stage-dependencies  = "cp data.txt $run_dir"
+exec.run                 = "python -m train"
 
 [implicit]
 
@@ -28,7 +28,7 @@ virtualenv .venv
 .venv/bin/pip install .
 """
 
-stage-deps = """
+stage-dependencies = """
 dvc pull
 cp data.txt $run_dir
 """

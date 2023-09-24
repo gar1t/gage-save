@@ -112,7 +112,7 @@ Each phase is implemented by a function in `run_util`:
 - `stage_sourcecode`
 - `apply_config`
 - `stage_runtime`
-- `resolve_deps`
+- `resolve_dependencies`
 - `finalize_staged_run`
 
 Each of these functions is called by `run_util.stage_run()` to stage a
@@ -308,7 +308,7 @@ The runner log records the command and its exit code.
 
 ## Resolve dependencies
 
-TODO: `resolve_deps()`
+TODO: `resolve_dependencies()`
 
 ## Finalize staged run
 
