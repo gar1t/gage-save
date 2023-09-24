@@ -6,7 +6,7 @@
 - Drop Click
 - Add `__all__` to all modules
 
-## Resolve early
+## General
 
 - Do tags, label, and comments from the `run` command land in the meta
   dir or in user? I suspect in meta under `./user` but want to sanity
@@ -18,21 +18,6 @@
 
 - How to re-associate runs with their project? Do we ask users to
   generate a unique ID for the project?
-
-- Make sure we're using the new uuid formats (with dashes)
-
-- Gagefile validation messages *suck* (see `lib-gagefile.md` tests) -
-  must clean up before shipping to anyone. These are being passed
-  through from the jschon library. Need to work with the low level error
-  and create intelligible reports (current reports mangle sub-schema
-  errors into a unqualified list and are nearly pointless)
-
-- How to handle invalid Gage file content? It's temping to add this to
-  `types.py` but it's maybe not great there. Types is a light weight
-  data-to-py mapper. Right now it's not handling type validation at all
-  -- it coerces lightly and let's bad data through. I think a validation
-  error is in order but we should load and use as much as we can and not
-  blow up at the slightest problem. For now bad data leaks.
 
 ``` toml
 "$namespace" = "my-project"
@@ -52,6 +37,21 @@ exec = "python train.py"
 }
 ```
 
+- Make sure we're using the new uuid formats (with dashes)
+
+- Gagefile validation messages *suck* (see `lib-gagefile.md` tests) -
+  must clean up before shipping to anyone. These are being passed
+  through from the jschon library. Need to work with the low level error
+  and create intelligible reports (current reports mangle sub-schema
+  errors into a unqualified list and are nearly pointless)
+
+- How to handle invalid Gage file content? It's temping to add this to
+  `types.py` but it's maybe not great there. Types is a light weight
+  data-to-py mapper. Right now it's not handling type validation at all
+  -- it coerces lightly and let's bad data through. I think a validation
+  error is in order but we should load and use as much as we can and not
+  blow up at the slightest problem. For now bad data leaks.
+
 ## Low priority
 
 - Fix plain table printing and matching with Groktest (look for `-space`
@@ -62,6 +62,9 @@ exec = "python train.py"
 
 - Gage file comments for JSON can't be inline - find a parser or get the
   comment stripping right
+
+- Source code preview should show the source code stage command if
+  specified.
 
 ## Run layout
 

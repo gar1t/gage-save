@@ -281,6 +281,7 @@ def run(
     timeout: int = 3600,
     cwd: Optional[str] = None,
     env: Optional[Env] = None,
+    rstrip: bool = True,
     _capture: bool = False,
 ):
     proc_env = dict(os.environ)
@@ -298,16 +299,16 @@ def run(
             raise
         else:
             assert err is None, err
-            exit_code = p.returncode
+            exit_code = cast(int, p.returncode)
     if quiet and exit_code == 0:
         return None
     out = out.strip().decode("latin-1")
+    if rstrip:
+        out = _rstrip_lines(out)
     if ignore:
         out = _strip_lines(out, ignore)
     if _capture:
-        if exit_code != 0:
-            assert False, "TODO - raise a meaningful error"
-        return out
+        return exit_code, out
     if out:
         print(out)
     print(f"<{exit_code}>")
@@ -387,6 +388,10 @@ class _kill_after:
 
     def __exit__(self, *exc: Any):
         self._timer.cancel()
+
+
+def _rstrip_lines(out: str):
+    return "\n".join([line.rstrip() for line in out.split("\n")])
 
 
 def _strip_lines(out: str, patterns: str | list[str]):

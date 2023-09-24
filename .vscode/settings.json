@@ -116,6 +116,7 @@
     "psutil",
     "pwsh",
     "pycache",
+    "pyfiles",
     "rcetps",
     "readlines",
     "relpath",
