@@ -3,9 +3,15 @@
 Next up:
 
 - Basic run command support (`run <op>`)
+- Rich progress and run output
+
+- Runs list
+
 - Scan output for scalars and attrs - save in run dir root with special
   extensions (e.g. *.attrs - same as with Guild)
 - Roll up tf event summaries with `metrics.json` and `attrs.json`
+
+- API and View
 
 ## CLI factor
 
