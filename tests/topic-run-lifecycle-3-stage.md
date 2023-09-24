@@ -41,7 +41,7 @@ Create the op def.
     >>> opdef = OpDef(
     ...     "test",
     ...     {
-    ...         "config": {"path": "train.py"},
+    ...         "config": {"keys": "train.py"},
     ...     })
 
 With this, the run is configured with the following:
@@ -208,7 +208,7 @@ The op def:
     >>> cat(run_meta_path(run, "opdef.json"))
     {
       "config": {
-        "path": "train.py"
+        "keys": "train.py"
       }
     }
 

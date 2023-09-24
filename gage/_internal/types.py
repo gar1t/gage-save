@@ -72,18 +72,16 @@ class OpDefConfig:
     def __init__(self, data: Data):
         self._data = data
 
-    def get_name(self) -> str | None:
-        return self._data.get("name")
-
     def get_description(self) -> str | None:
         return self._data.get("description")
 
-    def get_paths(self) -> list[str]:
-        # Expect path or paths
-        try:
-            return [self._data["path"]]
-        except KeyError:
-            return self._data.get("paths") or []
+    def get_keys(self) -> list[str]:
+        val = self._data.get("keys")
+        if val is None:
+            return []
+        if isinstance(val, str):
+            return [val]
+        return val
 
 
 class OpDef:
@@ -121,7 +119,9 @@ class OpDef:
         val = self._data.get("sourcecode")
         if val in (True, False, None):
             return val
-        return _path_patterns(val)
+        if isinstance(val, str):
+            return [val]
+        return val
 
     def get_config(self) -> list[OpDefConfig]:
         val = self._data.get("config")
@@ -130,14 +130,6 @@ class OpDef:
         elif isinstance(val, dict):
             val = [val]
         return [OpDefConfig(item) for item in val]
-
-
-def _path_patterns(data: Any) -> list[str]:
-    if data is None:
-        data = []
-    elif isinstance(data, str):
-        data = [data]
-    return data
 
 
 class GageFile:

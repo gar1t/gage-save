@@ -35,7 +35,7 @@ def read_config(src_dir: str):
 def apply_config(config: RunConfig, opdef: OpDef, dest_dir: str):
     applied: list[tuple[str, UnifiedDiff]] = []
     for opdef_config in opdef.get_config():
-        parsed_paths = _parse_paths(opdef_config.get_paths())
+        parsed_paths = _parse_paths(opdef_config.get_keys())
         files_config = _selected_files_config(dest_dir, parsed_paths)
         keys = _select_keys(dest_dir, files_config, parsed_paths)
         for path, file_config in files_config:

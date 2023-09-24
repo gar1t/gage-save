@@ -52,6 +52,8 @@ exec = "python train.py"
   error is in order but we should load and use as much as we can and not
   blow up at the slightest problem. For now bad data leaks.
 
+- Integrate time range spec into filter spec
+
 ## Low priority
 
 - Fix plain table printing and matching with Groktest (look for `-space`
@@ -101,6 +103,20 @@ to do. Otherwise we assume it's a project.
 ## Dependencies
 
 Sample:
+
+```toml
+[[a.config]]
+
+type = "run-files"
+run-select = "op in [prepare-data, prepare]"
+files = "data.csv"
+
+[[b.config]]
+
+type = "run-files"
+operation = "prepare-data"
+
+```
 
 ```json
 [

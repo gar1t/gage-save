@@ -101,6 +101,7 @@
     "nocopy",
     "normlf",
     "nowarn",
+    "omegaconf",
     "opdef",
     "oplib",
     "opref",

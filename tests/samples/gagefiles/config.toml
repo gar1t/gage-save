@@ -10,7 +10,7 @@ include = [
 
 [[train.config]]
 
-path = "config.json"
+keys = "config.json"
 
 [[train.config.bind]]
 

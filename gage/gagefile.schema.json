@@ -27,21 +27,36 @@
         }
       ]
     },
-    "path-pattern": {
-      "type": "string",
-      "title": "Path pattern",
-      "minLength": 1
-    },
-    "path-patterns": {
+    "files-pattern": {
+      "title": "Files pattern",
       "oneOf": [
         {
-          "$ref": "#/$defs/path-pattern"
+          "type": "string",
+          "minLength": 1
         },
         {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/path-pattern"
+            "type": "string",
+            "minLength": 1
           }
+        }
+      ]
+    },
+    "keys-pattern": {
+      "title": "Keys pattern",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
         }
       ]
     },
@@ -49,35 +64,23 @@
       "type": "object",
       "title": "Run configuration",
       "additionalProperties": false,
-      "anyOf": [{ "required": ["path"] }, { "required": ["paths"] }],
-      "allOf": [
-        {
-          "not": {
-            "required": ["path", "paths"]
-          }
-        }
-      ],
+      "required": ["keys"],
       "properties": {
-        "name": {
-          "type": "string",
-          "title": "Configuration name or name pattern"
-        },
         "description": {
           "type": "string",
           "title": "Configuration description"
         },
-        "path": {
-          "$ref": "#/$defs/path-pattern",
-          "title": "Configuration path",
-          "minLength": 1
+        "prefix": {
+          "type": "string",
+          "title": "Prefix to apply to keys"
         },
-        "paths": {
-          "type": "array",
-          "title": "Configuration paths",
-          "items": {
-            "$ref": "#/$defs/path-pattern"
-          },
-          "minLength": 1
+        "strip-prefix": {
+          "type": "string",
+          "title": "Prefix to remove from keys"
+        },
+        "keys": {
+          "$ref": "#/$defs/keys-pattern",
+          "title": "Configuration keys"
         }
       }
     }
@@ -130,7 +133,7 @@
           "title": "Operation source code",
           "oneOf": [
             {
-              "$ref": "#/$defs/path-patterns"
+              "$ref": "#/$defs/files-pattern"
             },
             {
               "type": "boolean"
@@ -141,8 +144,8 @@
           "title": "Operation configuration",
           "oneOf": [
             {
-              "title": "Operation config paths",
-              "$ref": "#/$defs/path-patterns"
+              "title": "Operation config keys",
+              "$ref": "#/$defs/keys-pattern"
             },
             {
               "$ref": "#/$defs/config"

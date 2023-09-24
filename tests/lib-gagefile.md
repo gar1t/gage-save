@@ -303,58 +303,55 @@ Strings must be non-empty.
     The text is too short (minimum 1 characters)
     ...
 
-Objects must provide either `path` or `paths` properties.
+Objects must define `keys`.
 
     >>> validate_opdef({"config": {}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['path']
-    The object is missing required properties ['paths']
+    The object is missing required properties ['keys']
     ...
 
+`keys` may be a string or a list of strings. String values must be
+non-empty. Lists must be non-empty.
 
-
-`path` (single string) and `paths` (list of strings) follow the same
-length requirements.
-
-    >>> validate_opdef({"config": {"path": ""}})  # +wildcard
+    >>> validate_opdef({"config": {"keys": ""}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    Properties ['path'] are invalid
+    Properties ['keys'] are invalid
+    ...
     The text is too short (minimum 1 characters)
     ...
 
-    >>> validate_opdef({"config": {"paths": ["foo", ""]}})  # +wildcard
+    >>> validate_opdef({"config": {"keys": []}})  # +wildcard
     Properties ['test'] are invalid
     Properties ['config'] are invalid
     ...
-    Properties ['paths'] are invalid
-    [1]
+    Properties ['keys'] are invalid
+    ...
+    The array has too few elements (minimum 1)
+    ...
+
+    >>> validate_opdef({"config": {"keys": ["foo", ""]}})  # +wildcard
+    Properties ['test'] are invalid
+    Properties ['config'] are invalid
+    ...
+    Properties ['keys'] are invalid
+    ...
     The text is too short (minimum 1 characters)
     ...
 
-`path` and `paths` cannot both be specified.
+Config objects may specify `prefix`, `strip-prefix` and `description` properties.
 
     >>> validate_opdef({"config": {
-    ...     "path": "foo",
-    ...     "paths": ["bar"]
-    ... }})  # +wildcard
-    Properties ['test'] are invalid
-    Properties ['config'] are invalid
-    ...
-    The instance must not be valid against the subschema
-    ...
-
-TODO The above error message is impossible to get useful information
-from.
-
-Config objects may specify `name` and `description` properties.
-
-    >>> validate_opdef({"config": {
-    ...     "name": "x",
+    ...     "prefix": "train_x",
+    ...     "strip-prefix": "x",
     ...     "description": "Some var x",
-    ...     "path": "train.py#x"
+    ...     "keys": "train.py#x"
     ... }})  # +wildcard
     ok
+
+TODO: prefix/strip-prefix in the above example wants to be `rename`.
+E.g. `rename = "x train_x"` where `rename` is a string or list of
+strings (each string applying a rename rule to the associated keys).

@@ -33,8 +33,6 @@ __all__ = [
     "META_SCHEMA",
     "RunManifest",
     "apply_config",
-    "stage_deps",
-    "stage_sourcecode",
     "finalize_staged_run",
     "init_run_meta",
     "make_run",
@@ -45,7 +43,9 @@ __all__ = [
     "run_meta_path",
     "run_status",
     "run_timestamp",
+    "stage_deps",
     "stage_run",
+    "stage_sourcecode",
     "unique_run_id",
 ]
 

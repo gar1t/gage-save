@@ -119,17 +119,16 @@ resolved dependency must be written, the dependency may specify
     writeable-deps.json is a valid Gage file
     <0>
 
-## Missing required config path
+## Missing required keys
 
-When specifying a binding, `path` or `paths` is required.
+`keys` is required.
 
     >>> run("gage check empty-config.json")  # +wildcard
     ERROR: empty-config.json has problems
     Properties ['train'] are invalid
     Properties ['config'] are invalid
     ...
-    The object is missing required properties ['path']
-    The object is missing required properties ['paths']
+    The object is missing required properties ['keys']
     ...
     <1>
 

@@ -11,15 +11,15 @@ exec = "python train.py"
 
 [train.config]
 
-include = "train.py"   # shorthand for train.py#*
+keys = "train.py"   # shorthand for train.py#*
 ```
 
-Multiple includes:
+Multiple explicit keys:
 
 ``` toml
 [train.config]
 
-include = [
+keys = [
     "train.py#x",
     "train.py#y"
 ]
@@ -30,9 +30,9 @@ Wildcard include with specific excludes.
 ``` toml
 [train.config]
 
-include = "train.py#*"
-exclude = [
-    "train.py#x"
+keys = [
+  "train.py#*",
+  "-train.py#x"
 ]
 ```
 
@@ -40,9 +40,9 @@ Include a ton of config - all keys in all files ending in `.yaml`. This
 is how a scheme like Hydra is supported.
 
 ``` toml
-[train.config]
+[train]
 
-include = "conf/**/*.yaml#**.*"
+config = "conf/**/*.yaml#**.*"
 ```
 
 Specific path - can be annotated with description, type, etc:
@@ -50,33 +50,31 @@ Specific path - can be annotated with description, type, etc:
 ``` toml
 [[train.config]]
 
-path = "train.py#x"       # required when name is specified
-description = "Some var x"  # optional
-type = "int"                # optional, inferred by value
+description = "Some var x"   # optional
+
+keys = "train.py#x"          # required when name is specified
+type = "int"                 # optional, inferred by value
 ```
 
-Renamed path:
+Renamed single key:
 
 ``` toml
 [[train.config]]
 
-name = "train.x"
-path = "train.py#x"
+prefix = "train."
+keys = "train.py#x"
 description = "Some var x"
 type = "int"
 ```
 
-Renamed includes:
+Renamed multiple keys:
 
 ``` toml
 [[train.config]]
 
-name = "train.{}"
+prefix = "train."
 include = "train.py#*"
 ```
-
-In this case, `name` can only be specified with `{}`, which is a
-reference to the matched value name.
 
 ## `config` command
 

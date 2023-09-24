@@ -448,13 +448,13 @@ Create a function that copies `target_dir` and applies config to its
 files according to opdef config paths. It prints the diffs of applied
 config.
 
-    >>> def apply(config, paths):
+    >>> def apply(config, keys):
     ...     from gage._internal.types import OpDef
     ...     copy_dir = make_temp_dir()
     ...     copytree(target_dir, copy_dir)
     ...     opdef = OpDef("test", {
     ...         "config": {
-    ...             "paths": paths
+    ...             "keys": keys
     ...         }
     ...     })
     ...     diffs = apply_config(config, opdef, copy_dir)
