@@ -86,27 +86,33 @@ sourcecode = [
   "-data.*"
 ]
 
-# [[i.depends]]
+[[i.depends]]
 
-# files = [
-#   "data.txt",
-#   "data.csv"
-# ]
+files = [
+  "data.txt",
+  "data.csv"
+]
 
-# [[i.depends]]
+[[i.depends]]
 
-# type = "project-files"  # default
-# files = "very-big-data.tar.gz"
-# link = true
+type = "project-files"  # default
+files = "very-big-data.tar.gz"
+link = true
 
-# [[i.depends]]
+[[i.depends]]
 
-# type = "run-files"  # implied if run-select specified
-# run-select = "op = prepare"
-# files = "*.h5"
+run-select = "op = prepare"  # Implies type = "run-files"
+files = "*.h5"
 
-# [[i.depends]]
+[[i.depends]]
 
-# description = "Runs for a summary operation"
-# type = "runs"
-# run-select = "op = preview and started after 30 days ago"
+type = "run-files"
+description = "Generated files from latest train or train2 run"
+run-select = "op in [train, train2]"
+
+[[i.depends]]
+
+type = "runs-summary"
+description = "Runs for a summary operation"
+runs-select = "op = preview and started after 30 days ago"
+summary-filename = "runs.json"

@@ -83,6 +83,81 @@
           "title": "Configuration keys"
         }
       }
+    },
+    "depends": {
+      "type": "object",
+      "title": "Dependency",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Project files dependency",
+          "additionalProperties": false,
+          "required": ["files"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["project-files"]
+            },
+            "description": {
+              "title": "Dependency description",
+              "type": "string"
+            },
+            "files": {
+              "$ref": "#/$defs/files-pattern"
+            },
+            "link": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Run files dependency",
+          "additionalProperties": false,
+          "required": ["run-select"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["run-files"]
+            },
+            "description": {
+              "title": "Dependency description",
+              "type": "string"
+            },
+            "run-select": {
+              "type": "string",
+              "title": "Run select criteria"
+            },
+            "files": {
+              "$ref": "#/$defs/files-pattern"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Runs summary dependency",
+          "additionalProperties": false,
+          "required": ["type", "runs-select"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["runs-summary"]
+            },
+            "description": {
+              "title": "Dependency description",
+              "type": "string"
+            },
+            "runs-select": {
+              "type": "string",
+              "title": "Runs select criteria"
+            },
+            "summary-filename": {
+              "type": "string",
+              "title": "Summary file name"
+            }
+          }
+        }
+      ]
     }
   },
   "type": "object",
@@ -154,6 +229,20 @@
               "type": "array",
               "items": {
                 "$ref": "#/$defs/config"
+              }
+            }
+          ]
+        },
+        "depends": {
+          "title": "Operation dependencies",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/depends"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/depends"
               }
             }
           ]

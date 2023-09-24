@@ -73,13 +73,13 @@ various stages of a run lifecycle.
     >>> train.get_exec()  # +wildcard
     <gage._internal.types.OpDefExec ...>
 
-    >>> train.get_exec().get_init_sourcecode()
+    >>> train.get_exec().get_stage_sourcecode()
     'cp * $run_dir'
 
-    >>> train.get_exec().get_init_deps()
+    >>> train.get_exec().get_stage_deps()
     ''
 
-    >>> train.get_exec().get_init_runtime()
+    >>> train.get_exec().get_stage_runtime()
     ['python', '-m', 'venv']
 
     >>> train.get_exec().get_run()
@@ -129,6 +129,19 @@ resolved dependency must be written, the dependency may specify
     Properties ['config'] are invalid
     ...
     The object is missing required properties ['keys']
+    ...
+    <1>
+
+## Empty config
+
+At a minimum, `files` is required for `depends`.
+
+    >>> run("gage check empty-depends.json")  # +wildcard
+    ERROR: empty-depends.json has problems
+    Properties ['a'] are invalid
+    Properties ['depends'] are invalid
+    ...
+    The object is missing required properties ['files']
     ...
     <1>
 
