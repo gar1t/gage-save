@@ -81,7 +81,6 @@ List the generated files.
     id
     initialized
     log/runner
-    name
     opdef.json
     opref
     proc/cmd
@@ -387,7 +386,6 @@ List meta runs.
     log/patched
     log/runner
     manifest
-    name
     opdef.json
     opref
     output/10_sourcecode

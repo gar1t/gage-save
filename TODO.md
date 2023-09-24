@@ -1,5 +1,12 @@
 # Gage To Do
 
+Next up:
+
+- Basic run command support (`run <op>`)
+- Scan output for scalars and attrs - save in run dir root with special
+  extensions (e.g. *.attrs - same as with Guild)
+- Roll up tf event summaries with `metrics.json` and `attrs.json`
+
 ## CLI factor
 
 - Get -H and -C core opts working again

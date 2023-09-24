@@ -93,7 +93,6 @@ Gage creates the following files:
     -r--r--r-- initialized
     drwxrwxr-x log
     -rw-rw-r-- log/runner
-    -r--r--r-- name
     -r--r--r-- opdef.json
     -r--r--r-- opref
     drwxrwxr-x proc
@@ -190,7 +189,6 @@ The log contains a record of the changes made during init.
 
     >>> cat_log(logfile)  # +diff
     Writing meta id
-    Writing meta name
     Writing meta opdef.json
     Writing meta config.json
     Writing meta proc/cmd

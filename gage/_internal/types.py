@@ -142,6 +142,8 @@ class OpDef:
         val = self._data.get("config")
         if val is None:
             val = []
+        elif isinstance(val, str):
+            val = [{"keys": val}]
         elif isinstance(val, dict):
             val = [val]
         return [OpDefConfig(item) for item in val]

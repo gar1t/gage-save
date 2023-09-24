@@ -37,6 +37,7 @@ __all__ = [
     "init_run_meta",
     "make_run",
     "meta_opdef",
+    "open_run_output",
     "run_attr",
     "run_attrs",
     "run_meta_dir",
@@ -47,6 +48,7 @@ __all__ = [
     "stage_run",
     "stage_runtime",
     "stage_sourcecode",
+    "start_run",
     "unique_run_id",
 ]
 
@@ -110,6 +112,23 @@ def meta_opdef(run: Run) -> OpDef:
 def meta_config(run: Run) -> RunConfig:
     with open(run_meta_path(run, "config.json")) as f:
         return json.load(f)
+
+
+def meta_cmd(run: Run) -> OpCmd:
+    meta_dir = run_meta_dir(run)
+    cmd_filename = os.path.join(meta_dir, "proc", "cmd")
+    env_filename = os.path.join(meta_dir, "proc", "env")
+    return OpCmd(_decode_cmd_args(cmd_filename), _decode_cmd_env(env_filename))
+
+
+def _decode_cmd_args(filename: str):
+    with open(filename) as f:
+        return [line.rstrip() for line in f.readlines()]
+
+
+def _decode_cmd_env(filename: str):
+    with open(filename) as f:
+        return dict([line.rstrip().split("=", 1) for line in f.readlines()])
 
 
 # =================================================================
@@ -183,7 +202,6 @@ def init_run_meta(
     _ensure_meta_log_dir(meta_dir)
     log = _runner_log(run)
     _write_run_id(run, meta_dir, log)
-    _write_run_name(run, meta_dir, log)
     _write_opdef(opdef, meta_dir, log)
     _write_config(config, meta_dir, log)
     _write_cmd_args(cmd, meta_dir, log)
@@ -216,12 +234,6 @@ def _write_run_id(run: Run, meta_dir: str, log: Logger):
     log.info("Writing meta id")
     filename = os.path.join(meta_dir, "id")
     write_file(filename, run.id, readonly=True)
-
-
-def _write_run_name(run: Run, meta_dir: str, log: Logger):
-    log.info("Writing meta name")
-    filename = os.path.join(meta_dir, "name")
-    write_file(filename, run.name, readonly=True)
 
 
 def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
@@ -439,8 +451,23 @@ def _reduce_files_log(run: Run):
 
 
 def start_run(run: Run):
-    cmd = "xxx" # meta_cmd(run)
-    assert False, f"TODO start run with {cmd}"
+    cmd = meta_cmd(run)
+    p = subprocess.Popen(
+        cmd.args,
+        env=cmd.env,
+        cwd=run.run_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return p
+
+
+def open_run_output(run: Run, p: subprocess.Popen[bytes]):
+    output_filename = run_meta_path(run, "output", "40_run")
+    ensure_dir(os.path.dirname(output_filename))
+    output = run_output.RunOutput(output_filename)
+    output.open(p)
+    return output
 
 
 def finalize_run(run: Run, exit_status: int):
