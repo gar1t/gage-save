@@ -53,13 +53,13 @@ class OpDefExec:
         self._data = data
 
     def get_init_sourcecode(self) -> str | None:
-        return self._data.get("init-sourcecode")
+        return self._data.get("stage-sourcecode")
 
     def get_init_deps(self) -> str | None:
-        return self._data.get("init-deps")
+        return self._data.get("stage-deps")
 
     def get_init_runtime(self) -> str | None:
-        return self._data.get("init-runtime")
+        return self._data.get("stage-runtime")
 
     def get_run(self) -> str | None:
         return self._data.get("run")

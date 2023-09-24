@@ -1,9 +1,9 @@
 {
     "train": {
         "exec": {
-            "init-sourcecode": "cp * $run_dir",
-            "init-deps": "",
-            "init-runtime": ["python", "-m", "venv"],
+            "stage-sourcecode": "cp * $run_dir",
+            "stage-deps": "",
+            "stage-runtime": ["python", "-m", "venv"],
             "run": "dir .",
             "finalize-run": ""
         }

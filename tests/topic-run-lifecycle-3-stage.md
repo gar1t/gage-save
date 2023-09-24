@@ -99,9 +99,9 @@ The order of these phases is important:
 
 Each phase is implemented by a function in `run_util`:
 
-- `init_sourcecode`
+- `stage_sourcecode`
 - `apply_config`
-- `init_runtime`
+- `stage_runtime`
 - `resolve_deps`
 - `finalize_staged_run`
 
@@ -115,7 +115,7 @@ runtime files.
 
 ## Copy source code
 
-`init_sourcecode()` requires a source directory and a run. The rules for
+`stage_sourcecode()` requires a source directory and a run. The rules for
 source code copy are defined in the run op def or are applied as
 defaults if rules are not provided.
 
@@ -155,7 +155,7 @@ Confirm the run directory is empty.
 
 Copy the source code to the run directory.
 
-    >>> init_sourcecode(run, sourcecode_dir)
+    >>> stage_sourcecode(run, sourcecode_dir)
 
 Source code files are copied and left in a writeable state.
 
@@ -241,7 +241,7 @@ Changes are logged in run meta under `log/patched`.
 
 ## Init runtime
 
-TODO: `init_runtime()`
+TODO: `stage_runtime()`
 
 ## Resolve dependencies
 

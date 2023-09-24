@@ -33,8 +33,8 @@ __all__ = [
     "META_SCHEMA",
     "RunManifest",
     "apply_config",
-    "init_deps",
-    "init_sourcecode",
+    "stage_deps",
+    "stage_sourcecode",
     "finalize_staged_run",
     "init_run_meta",
     "make_run",
@@ -321,14 +321,14 @@ def meta_config(run: Run) -> RunConfig:
 
 
 def stage_run(run: Run, project_dir: str):
-    init_sourcecode(run, project_dir)
+    stage_sourcecode(run, project_dir)
     apply_config(run)
     initialize_runtime(run, project_dir)
-    init_deps(run, project_dir)
+    stage_deps(run, project_dir)
     finalize_staged_run(run)
 
 
-def init_sourcecode(run: Run, project_dir: str):
+def stage_sourcecode(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     _copy_sourcecode_patterns(run, project_dir, opdef, log)
@@ -347,7 +347,7 @@ def _copy_sourcecode_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger)
     if exec:
         _run_phase_exec(
             run,
-            "init-sourcecode",
+            "stage-sourcecode",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),
@@ -411,7 +411,7 @@ def _init_runtime_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     if exec:
         _run_phase_exec(
             run,
-            "init-runtime",
+            "stage-runtime",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),
@@ -420,7 +420,7 @@ def _init_runtime_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
         )
 
 
-def init_deps(run: Run, project_dir: str):
+def stage_deps(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     _copy_deps_patterns(run, project_dir, opdef, log)
@@ -441,7 +441,7 @@ def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     if exec:
         _run_phase_exec(
             run,
-            "init-deps",
+            "stage-deps",
             exec,
             project_dir,
             _phase_exec_env(run, project_dir),

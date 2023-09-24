@@ -18,17 +18,17 @@ decription = "Use a virtual env for a run"
 
 [virtualenv.exec]
 
-init-sourcecode = """
+stage-sourcecode = """
 cp -r **/*.py $run_dir
 cp pyproject.toml $run_dir
 """
 
-init-runtime = """
+stage-runtime = """
 virtualenv .venv
 .venv/bin/pip install .
 """
 
-init-deps = """
+stage-deps = """
 dvc pull
 cp data.txt $run_dir
 """

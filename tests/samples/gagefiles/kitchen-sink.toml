@@ -32,12 +32,12 @@ description = "Phase-specific exec"
 
 [d.exec]
 
-init-sourcecode = """
+stage-sourcecode = """
 cp -r src $run_dir/src
 cp pyproject.toml $run_dir
 """
 
-init-runtime = """
+stage-runtime = """
 virtualenv venv
 venv/bin/pip install .
 """

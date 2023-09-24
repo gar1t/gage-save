@@ -99,7 +99,7 @@ Exec commands must be either strings or arrays of strings.
     ...
     The instance must be of type "string"
     The instance must be of type "array"
-    Properties ['init-deps', 'init-runtime', 'run'] are invalid
+    Properties ['stage-deps', 'stage-runtime', 'run'] are invalid
     ...
     The instance must be of type "string"
     [0]

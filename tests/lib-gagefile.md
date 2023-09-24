@@ -151,10 +151,10 @@ validate this.
 
 When `exec` an object, it may have any of the following properties:
 
-- `init-sourcecode`
-- `init-deps`
+- `stage-sourcecode`
+- `stage-deps`
 - `resolve-deps`
-- `init-runtime`
+- `stage-runtime`
 - `run`
 - `finalize-run`
 
@@ -196,9 +196,9 @@ An object is used to provide fine-grained control over what is executed
 for a run.
 
     >>> validate_opdef({"exec": {
-    ...     "init-sourcecode": "cp *.py $run_dir",
-    ...     "init-deps": "cp *.data $run_dir",
-    ...     "init-runtime": "virtualenv .venv",
+    ...     "stage-sourcecode": "cp *.py $run_dir",
+    ...     "stage-deps": "cp *.data $run_dir",
+    ...     "stage-runtime": "virtualenv .venv",
     ...     "run": "python train.py",
     ...     "finalize-run": "rm *.temp"
     ... }})

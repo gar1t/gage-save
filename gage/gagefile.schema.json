@@ -107,13 +107,13 @@
               "title": "Full exec spec",
               "additionalProperties": false,
               "properties": {
-                "init-sourcecode": {
+                "stage-sourcecode": {
                   "$ref": "#/$defs/exec-cmd"
                 },
-                "init-runtime": {
+                "stage-runtime": {
                   "$ref": "#/$defs/exec-cmd"
                 },
-                "init-deps": {
+                "stage-deps": {
                   "$ref": "#/$defs/exec-cmd"
                 },
                 "run": {
