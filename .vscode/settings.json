@@ -90,6 +90,7 @@
     "logfile",
     "loglib",
     "lstrip",
+    "makedirs",
     "MANPAGER",
     "mkid",
     "mklink",

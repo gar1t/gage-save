@@ -45,6 +45,7 @@ __all__ = [
     "run_timestamp",
     "stage_deps",
     "stage_run",
+    "stage_runtime",
     "stage_sourcecode",
     "unique_run_id",
 ]
@@ -323,7 +324,7 @@ def meta_config(run: Run) -> RunConfig:
 def stage_run(run: Run, project_dir: str):
     stage_sourcecode(run, project_dir)
     apply_config(run)
-    initialize_runtime(run, project_dir)
+    stage_runtime(run, project_dir)
     stage_deps(run, project_dir)
     finalize_staged_run(run)
 
@@ -331,25 +332,25 @@ def stage_run(run: Run, project_dir: str):
 def stage_sourcecode(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _copy_sourcecode_patterns(run, project_dir, opdef, log)
-    _copy_sourcecode_exec(run, project_dir, opdef, log)
+    _copy_sourcecode(run, project_dir, opdef, log)
+    _stage_sourcecode_hook(run, project_dir, opdef, log)
     _apply_log_files(run, "s")
 
 
-def _copy_sourcecode_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+def _copy_sourcecode(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     sourcecode = run_sourcecode.init(project_dir, opdef)
     log.info(f"Copying source code (see log/files for details): {sourcecode.patterns}")
     copy_files(project_dir, run.run_dir, sourcecode.paths)
 
 
-def _copy_sourcecode_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_init_sourcecode()
+def _stage_sourcecode_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_stage_sourcecode()
     if exec:
         _run_phase_exec(
             run,
             "stage-sourcecode",
             exec,
-            project_dir,
+            run.run_dir,
             _phase_exec_env(run, project_dir),
             "10_sourcecode",
             log,
@@ -363,6 +364,57 @@ def apply_config(run: Run):
     log.info("Applying configuration (see log/patched for details)")
     diffs = run_config.apply_config(config, opdef, run.run_dir)
     _log_applied_config(run, diffs)
+
+
+def stage_runtime(run: Run, project_dir: str):
+    log = _runner_log(run)
+    opdef = meta_opdef(run)
+    _stage_runtime_hook(run, project_dir, opdef, log)
+    _apply_log_files(run, "r")
+
+
+def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_stage_runtime()
+    if exec:
+        _run_phase_exec(
+            run,
+            "stage-runtime",
+            exec,
+            run.run_dir,
+            _phase_exec_env(run, project_dir),
+            "20_runtime",
+            log,
+        )
+
+
+def stage_deps(run: Run, project_dir: str):
+    log = _runner_log(run)
+    opdef = meta_opdef(run)
+    _copy_deps_patterns(run, project_dir, opdef, log)
+    _copy_deps_exec(run, project_dir, opdef, log)
+    _apply_log_files(run, "d")
+
+
+def _copy_deps_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    pass
+    # TODO
+    # deps = run_deps.init(project_dir, opdef)
+    # log.info(f"Copying dependencies (see log/files for details): {deps.patterns}")
+    # copy_files(project_dir, run.run_dir, deps.paths)
+
+
+def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_stage_deps()
+    if exec:
+        _run_phase_exec(
+            run,
+            "stage-deps",
+            exec,
+            project_dir,
+            _phase_exec_env(run, project_dir),
+            "30_deps",
+            log,
+        )
 
 
 def finalize_staged_run(run: Run):
@@ -397,57 +449,6 @@ def _reduce_files_log(run: Run):
             paths.pop(path, None)
     for path, type in paths.items():
         yield type, path
-
-
-def initialize_runtime(run: Run, project_dir: str):
-    log = _runner_log(run)
-    opdef = meta_opdef(run)
-    _init_runtime_exec(run, project_dir, opdef, log)
-    _apply_log_files(run, "r")
-
-
-def _init_runtime_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_init_runtime()
-    if exec:
-        _run_phase_exec(
-            run,
-            "stage-runtime",
-            exec,
-            project_dir,
-            _phase_exec_env(run, project_dir),
-            "20_runtime",
-            log,
-        )
-
-
-def stage_deps(run: Run, project_dir: str):
-    log = _runner_log(run)
-    opdef = meta_opdef(run)
-    _copy_deps_patterns(run, project_dir, opdef, log)
-    _copy_deps_exec(run, project_dir, opdef, log)
-    _apply_log_files(run, "d")
-
-
-def _copy_deps_patterns(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    pass
-    # TODO
-    # deps = run_deps.init(project_dir, opdef)
-    # log.info(f"Copying dependencies (see log/files for details): {deps.patterns}")
-    # copy_files(project_dir, run.run_dir, deps.paths)
-
-
-def _copy_deps_exec(run: Run, project_dir: str, opdef: OpDef, log: Logger):
-    exec = opdef.get_exec().get_init_deps()
-    if exec:
-        _run_phase_exec(
-            run,
-            "stage-deps",
-            exec,
-            project_dir,
-            _phase_exec_env(run, project_dir),
-            "30_deps",
-            log,
-        )
 
 
 # =================================================================
