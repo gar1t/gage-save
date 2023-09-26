@@ -28,25 +28,27 @@ def runs_list(args: Args):
     width = cli.console_width()
     table = cli.Table(_headers(width), expand=not cli.is_plain)
     for i, run in enumerate(runs):
-        table.add_row(*_row(i, run, width))
+        table.add_row(*_row(i + 1, run, width))
     cli.out(table)
 
 
-_TRUNC_WIDTH = 60
+_TRUNC_POINTS = [
+    (28, (2, 3, 4, 5)),
+    (40, (3, 4, 5)),
+    (60, (5,)),
+]
 
 
 def _headers(width: int) -> list[cli.ColSpec]:
     headers = [
         ("#", {"ratio": None, "no_wrap": True}),
         ("id", {"ratio": None, "no_wrap": True}),
-        ("operation", {"ratio": None, "no_wrap": True, "max_width": 20}),
+        ("operation", {"ratio": None, "no_wrap": True}),
         ("started", {"ratio": None, "no_wrap": True}),
         ("status", {"ratio": None, "no_wrap": True}),
         ("label", {"ratio": 1, "no_wrap": True}),
     ]
-    if width < _TRUNC_WIDTH:
-        del headers[-1]
-    return headers
+    return _fit(headers, width)
 
 
 def _row(index: int, run: Run, width: int) -> list[str]:
@@ -68,7 +70,11 @@ def _row(index: int, run: Run, width: int) -> list[str]:
         label,
     ]
 
-    if width < _TRUNC_WIDTH:
-        del row[-1]
+    return _fit(row, width)
 
-    return row
+
+def _fit(l: list[Any], width: int):
+    for limit, drop in _TRUNC_POINTS:
+        if width <= limit:
+            return [x for i, x in enumerate(l) if i not in drop]
+    return l

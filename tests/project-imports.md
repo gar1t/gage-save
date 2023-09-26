@@ -30,6 +30,7 @@
     gage._internal.cli
     gage._internal.commands.check
     gage._internal.commands.check_impl
+    gage._internal.commands.command_types
     gage._internal.commands.error_handlers
     gage._internal.commands.help
     gage._internal.commands.main
@@ -39,6 +40,8 @@
     gage._internal.commands.run
     gage._internal.commands.run_impl
     gage._internal.commands.runs
+    gage._internal.commands.runs_delete
+    gage._internal.commands.runs_delete_impl
     gage._internal.commands.runs_list
     gage._internal.commands.runs_list_impl
     gage._internal.exitcodes

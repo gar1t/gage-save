@@ -265,7 +265,14 @@ variable `_ATTR_READERS`.
     >>> from gage._internal.run_util import _ATTR_READERS
 
     >>> sorted(_ATTR_READERS)  # +pprint
-    ['dir', 'id', 'label', 'name', 'started', 'stopped']
+    ['dir',
+     'id',
+     'label',
+     'name',
+     'staged',
+     'started',
+     'stopped',
+     'timestamp']
 
 Create a run that's not bound to a directory.
 
