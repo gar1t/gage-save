@@ -24,10 +24,11 @@
     .meta/proc/cmd.json
     .meta/proc/env.json
     .meta/staged
+    .meta/sys/platform.json
     /gage.toml
 
     >>> run("gage runs")  # +parse
-    | # | id       | operation   | started | status |
-    |---|----------|-------------|---------|--------|
-    | 1 | {:aaaaa} | hello:hello |         | staged |
+    | # | id       | operation   | started | status | label |
+    |---|----------|-------------|---------|--------|-------|
+    | 1 | {:aaaaa} | hello:hello |         | staged |       |
     <0>

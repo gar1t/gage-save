@@ -1,19 +1,25 @@
 # Gage To Do
 
-
 Next up:
 
 - Basic run command support (`run <op>`)
-- Rich progress and run output
+  - Confirm prompt
+  - Show output
+  - Show progress
 
 - Runs list - rich gives us a lot of options
+  - Standard columns
+  - Where filter
+  - Sort filter
 
 - Missing these commands
   - show (was runs info)
   - ls
+  - open
 
 - Scan output for scalars and attrs - save in run dir root with special
   extensions (e.g. *.attrs - same as with Guild)
+
 - Roll up tf event summaries with `metrics.json` and `attrs.json`
 
 - API and View
@@ -103,6 +109,9 @@ run[linux] = "..."
 
 - Source code preview should show the source code stage command if
   specified.
+
+- Meta vars in help are screamingly loud (caps, bold, yellow - would be
+  better if not bold)
 
 ## Run layout
 

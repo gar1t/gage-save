@@ -125,7 +125,10 @@ def _pager_supports_styles(pager: str | None):
     return parts[0] == "less" and "-r" in parts[1:]
 
 
-def Table(header: list[str] | None = None, **kw: Any):
+ColSpec = str | tuple[str, dict[str, Any]]
+
+
+def Table(header: list[ColSpec] | None = None, **kw: Any):
     t = rich.table.Table(
         show_header=header is not None,
         box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
@@ -133,9 +136,18 @@ def Table(header: list[str] | None = None, **kw: Any):
         header_style=TABLE_HEADER_STYLE,
         **kw,
     )
-    for col_name in header or []:
-        t.add_column(col_name)
+    for col in header or []:
+        col_header, col_kw = _split_col(col)
+        t.add_column(col_header, **col_kw)
     return t
+
+
+def _split_col(col: ColSpec) -> tuple[str, dict[str, Any]]:
+    if isinstance(col, str):
+        return col, {}
+    else:
+        header, kw = col
+        return header, kw
 
 
 def Panel(renderable: rich.console.RenderableType, **kw: Any):

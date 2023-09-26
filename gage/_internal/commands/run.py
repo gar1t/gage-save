@@ -14,6 +14,15 @@ def run(
             help="Operation to start.",
         ),
     ] = "",
+    label: Annotated[
+        str,
+        Option(
+            "-l",
+            "--label",
+            metavar="LABEL",
+            help="Run label.",
+        ),
+    ] = "",
     stage: Annotated[
         bool,
         Option(
@@ -58,6 +67,7 @@ def run(
     run(
         Args(
             opspec=opspec,
+            label=label,
             stage=stage,
             preview_sourcecode=preview_sourcecode,
             preview_all=preview_all,

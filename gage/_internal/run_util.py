@@ -141,6 +141,17 @@ def _pending_status(run: Run) -> Literal["pending", "unknown"] | None:
 # =================================================================
 
 
+def run_user_attr(run: Run, name: str):
+    filename = _meta_user_attr_filename(run, name)
+    try:
+        f = open(filename)
+    except FileNotFoundError:
+        return None
+    else:
+        with f:
+            return json.load(f)
+
+
 def run_timestamp(run: Run, name: RunTimestamp):
     filename = _meta_timestamp_filename(run, name)
     try:
@@ -252,6 +263,10 @@ def _meta_manifest_filename(run: Run):
 
 def _meta_timestamp_filename(run: Run, name: RunTimestamp):
     return run_meta_path(run, name)
+
+
+def _meta_user_attr_filename(run: Run, name: str):
+    return run_meta_path(run, "user", name + ".json")
 
 
 # =================================================================

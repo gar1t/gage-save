@@ -4,6 +4,7 @@ from typing import *
 from ..types import *
 
 import os
+import platform
 
 from .. import cli
 from .. import run_sourcecode
@@ -21,6 +22,7 @@ __all__ = ["Args", "run"]
 
 class Args(NamedTuple):
     opspec: str
+    label: str
     stage: bool
     preview_sourcecode: bool
     preview_all: bool
@@ -101,8 +103,8 @@ def _stage(ctx: RunContext, args: Args):
     run = make_run(ctx.opref, runs_home())
     config = _run_config(args)
     cmd = _op_cmd(ctx, config)
-    user_attrs = {}
-    sys_attrs = {}
+    user_attrs = _user_attrs(args)
+    sys_attrs = _sys_attrs()
     init_run_meta(run, ctx.opdef, config, cmd, user_attrs, sys_attrs)
     stage_run(run, ctx.project_dir)
     return run
@@ -118,6 +120,17 @@ def _op_cmd(ctx: RunContext, config: RunConfig):
         error_handlers.missing_exec_error(ctx)
     env = {}
     return OpCmd(cmd_args, env)
+
+
+def _user_attrs(args: Args):
+    attrs: dict[str, Any] = {}
+    if args.label:
+        attrs["label"] = args.label
+    return attrs
+
+
+def _sys_attrs():
+    return {"platform": platform.platform()}
 
 
 def _run(ctx: RunContext, args: Args):
