@@ -2,6 +2,8 @@
 
 from typing import *
 
+from ..types import *
+
 import human_readable
 
 from .. import cli
@@ -16,40 +18,57 @@ __all__ = ["Args", "runs_list"]
 
 
 class Args(NamedTuple):
+    where: str
     first: int
 
 
 def runs_list(args: Args):
-    runs = var.list_runs()
-    table = cli.Table(
-        header=[
-            ("#", {"style": "yellow"}),
-            ("id", {}),
-            ("operation", {"style": "bold cyan"}),
-            ("started", {}),
-            ("status", {}),
-            ("label", {"style": "cyan"}),
-        ],
-        # header=[
-        #     ("#", {"ratio": 0}),
-        #     ("id", {"ratio": 1}),
-        #     ("operation", {"ratio": 3}),
-        #     ("started", {"ratio": 2, "no_wrap": True}),
-        #     ("status", {"ratio": 2}),
-        #     ("label", {"ratio": 4, "no_wrap": True}),
-        # ],
-        # expand=not cli.is_plain,
-    )
-    for index, run in enumerate(runs):
-        opref = meta_opref(run)
-        started = run_timestamp(run, "started")
-        label = run_user_attr(run, "label")
-        table.add_row(
-            str(index + 1),
-            run.id[:8],
-            opref.get_full_name(),
-            human_readable.date_time(started) if started else "",
-            run_status(run),
-            label or "",
-        )
+    # TODO apply filter
+    runs = var.list_runs(sort=["-timestamp"])
+    width = cli.console_width()
+    table = cli.Table(_headers(width), expand=not cli.is_plain)
+    for i, run in enumerate(runs):
+        table.add_row(*_row(i, run, width))
     cli.out(table)
+
+
+_TRUNC_WIDTH = 60
+
+
+def _headers(width: int) -> list[cli.ColSpec]:
+    headers = [
+        ("#", {"ratio": None, "no_wrap": True}),
+        ("id", {"ratio": None, "no_wrap": True}),
+        ("operation", {"ratio": None, "no_wrap": True, "max_width": 20}),
+        ("started", {"ratio": None, "no_wrap": True}),
+        ("status", {"ratio": None, "no_wrap": True}),
+        ("label", {"ratio": 1, "no_wrap": True}),
+    ]
+    if width < _TRUNC_WIDTH:
+        del headers[-1]
+    return headers
+
+
+def _row(index: int, run: Run, width: int) -> list[str]:
+    opref = meta_opref(run)
+    index_str = str(index)
+    run_id = run.id[:8]
+    op_name = opref.get_full_name()
+    started = run_timestamp(run, "started")
+    started_str = human_readable.date_time(started) if started else ""
+    status = run_status(run)
+    label = run_user_attr(run, "label") or ""
+
+    row = [
+        index_str,
+        run_id,
+        op_name,
+        started_str,
+        status,
+        label,
+    ]
+
+    if width < _TRUNC_WIDTH:
+        del row[-1]
+
+    return row

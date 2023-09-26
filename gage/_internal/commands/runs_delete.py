@@ -4,18 +4,18 @@ from typing import *
 
 from .command_types import *
 
-__all__ = ["runs_list"]
+__all__ = ["runs_delete"]
 
 
-def runs_list(
+def runs_delete(
     where: RunsWhere = "",
     first: RunsFirst = 20,
 ):
-    """List runs."""
-    from .runs_list_impl import runs_list, Args
+    """Delete runs."""
+    from .runs_delete_impl import runs_delete, Args
 
     args = Args(
         where=where,
         first=first,
     )
-    runs_list(args)
+    runs_delete(args)

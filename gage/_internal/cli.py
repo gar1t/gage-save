@@ -25,6 +25,7 @@ __all__ = [
     "Group",
     "Panel",
     "Table",
+    "console_width",
     "err",
     "error_message",
     "exit_with_error",
@@ -35,6 +36,7 @@ __all__ = [
 ]
 
 _out = rich.console.Console(soft_wrap=False)
+
 _err = rich.console.Console(stderr=True, soft_wrap=False)
 
 is_plain = os.getenv("TERM") in ("dumb", "unknown")
@@ -42,6 +44,10 @@ is_plain = os.getenv("TERM") in ("dumb", "unknown")
 TABLE_HEADER_STYLE = "yellow"
 TABLE_BORDER_STYLE = "dim"
 LABEL_STYLE = "bold cyan"
+
+
+def console_width():
+    return _out.width
 
 
 def out(val: Any, style: str | None = None, wrap: bool = False, err: bool = False):
@@ -92,13 +98,6 @@ def incompatible_with(*params: str):
         return value
 
     return callback
-
-
-def call_once(f: Callable[..., Any], args: list[Any], ctx: click.Context):
-    key = f"{f.__name__}.called"
-    if not ctx.meta.get(key):
-        f(*args)
-        ctx.meta[key] = True
 
 
 class pager:

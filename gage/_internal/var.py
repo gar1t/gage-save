@@ -18,9 +18,9 @@ RunFilter = Callable[[Run], bool]
 
 
 def list_runs(
-    root: Optional[str] = None,
-    sort: Optional[str] = None,
-    filter: Optional[RunFilter] = None,
+    root: str | None = None,
+    filter: RunFilter | None = None,
+    sort: list[str] | None = None,
 ):
     root = root or sys_config.runs_home()
     filter = filter or _all_runs_filter
@@ -48,14 +48,14 @@ def _iter_runs(root: str):
             yield run
 
 
-def _run_sort_key(sort: str):
+def _run_sort_key(sort: list[str]):
     def cmp(a: Run, b: Run):
         return _run_cmp(a, b, sort)
 
     return functools.cmp_to_key(cmp)
 
 
-def _run_cmp(a: Run, b: Run, sort: str):
+def _run_cmp(a: Run, b: Run, sort: list[str]):
     for attr in sort:
         attr_cmp = _run_attr_cmp(a, b, attr)
         if attr_cmp != 0:
@@ -69,10 +69,10 @@ def _run_attr_cmp(a: Run, b: Run, attr: str):
         rev = -1
     else:
         rev = 1
-    x_val = run_attr(a, attr)
+    x_val = run_attr(a, attr, None)
     if x_val is None:
         return -rev
-    y_val = run_attr(b, attr)
+    y_val = run_attr(b, attr, None)
     if y_val is None:
         return rev
     return rev * ((x_val > y_val) - (x_val < y_val))

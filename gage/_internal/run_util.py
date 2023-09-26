@@ -199,17 +199,28 @@ def run_timestamp(run: Run, name: RunTimestamp, default: Any = None):
             return datetime.datetime.fromtimestamp(timestamp_int / 1000000)
 
 
-def _run_run_dir(run: Run, name: str, default: Any = None):
+def _run_dir_reader(run: Run, name: str, default: Any = None):
     return run.run_dir
+
+
+def _run_adaptive_timestamp_reader(run: Run, name: str, default: Any = None):
+    # Ignore requested name - assumed to be 'timestamp'
+    for name in ("started", "staged", "initialized"):
+        val = run_timestamp(run, name, _UNREAD)
+        if val is not _UNREAD:
+            return val
+    return default
 
 
 _ATTR_READERS = {
     "id": getattr,
     "label": run_user_attr,
     "name": getattr,
-    "dir": _run_run_dir,
+    "dir": _run_dir_reader,
+    "staged": run_timestamp,
     "started": run_timestamp,
     "stopped": run_timestamp,
+    "timestamp": _run_adaptive_timestamp_reader,
 }
 
 

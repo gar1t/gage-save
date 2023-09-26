@@ -16,6 +16,7 @@ Next up:
   - show (was runs info)
   - ls
   - open
+  - delete run
 
 - Scan output for scalars and attrs - save in run dir root with special
   extensions (e.g. *.attrs - same as with Guild)
