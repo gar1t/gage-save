@@ -1,70 +1,74 @@
 # Making a run
 
-A run is created with an ID and a run directory. Runs are always local
-to a system.
-
-A run can be created using `make_run`. This function generates a unique
-ID and creates a corresponding run directory in a given parent
-directory.
-
     >>> from gage._internal.run_util import *
+    >>> from gage._internal.types import *
 
-Create a parent directory.
+A run is created with `make_run()`. To create a run, specify:
+
+- OpRef
+- Optional location
+
+If a location isn't specified, the run is assumed to be located in the
+system default as provided by `sys_config.runs_home()`.
+
+For the tests below, use a new location.
 
     >>> runs_home = make_temp_dir()
 
 Create a new run.
 
-    >>> run = make_run(runs_home)
+    >>> opref = OpRef("test", "test")
+    >>> run = make_run(opref, runs_home)
 
-We know four things about the run:
+The run has a unique ID.
 
-1. It has a unique ID
+    >>> run.id  # +parse
+    '{run_id:run_id}'
 
-       >>> run.id  # +parse
-       '{run_id:run_id}'
+It has a name based on the ID.
 
-2. It has a name based on the ID
+    >>> run.name  # +parse
+    '{run_name:run_name}'
 
-       >>> run.name  # +parse
-       '{run_name:run_name}'
+    >>> assert run_name == run_name_for_id(run.id)
 
-   Any run with the same ID has the same name.
+It has a corresponding run directory under `runs_home`.
 
-       >>> from gage._internal.run_util import run_name_for_id
+    >>> run.run_dir  # +parse
+    '{run_dir:path}'
 
-       >>> assert run_name == run_name_for_id(run.id)
+The run directory is a subdirectory of the runs location and is named
+with the run ID.
 
-3. It has a corresponding run directory under `runs_home`
+    >>> assert run_dir == path_join(runs_home, run_id)
 
-       >>> run.run_dir  # +parse
-       '{run_dir:path}'
+The run directory doesn't exit.
 
-       >>> assert path_exists(run_dir)
+    >>> assert not os.path.exists(run_dir)
 
-       >>> assert run_dir == path_join(runs_home, run_id)
+The run has corresponding meta directory under `runs_home`.
 
-4. It's status is `unknown`
+    >>> run.meta_dir  # +parse
+    '{meta_dir:path}'
 
-       >>> run_status(run)
-       'unknown'
+The meta directory name is the same as the run directory plus ".meta".
 
-The run directory is empty.
+    >>> assert meta_dir == run_dir + ".meta"
 
-    >>> ls(run_dir)
-    <empty>
+The meta directory does exist.
 
-It's attributes cannot be read.
+    >>> assert os.path.exists(meta_dir)
 
-    >>> run_attrs(run)  # +parse
-    Traceback (most recent call last):
-    FileNotFoundError: {x}.meta/attrs
+The meta directory contains a single file `opref`, which is the encoded
+op ref for the run.
 
-    >>> assert x == run_dir
+    >>> ls(meta_dir, include_dirs=True, permissions=True)
+    -r--r--r-- opref
 
-The run doesn't show up in a run listing.
+    >>> cat(path_join(meta_dir, "opref"))
+    1 test test
 
-    >>> from gage._internal.var import list_runs
+The run status is `unknown`.
 
-    >>> list_runs(runs_home)
-    []
+    >>> run_status(run)
+    'unknown'

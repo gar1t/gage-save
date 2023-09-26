@@ -30,6 +30,7 @@
     gage._internal.cli
     gage._internal.commands.check
     gage._internal.commands.check_impl
+    gage._internal.commands.error_handlers
     gage._internal.commands.help
     gage._internal.commands.main
     gage._internal.commands.main_impl
@@ -37,22 +38,26 @@
     gage._internal.commands.operations_impl
     gage._internal.commands.run
     gage._internal.commands.run_impl
-    gage._internal.config
+    gage._internal.commands.runs
+    gage._internal.commands.runs_list
+    gage._internal.commands.runs_list_impl
     gage._internal.exitcodes
     gage._internal.file_select
     gage._internal.file_util
     gage._internal.gagefile
     gage._internal.log
-    gage._internal.opdef_util
     gage._internal.opref_util
     gage._internal.project_util
     gage._internal.python_util
     gage._internal.run_config
     gage._internal.run_config_py
+    gage._internal.run_context
+    gage._internal.run_dependencies
     gage._internal.run_output
     gage._internal.run_sourcecode
     gage._internal.run_util
     gage._internal.shlex_util
+    gage._internal.sys_config
     gage._internal.test
     gage._internal.types
     gage._internal.util

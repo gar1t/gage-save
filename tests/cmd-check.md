@@ -20,7 +20,7 @@ Help for `check`:
                       filename.
       --json          Format check output as JSON.
       -v, --verbose   Show more information.
-      --help          Show this message and exit.
+      -h, --help      Show this message and exit.
     <0>
 
 Default output:
@@ -40,8 +40,10 @@ directory for control.
     >>> tmp = make_temp_dir()
 
     >>> run(f"gage -C {tmp} check -v")  # -space +parse
-    | gage_version          | {:ver}   |
-    {}
+    | gage_version          | {}       |
+    | gage_install_location | {}       |
+    | python_version        | {}       |
+    | python_exe            | {}       |
     | platform              | {}       |
     | command_directory     | {x:path} |
     | project_directory     | <none>   |

@@ -5,6 +5,7 @@ from .types import *
 from logging import Logger
 from os import DirEntry
 
+import datetime
 import json
 import logging
 import os
@@ -13,16 +14,18 @@ import threading
 import time
 import uuid
 
-from . import config
+from . import sys_config
 from . import run_config
 from . import run_sourcecode
 from . import run_output
+from . import util
 
 from .file_select import copy_files
 
-from .file_util import make_dir, set_readonly
 from .file_util import ensure_dir
 from .file_util import file_sha256
+from .file_util import make_dir
+from .file_util import set_readonly
 from .file_util import write_file
 
 from .opref_util import decode_opref
@@ -34,14 +37,14 @@ __all__ = [
     "RunManifest",
     "apply_config",
     "finalize_staged_run",
+    "finalize_run",
     "init_run_meta",
     "make_run",
+    "make_run_timestamp",
     "meta_opdef",
     "open_run_output",
-    "run_attr",
-    "run_attrs",
-    "run_meta_dir",
     "run_meta_path",
+    "run_name_for_id",
     "run_status",
     "run_timestamp",
     "stage_dependencies",
@@ -57,44 +60,110 @@ META_SCHEMA = "1"
 __last_ts = None
 __last_ts_lock = threading.Lock()
 
+log = logging.getLogger(__name__)
+
 
 # =================================================================
-# Run attributes
+# Run status
 # =================================================================
 
 
-def run_status(run: Run) -> RunStatus:
-    meta_dir = run_meta_dir(run)
-    if not os.path.exists(meta_dir):
-        return "unknown"
-    assert False
+def run_status(run: Run):
+    return cast(
+        RunStatus,
+        util.find_apply(
+            [
+                _exit_status,
+                _running_status,
+                _staged_status,
+                _pending_status,
+            ],
+            run,
+        ),
+    )
 
 
-def run_meta_dir(run: Run):
-    return run.run_dir + ".meta"
-
-
-def run_meta_path(run: Run, *path: str):
-    return os.path.join(run_meta_dir(run), *path)
-
-
-def run_attrs(run: Run) -> dict[str, Any]:
-    attrs_dir = run_meta_path(run, "attrs")
-    if not os.path.exists(attrs_dir):
-        raise FileNotFoundError(attrs_dir)
-    assert False
-
-
-def run_attr(run: Run, name: str):
+def _exit_status(run: Run) -> Literal["completed", "terminated", "error"] | None:
+    filename = _meta_proc_exit_filename(run)
     try:
-        return getattr(run, name)
-    except AttributeError:
-        assert False, f"TODO run attr {name} somewhere in {run.run_dir}"
+        exit_str = open(filename).read().rstrip()
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        log.warning("Error reading exit status in \"%s\": %s", filename, e)
+        return None
+    else:
+        try:
+            exit = int(exit_str)
+        except ValueError:
+            log.warning("Invalid exit status in \"%s\": %s", filename, exit_str)
+            return None
+        else:
+            if exit == 0:
+                return "completed"
+            elif exit < 0:
+                return "terminated"
+            else:
+                return "error"
+
+
+def _running_status(run: Run) -> Literal["running", "terminated"] | None:
+    filename = _meta_proc_lock_filename(run)
+    try:
+        lock_str = open(filename).read().rstrip()
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        log.warning("Error reading process status in \"%s\": %s", filename, e)
+        return None
+    else:
+        return "running" if _is_active_lock(lock_str) else "terminated"
+
+
+def _is_active_lock(lock: str):
+    # TODO: read lock = should have PID + some process hints to verify
+    # PID belongs to expected run - for now assume valid
+    return True
+
+
+def _staged_status(run: Run) -> Literal["staged"] | None:
+    filename = _meta_timestamp_filename(run, "staged")
+    return "staged" if os.path.exists(filename) else None
+
+
+def _pending_status(run: Run) -> Literal["pending", "unknown"] | None:
+    filename = _meta_timestamp_filename(run, "initialized")
+    return "pending" if os.path.exists(filename) else "unknown"
+
+
+# =================================================================
+# Run attrs
+# =================================================================
+
+
+def run_timestamp(run: Run, name: RunTimestamp):
+    filename = _meta_timestamp_filename(run, name)
+    try:
+        timestamp_str = open(filename).read()
+    except FileNotFoundError:
+        return None
+    else:
+        try:
+            timestamp_int = int(timestamp_str.rstrip())
+        except ValueError:
+            log.warning("Invalid run timestamp in \"%s\"", filename)
+            return None
+        else:
+            return datetime.datetime.fromtimestamp(timestamp_int / 1000000)
 
 
 # =================================================================
 # Meta API
 # =================================================================
+
+
+def run_meta_path(run: Run, *path: str):
+    return os.path.join(run.meta_dir, *path)
 
 
 def meta_opref(run: Run) -> OpRef:
@@ -104,31 +173,85 @@ def meta_opref(run: Run) -> OpRef:
 
 def meta_opdef(run: Run) -> OpDef:
     opref = meta_opref(run)
-    with open(run_meta_path(run, "opdef.json")) as f:
-        data = json.load(f)
-    return OpDef(opref.get_full_name(), data)
+    return OpDef(opref.op_name, _decode_json(_meta_opdef_filename(run)))
+
+
+def _decode_json(filename: str):
+    return json.load(open(filename))
 
 
 def meta_config(run: Run) -> RunConfig:
-    with open(run_meta_path(run, "config.json")) as f:
-        return json.load(f)
+    return _decode_json(run_meta_path(run, "config.json"))
 
 
-def meta_cmd(run: Run) -> OpCmd:
-    meta_dir = run_meta_dir(run)
-    cmd_filename = os.path.join(meta_dir, "proc", "cmd")
-    env_filename = os.path.join(meta_dir, "proc", "env")
-    return OpCmd(_decode_cmd_args(cmd_filename), _decode_cmd_env(env_filename))
+def meta_opcmd(run: Run) -> OpCmd:
+    return OpCmd(
+        _decode_json(run_meta_path(run, "proc", "cmd.json")),
+        _decode_json(run_meta_path(run, "proc", "env.json")),
+    )
 
 
-def _decode_cmd_args(filename: str):
-    with open(filename) as f:
-        return [line.rstrip() for line in f.readlines()]
+# =================================================================
+# Meta filenames
+# =================================================================
 
 
-def _decode_cmd_env(filename: str):
-    with open(filename) as f:
-        return dict([line.rstrip().split("=", 1) for line in f.readlines()])
+def _meta_id_filename(run: Run):
+    return run_meta_path(run, "id")
+
+
+def _meta_opref_filename(run_or_meta_dir: Run | str):
+    if isinstance(run_or_meta_dir, Run):
+        return run_meta_path(run_or_meta_dir, "opref")
+    return os.path.join(run_or_meta_dir, "opref")
+
+
+def _meta_opdef_filename(run: Run):
+    return run_meta_path(run, "opdef.json")
+
+
+def _meta_config_filename(run: Run):
+    return run_meta_path(run, "config.json")
+
+
+def _meta_proc_cmd_filename(run: Run):
+    return run_meta_path(run, "proc", "cmd.json")
+
+
+def _meta_proc_env_filename(run: Run):
+    return run_meta_path(run, "proc", "env.json")
+
+
+def _meta_schema_filename(run: Run):
+    return run_meta_path(run, "__schema__")
+
+
+def _meta_runner_log_filename(run: Run):
+    return run_meta_path(run, "log", "runner")
+
+
+def _meta_files_log_filename(run: Run):
+    return run_meta_path(run, "log", "files")
+
+
+def _meta_proc_exit_filename(run: Run):
+    return run_meta_path(run, "proc", "exit")
+
+
+def _meta_proc_lock_filename(run: Run):
+    return run_meta_path(run, "proc", "lock")
+
+
+def _meta_patched_filename(run: Run):
+    return run_meta_path(run, "log", "patched")
+
+
+def _meta_manifest_filename(run: Run):
+    return run_meta_path(run, "manifest")
+
+
+def _meta_timestamp_filename(run: Run, name: RunTimestamp):
+    return run_meta_path(run, name)
 
 
 # =================================================================
@@ -136,12 +259,19 @@ def _decode_cmd_env(filename: str):
 # =================================================================
 
 
-def make_run(location: Optional[str] = None):
+def make_run(opref: OpRef, location: Optional[str] = None):
     run_id = unique_run_id()
-    location = location or config.runs_home()
+    location = location or sys_config.runs_home()
     run_dir = os.path.join(location, run_id)
-    make_dir(run_dir)
-    return Run(run_id, run_dir, run_name_for_id(run_id))
+    meta_dir = run_dir + ".meta"
+    name = run_name_for_id(run_id)
+    make_dir(meta_dir)
+    _write_opref(opref, meta_dir)
+    return Run(run_id, opref, meta_dir, run_dir, name)
+
+
+def _write_opref(opref: OpRef, meta_dir: str):
+    write_file(_meta_opref_filename(meta_dir), encode_opref(opref), readonly=True)
 
 
 def unique_run_id():
@@ -166,7 +296,7 @@ def _run_id_as_uint(run_id: str):
     return crc32(run_id.encode())
 
 
-def run_timestamp():
+def make_run_timestamp():
     """Returns an integer use for run timestamps.
 
     Ensures that subsequent calls return increasing values.
@@ -186,60 +316,38 @@ def run_timestamp():
 
 def init_run_meta(
     run: Run,
-    opref: OpRef,
     opdef: OpDef,
     config: RunConfig,
     cmd: OpCmd,
     user_attrs: Optional[dict[str, Any]] = None,
     system_attrs: Optional[dict[str, Any]] = None,
 ):
-    if opref.op_name != opdef.name:
-        raise ValueError(
-            f"mismatched names in opref ('{opref.op_name}') and opdef ('{opdef.name}')"
-        )
-    meta_dir = _ensure_run_meta_dir(run)
-    _write_schema_file(meta_dir)
-    _ensure_meta_log_dir(meta_dir)
+    _write_schema_file(run)
     log = _runner_log(run)
-    _write_run_id(run, meta_dir, log)
-    _write_opdef(opdef, meta_dir, log)
-    _write_config(config, meta_dir, log)
-    _write_cmd_args(cmd, meta_dir, log)
-    _write_cmd_env(cmd, meta_dir, log)
+    _write_run_id(run, log)
+    _write_opdef(opdef, run, log)
+    _write_config(config, run, log)
+    _write_proc_cmd(cmd, run, log)
+    _write_proc_env(cmd, run, log)
     if user_attrs:
-        _write_user_attrs(user_attrs, meta_dir, log)
+        _write_user_attrs(user_attrs, run, log)
     if system_attrs:
-        _write_system_attrs(system_attrs, meta_dir, log)
-    # opref marks run as discoverable in lists - should appear last
-    _write_opref(opref, meta_dir, log)
-    _write_initialized_timestamp(meta_dir, log)
+        _write_system_attrs(system_attrs, run, log)
+    _write_timestamp("initialized", run, log)
 
 
-def _ensure_run_meta_dir(run: Run):
-    meta_dir = run_meta_dir(run)
-    ensure_dir(meta_dir)
-    return meta_dir
+def _write_schema_file(run: Run):
+    write_file(_meta_schema_filename(run), str(META_SCHEMA), readonly=True)
 
 
-def _write_schema_file(meta_dir: str):
-    filename = os.path.join(meta_dir, "__schema__")
-    write_file(filename, str(META_SCHEMA), readonly=True)
-
-
-def _ensure_meta_log_dir(meta_dir: str):
-    ensure_dir(os.path.join(meta_dir, "log"))
-
-
-def _write_run_id(run: Run, meta_dir: str, log: Logger):
+def _write_run_id(run: Run, log: Logger):
     log.info("Writing meta id")
-    filename = os.path.join(meta_dir, "id")
-    write_file(filename, run.id, readonly=True)
+    write_file(_meta_id_filename(run), run.id, readonly=True)
 
 
-def _write_opdef(opdef: OpDef, meta_dir: str, log: Logger):
-    log.info("Writing meta opdef.json")
-    filename = os.path.join(meta_dir, "opdef.json")
-    write_file(filename, _encode_json(opdef), readonly=True)
+def _write_opdef(opdef: OpDef, run: Run, log: Logger):
+    log.info("Writing meta opdef")
+    write_file(_meta_opdef_filename(run), _encode_json(opdef), readonly=True)
 
 
 def _encode_json(val: Any):
@@ -250,62 +358,41 @@ def _encode_json(val: Any):
     return json.dumps(val, indent=2, sort_keys=True)
 
 
-def _write_config(config: RunConfig, meta_dir: str, log: Logger):
-    log.info("Writing meta config.json")
-    filename = os.path.join(meta_dir, "config.json")
-    write_file(filename, _encode_json(config), readonly=True)
+def _write_config(config: RunConfig, run: Run, log: Logger):
+    log.info("Writing meta config")
+    write_file(_meta_config_filename(run), _encode_json(config), readonly=True)
 
 
-def _write_cmd_args(cmd: OpCmd, meta_dir: str, log: Logger):
-    log.info("Writing meta proc/cmd")
-    ensure_dir(os.path.join(meta_dir, "proc"))
-    filename = os.path.join(meta_dir, "proc", "cmd")
-    write_file(filename, _encode_cmd_args(cmd.args), readonly=True)
+def _write_proc_cmd(cmd: OpCmd, run: Run, log: Logger):
+    log.info("Writing meta proc cmd")
+    filename = _meta_proc_cmd_filename(run)
+    ensure_dir(os.path.dirname(filename))
+    write_file(filename, _encode_json(cmd.args), readonly=True)
 
 
-def _encode_cmd_args(args: list[str]):
-    return "".join([arg + "\n" for arg in args])
+def _write_proc_env(cmd: OpCmd, run: Run, log: Logger):
+    log.info("Writing meta proc env")
+    filename = _meta_proc_env_filename(run)
+    ensure_dir(os.path.dirname(filename))
+    write_file(filename, _encode_json(cmd.env), readonly=True)
 
 
-def _write_cmd_env(cmd: OpCmd, meta_dir: str, log: Logger):
-    log.info("Writing meta proc/env")
-    ensure_dir(os.path.join(meta_dir, "proc"))
-    filename = os.path.join(meta_dir, "proc", "env")
-    write_file(filename, _encode_cmd_env(cmd.env), readonly=True)
+def _write_user_attrs(attrs: dict[str, Any], run: Run, log: Logger):
+    _gen_write_attrs("user", attrs, run, log)
 
 
-def _encode_cmd_env(env: dict[str, str]):
-    return "".join([f"{name}={val}\n" for name, val in sorted(env.items())])
+def _write_system_attrs(attrs: dict[str, Any], run: Run, log: Logger):
+    _gen_write_attrs("sys", attrs, run, log)
 
 
-def _write_user_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
-    _gen_write_attrs("user", attrs, meta_dir, log)
-
-
-def _write_system_attrs(attrs: dict[str, Any], meta_dir: str, log: Logger):
-    _gen_write_attrs("sys", attrs, meta_dir, log)
-
-
-def _gen_write_attrs(dir: str, attrs: dict[str, Any], meta_dir: str, log: Logger):
-    ensure_dir(os.path.join(meta_dir, dir))
+def _gen_write_attrs(dir: str, attrs: dict[str, Any], run: Run, log: Logger):
+    full_dir = run_meta_path(run, dir)
+    ensure_dir(full_dir)
     for name in attrs:
         log.info("Writing meta %s/%s", dir, name)
-        filename = os.path.join(meta_dir, dir, name)
+        filename = os.path.join(full_dir, name + ".json")
         encoded = json.dumps(attrs[name])
         write_file(filename, encoded, readonly=True)
-
-
-def _write_opref(opref: OpRef, meta_dir: str, log: Logger):
-    log.info("Writing meta opref")
-    filename = os.path.join(meta_dir, "opref")
-    write_file(filename, encode_opref(opref), readonly=True)
-
-
-def _write_initialized_timestamp(meta_dir: str, log: Logger):
-    log.info("Writing meta initialized")
-    filename = os.path.join(meta_dir, "initialized")
-    timestamp = run_timestamp()
-    write_file(filename, str(timestamp), readonly=True)
 
 
 # =================================================================
@@ -326,7 +413,7 @@ def stage_sourcecode(run: Run, project_dir: str):
     opdef = meta_opdef(run)
     _copy_sourcecode(run, project_dir, opdef, log)
     _stage_sourcecode_hook(run, project_dir, opdef, log)
-    _apply_log_files(run, "s")
+    _apply_to_files_log(run, "s")
 
 
 def _copy_sourcecode(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -342,8 +429,7 @@ def _stage_sourcecode_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger
             run,
             "stage-sourcecode",
             exec,
-            run.run_dir,
-            _phase_exec_env(run, project_dir),
+            _hook_env(run, project_dir),
             "10_sourcecode",
             log,
         )
@@ -355,14 +441,15 @@ def apply_config(run: Run):
     opdef = meta_opdef(run)
     log.info("Applying configuration (see log/patched for details)")
     diffs = run_config.apply_config(config, opdef, run.run_dir)
-    _log_applied_config(run, diffs)
+    if diffs:
+        _write_patched(run, diffs)
 
 
 def stage_runtime(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     _stage_runtime_hook(run, project_dir, opdef, log)
-    _apply_log_files(run, "r")
+    _apply_to_files_log(run, "r")
 
 
 def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -372,8 +459,7 @@ def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
             run,
             "stage-runtime",
             exec,
-            run.run_dir,
-            _phase_exec_env(run, project_dir),
+            _hook_env(run, project_dir),
             "20_runtime",
             log,
         )
@@ -384,7 +470,7 @@ def stage_dependencies(run: Run, project_dir: str):
     opdef = meta_opdef(run)
     _resolve_dependencies(run, project_dir, opdef, log)
     _stage_dependencies_hook(run, project_dir, opdef, log)
-    _apply_log_files(run, "d")
+    _apply_to_files_log(run, "d")
 
 
 def _resolve_dependencies(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -404,8 +490,7 @@ def _stage_dependencies_hook(run: Run, project_dir: str, opdef: OpDef, log: Logg
             run,
             "stage-dependencies",
             exec,
-            project_dir,
-            _phase_exec_env(run, project_dir),
+            _hook_env(run, project_dir),
             "30_dependencies",
             log,
         )
@@ -413,13 +498,14 @@ def _stage_dependencies_hook(run: Run, project_dir: str, opdef: OpDef, log: Logg
 
 def finalize_staged_run(run: Run):
     log = _runner_log(run)
-    _finalize_staged_files(run, log)
-    _write_staged_timestamp(run_meta_dir(run), log)
+    _write_staged_files_manifest(run, log)
+    _write_timestamp("staged", run, log)
 
 
-def _finalize_staged_files(run: Run, log: Logger):
+def _write_staged_files_manifest(run: Run, log: Logger):
     log.info("Finalizing staged files (see manifest for details)")
-    with RunManifest(run, "w") as m:
+    m = RunManifest(run, "w")
+    with m:
         for type, path in _reduce_files_log(run):
             filename = os.path.join(run.run_dir, path)
             set_readonly(filename)
@@ -427,15 +513,8 @@ def _finalize_staged_files(run: Run, log: Logger):
             m.add(type, digest, path)
 
 
-def _write_staged_timestamp(meta_dir: str, log: Logger):
-    log.info("Writing meta staged")
-    filename = os.path.join(meta_dir, "staged")
-    timestamp = run_timestamp()
-    write_file(filename, str(timestamp), readonly=True)
-
-
 def _reduce_files_log(run: Run):
-    paths: Dict[str, LoggedFileType] = {}
+    paths: Dict[str, RunFileType] = {}
     for event, type, modified, path in _iter_files_log(run):
         if event == "a":
             paths[path] = type
@@ -446,47 +525,155 @@ def _reduce_files_log(run: Run):
 
 
 # =================================================================
-# Run
+# Start / finalize
 # =================================================================
 
 
 def start_run(run: Run):
-    cmd = meta_cmd(run)
+    log = _runner_log(run)
+    cmd = meta_opcmd(run)
+    shell = isinstance(cmd.args, str)
+    _write_timestamp("started", run, log)
+    log.info(f"Starting run process: {cmd.args}")
     p = subprocess.Popen(
         cmd.args,
         env=cmd.env,
         cwd=run.run_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        shell=shell,
     )
+    _write_proc_lock(p, run, log)
     return p
 
 
+def _write_proc_lock(proc: subprocess.Popen[bytes], run: Run, log: Logger):
+    log.info("Writing meta proc/lock")
+    filename = _meta_proc_lock_filename(run)
+    ensure_dir(os.path.dirname(filename))
+    write_file(filename, str(proc.pid), readonly=True)
+
+
 def open_run_output(run: Run, p: subprocess.Popen[bytes]):
+    ensure_dir(run_meta_path(run, "output"))
     output_filename = run_meta_path(run, "output", "40_run")
-    ensure_dir(os.path.dirname(output_filename))
     output = run_output.RunOutput(output_filename)
     output.open(p)
     return output
 
 
-def finalize_run(run: Run, exit_status: int):
-    assert False, "TODO run finalize-run hook, make files readonly, finalize manifest"
+def finalize_run(run: Run, exit_code: int):
+    log = _runner_log(run)
+    opdef = meta_opdef(run)
+    ensure_dir(run.run_dir)
+    _finalize_run_output(run)
+    _write_timestamp("stopped", run, log)
+    _write_exit_code(exit_code, run, log)
+    _delete_proc_lock(run, log)
+    _finalize_run_hook(run, opdef, log)
+    _apply_to_files_log(run, "g")
+    _finalize_files_log(run)
+    _write_run_files_manifest(run, log)
+    _finalize_runner_log(run)
+
+
+def _finalize_run_output(run: Run):
+    output_filename = run_meta_path(run, "output", "40_run")
+    if os.path.exists(output_filename):
+        set_readonly(output_filename)
+    index_filename = run_meta_path(run, "output", "40_run.index")
+    if os.path.exists(index_filename):
+        set_readonly(index_filename)
+
+
+def _write_exit_code(exit_code: int, run: Run, log: Logger):
+    log.info("Writing meta proc/exit")
+    filename = _meta_proc_exit_filename(run)
+    ensure_dir(os.path.dirname(filename))
+    write_file(filename, str(exit_code), readonly=True)
+
+
+def _delete_proc_lock(run: Run, log: Logger):
+    log.info("Deleting meta proc/lock")
+    filename = _meta_proc_lock_filename(run)
+    try:
+        os.remove(filename)
+    except OSError as e:
+        log.info(f"Error deleting proc/lock: {e}")
+
+
+def _finalize_run_hook(run: Run, opdef: OpDef, log: Logger):
+    exec = opdef.get_exec().get_finalize_run()
+    if exec:
+        _run_phase_exec(
+            run,
+            "finalize-run",
+            exec,
+            _hook_env(run),
+            "50_finalize",
+            log,
+        )
+
+
+def _write_run_files_manifest(run: Run, log: Logger):
+    log.info("Finalizing run files (see manifest for details)")
+    index = _init_manifest_index(run)
+    m = RunManifest(run, "w")
+    with m:
+        for type, path in _reduce_files_log(run):
+            filename = os.path.join(run.run_dir, path)
+            set_readonly(filename)
+            digest = file_sha256(filename)
+            _maybe_log_file_changed(path, digest, index, log)
+            m.add(type, digest, path)
+    set_readonly(m.filename)
+
+
+def _maybe_log_file_changed(
+    path: str,
+    digest: str,
+    index: dict[str, str],
+    log: Logger,
+):
+    try:
+        orig_digest = index[path]
+    except KeyError:
+        pass
+    else:
+        log.info(f"File \"{path}\" was modified during the run")
+
+
+def _finalize_files_log(run: Run):
+    filename = run_meta_path(run, "log", "files")
+    set_readonly(filename)
+
+
+def _finalize_runner_log(run: Run):
+    filename = _meta_runner_log_filename(run)
+    set_readonly(filename)
 
 
 # =================================================================
 # Utils
 # =================================================================
 
-LoggedFileEvent = Literal["a", "d", "m"]
-LoggedFileType = Literal["s", "d", "r"]
-RunFileType = Literal["s", "d", "r", "g"]
+LoggedFileEvent = Literal[
+    "a",  # added
+    "d",  # deleted
+    "m",  # modified
+]
+
+RunFileType = Literal[
+    "s",  # source code
+    "d",  # deleted
+    "r",  # runtime
+    "g",  # generated
+]
 
 
 def _runner_log(run: Run):
-    filename = _runner_log_filename(run)
-    filename_parent = os.path.dirname(filename)
-    assert os.path.exists(filename_parent), filename_parent
+    filename = _meta_runner_log_filename(run)
+    ensure_dir(os.path.dirname(filename))
     log = logging.Logger("runner")
     handler = logging.FileHandler(filename)
     log.addHandler(handler)
@@ -495,16 +682,19 @@ def _runner_log(run: Run):
     return log
 
 
-def _runner_log_filename(run: Run):
-    return run_meta_path(run, "log", "runner")
-
-
 def _run_meta_schema(run: Run):
-    with open(run_meta_path(run, "__schema__")) as f:
+    with open(_meta_schema_filename(run)) as f:
         return f.read().rstrip()
 
 
-def _apply_log_files(run: Run, type: LoggedFileType):
+def _write_timestamp(name: RunTimestamp, run: Run, log: Logger):
+    log.info(f"Writing meta {name}")
+    filename = run_meta_path(run, name)
+    timestamp = make_run_timestamp()
+    write_file(filename, str(timestamp), readonly=True)
+
+
+def _apply_to_files_log(run: Run, type: RunFileType):
     pre_files = _init_pre_files_index(run)
     seen = set()
     with _open_files_log(run) as f:
@@ -529,7 +719,11 @@ def _iter_run_files(run: Run):
 
 
 def _scan_files(dir: str) -> Generator[DirEntry[str], Any, None]:
-    for entry in os.scandir(dir):
+    try:
+        scanner = os.scandir(dir)
+    except FileNotFoundError:
+        return
+    for entry in scanner:
         if entry.is_file():
             yield entry
         elif entry.is_dir():
@@ -546,7 +740,7 @@ def _init_pre_files_index(run: Run) -> PreFilesIndex:
 
 class LoggedFile(NamedTuple):
     event: LoggedFileEvent
-    type: LoggedFileType
+    type: RunFileType
     modified: int | None
     path: str
 
@@ -592,7 +786,9 @@ def _decode_files_log_line(line: str):
 
 
 def _open_files_log(run: Run):
-    return open(run_meta_path(run, "log", "files"), "a")
+    filename = _meta_files_log_filename(run)
+    ensure_dir(os.path.dirname(filename))
+    return open(filename, "a")
 
 
 def _encode_logged_file(file: LoggedFile):
@@ -601,7 +797,12 @@ def _encode_logged_file(file: LoggedFile):
 
 class RunManifest:
     def __init__(self, run: Run, mode: Literal["r", "w", "a"] = "r"):
-        self._f = open(run_meta_path(run, "manifest"), mode)
+        self.filename = _meta_manifest_filename(run)
+        self._f = open(self.filename, mode)
+
+    def __iter__(self):
+        for line in self._f:
+            yield _decode_run_manifest_entry(line)
 
     def close(self):
         self._f.close()
@@ -621,11 +822,25 @@ def _encode_run_manifest_entry(type: RunFileType, digest: str, path: str):
     return f"{type} {digest} {path}\n"
 
 
-def _log_applied_config(run: Run, diffs: list[tuple[str, UnifiedDiff]]):
-    with open(run_meta_path(run, "log", "patched"), "a") as f:
+def _decode_run_manifest_entry(entry: str):
+    return entry.rstrip().split(" ", 2)
+
+
+def _init_manifest_index(run: Run) -> dict[str, str]:
+    index = {}
+    with RunManifest(run) as m:
+        for type, digest, path in m:
+            index[path] = digest
+    return index
+
+
+def _write_patched(run: Run, diffs: list[tuple[str, UnifiedDiff]]):
+    filename = _meta_patched_filename(run)
+    with open(filename, "w") as f:
         for path, diff in sorted(diffs):
             for line in diff:
                 f.write(line)
+    set_readonly(filename)
 
 
 class RunExecError(Exception):
@@ -636,30 +851,33 @@ def _run_phase_exec(
     run: Run,
     phase_name: str,
     exec_cmd: str | list[str],
-    cwd: str,
     env: dict[str, str],
     output_name: str,
     log: Logger,
 ):
     log.info(f"Running {phase_name} (see output/{output_name} for output): {exec_cmd}")
-
     proc_args, use_shell = _proc_args(exec_cmd)
-    proc_env = {**os.environ, **env}
+    proc_env = {
+        **os.environ,
+        **env,
+    }
+    ensure_dir(run.run_dir)
     p = subprocess.Popen(
         proc_args,
         shell=use_shell,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=cwd,
+        cwd=run.run_dir,
         env=proc_env,
     )
+    ensure_dir(run_meta_path(run, "output"))
     output_filename = run_meta_path(run, "output", output_name)
     output = run_output.RunOutput(output_filename)
-    ensure_dir(os.path.dirname(output_filename))
     output.open(p)
     exit_code = p.wait()
     output.wait_and_close()
     log.info(f"Exit code for {phase_name}: {exit_code}")
+    set_readonly(output_filename)
     if exit_code != 0:
         raise RunExecError(phase_name, proc_args, exit_code)
 
@@ -674,8 +892,9 @@ def _proc_args(exec_cmd: str | list[str]) -> tuple[str | list[str], bool]:
         return exec_cmd, True
 
 
-def _phase_exec_env(run: Run, project_dir: str):
+def _hook_env(run: Run, project_dir: str | None = None):
     return {
+        "run_id": run.id,
         "run_dir": run.run_dir,
-        "project_dir": project_dir,
+        **({"project_dir": project_dir} if project_dir else {}),
     }

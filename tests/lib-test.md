@@ -71,3 +71,20 @@ Valid formats but not supported:
 
     >>> print("2023-09-03T11:21:33-05:00:30")  # +fails
     {:date}
+
+## `cat_json`
+
+`cat_json` prints a JSON file as formatted JSON.
+
+    >>> tmp = make_temp_dir()
+    >>> write(path_join(tmp, "test.json"), """{"z": 123, "a": [1, 2, "abc"]}""")
+
+    >>> cat_json(path_join(tmp, "test.json"))
+    {
+      "a": [
+        1,
+        2,
+        "abc"
+      ],
+      "z": 123
+    }

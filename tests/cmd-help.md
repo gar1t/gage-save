@@ -1,11 +1,12 @@
 # `help` command
 
-    >>> run("gage help")
+    >>> run("gage help")  # +diff
     Usage: gage help [OPTIONS] TOPIC
     ⤶
       Show help for a topic.
     ⤶
     Commands:
+      exec        Defining run commands.
       filters     Filtering results.
       gagefile    Defining and using gage files.
       operations  Defining and running operations.

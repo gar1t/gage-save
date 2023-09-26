@@ -7,7 +7,7 @@ import os
 from ...__init__ import __version__
 
 from .. import cli
-from .. import config
+from .. import sys_config
 
 
 class Args(NamedTuple):
@@ -24,7 +24,7 @@ def main(args: Args):
 
 
 def _apply_cwd(cwd: str):
-    config.set_cwd(_validated_dir(cwd))
+    sys_config.set_cwd(_validated_dir(cwd))
 
 
 def _validated_dir(path: str):

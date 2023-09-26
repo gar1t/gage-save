@@ -11,6 +11,7 @@ from .check import check
 from .help import help_app
 from .operations import operations
 from .run import run
+from .runs import runs_app
 
 
 def main(
@@ -38,16 +39,22 @@ def main(
     main(Args(version=version, cwd=cwd))
 
 
-def make_app():
+def main_app():
     app = Typer(
         cls=cli.AliasGroup,
         rich_markup_mode="markdown",
         invoke_without_command=True,
         no_args_is_help=True,
         add_completion=False,
+        pretty_exceptions_enable=not cli.is_plain,
+        pretty_exceptions_show_locals=False,
+        context_settings={
+            "help_option_names": ("-h", "--help"),
+        },
     )
     app.callback()(main)
     app.command()(check)
+    app.add_typer(runs_app())
     app.add_typer(help_app())
     app.command("operations, ops")(operations)
     app.command()(run)

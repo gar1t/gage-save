@@ -7,7 +7,7 @@
     ⤶
     ...
     Options:
-      --help  Show this message and exit.
+      -h, --help  Show this message and exit.
     <0>
 
 The alias `ops` may also be used.

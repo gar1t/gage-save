@@ -13,7 +13,9 @@ possible Gage project.
     [hello]
     ⤶
     description = "Say hello to my friend"
-    exec = "python -c print('Hello Gage!')"
+    exec = """
+    python -c "print('Hello Gage!')"
+    """
 
 List operations.
 

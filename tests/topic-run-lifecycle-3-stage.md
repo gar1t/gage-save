@@ -1,5 +1,8 @@
 # Staging a run dir
 
+    >>> from gage._internal.run_util import *
+    >>> from gage._internal.types import *
+
 A staged run can be started by a runner using only the run directory and
 the contents of the run meta directory. Staged runs (i.e. the run and
 meta directories) can be relocated to another compatible system and
@@ -26,15 +29,9 @@ meta*](topic-run-lifecycle-2-init-meta.md).
 
 Create a run and initialize its meta.
 
-    >>> from gage._internal.run_util import *
-    >>> from gage._internal.types import *
-
     >>> runs_home = make_temp_dir()
-    >>> run = make_run(runs_home)
-
-Op ref identifies the run:
-
     >>> opref = OpRef("test", "test")
+    >>> run = make_run(opref, runs_home)
 
 Create the op def.
 
@@ -54,41 +51,49 @@ Create the op def.
     ...         }
     ...     })
 
-With this, the run is configured with the following:
+The op def configures the operation as follows:
 
-- Default source code copy rules are applied (e.g. plain text files)
-- Configuration is applied to the top-level variables in `train.py`
+- Use default source code copy rules (e.g. plain text files)
+- Apply configuration to variables in train.py
+- Perform additional steps during source code staging (write `msg.txt`)
+  and during runtime staging (run `setup.py`)
 
-Create configuration. This is applied to the source code files according
-to `config` definitions in op def.
+Create configuration, which is applied to the source code files
+according to `config` definitions in op def.
 
     >>> config = {"x": 2}
 
-The command is what is run. As tests below only stage the run, this
-command is merely an example.
+Define the operation command and environment.
 
     >>> cmd = OpCmd(["python", "train.py"], {})
 
-Initialize the run meta.
+List meta files before init.
 
-    >>> init_run_meta(run, opref, opdef, config, cmd, {}, {})
+    >>> ls(run.meta_dir, include_dirs=True, permissions=True)
+    -r--r--r-- opref
 
-List the generated files.
+Initialize run meta.
 
-    >>> ls(run_meta_dir(run))  # +diff
-    __schema__
-    config.json
-    id
-    initialized
-    log/runner
-    opdef.json
-    opref
-    proc/cmd
-    proc/env
+    >>> init_run_meta(run, opdef, config, cmd, {}, {})
+
+List meta files after init.
+
+    >>> ls(run.meta_dir, include_dirs=True, permissions=True)  # +diff
+    -r--r--r-- __schema__
+    -r--r--r-- config.json
+    -r--r--r-- id
+    -r--r--r-- initialized
+    drwxrwxr-x log
+    -rw-rw-r-- log/runner
+    -r--r--r-- opdef.json
+    -r--r--r-- opref
+    drwxrwxr-x proc
+    -r--r--r-- proc/cmd.json
+    -r--r--r-- proc/env.json
 
 ## Run stage phases
 
-Run staging consists of the following phases:
+The tests in this section show each of the staging phases:
 
 - Copy source code
 - Apply configuration
@@ -106,21 +111,10 @@ The order of these phases is important:
 4. All files must be written before a staged run is finalized
    (everything < finalize)
 
-Each phase is implemented by a function in `run_util`:
+Each phase is executed by `stage_run()` in the appropriate order.
 
-- `stage_sourcecode`
-- `apply_config`
-- `stage_runtime`
-- `resolve_dependencies`
-- `finalize_staged_run`
-
-Each of these functions is called by `run_util.stage_run()` to stage a
-run.
-
-Changes made to the run directory for each phase up to stage finalizing
-are written to `log/files`. This log is used to generate a run manifest,
-which contains a record of source code, resolved dependencies, and
-runtime files.
+Changes to the run directory are logged in `log/files` for each phase.
+This record is used to generate the run manifest.
 
 ## Source code
 
@@ -377,7 +371,7 @@ config.
 
 List meta runs.
 
-    >>> ls(run_meta_dir(run))  # +diff
+    >>> ls(run.meta_dir)  # +diff
     __schema__
     config.json
     id
@@ -392,8 +386,8 @@ List meta runs.
     output/10_sourcecode.index
     output/20_runtime
     output/20_runtime.index
-    proc/cmd
-    proc/env
+    proc/cmd.json
+    proc/env.json
     staged
 
 Show logged events.

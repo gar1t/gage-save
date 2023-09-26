@@ -20,7 +20,7 @@ import time
 
 import gage
 
-from . import config
+from . import sys_config
 from . import file_util
 from . import shlex_util
 from . import util
@@ -31,6 +31,7 @@ __all__ = [
     "SysPath",
     "basename",
     "cat",
+    "cat_json",
     "cat_log",
     "cd",
     "copytree",
@@ -51,6 +52,7 @@ __all__ = [
     "parse_path",
     "parse_run_id",
     "parse_run_name",
+    "parse_short_id",
     "parse_sha256",
     "parse_timestamp",
     "parse_ver",
@@ -64,7 +66,7 @@ __all__ = [
     "run",
     "sample",
     "samples_dir",
-    "set_var_home",
+    "set_runs_home",
     "sha256",
     "symlink",
     "sys",
@@ -128,6 +130,11 @@ def parse_path(s: str):
 
 @parse_type("run_id", r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
 def parse_run_id(s: str):
+    return s
+
+
+@parse_type("aaaaa", r"[a-f0-9]{8}")
+def parse_short_id(s: str):
     return s
 
 
@@ -232,6 +239,11 @@ def cat(*parts: str):
             if s[-1:] == "\n":
                 s = s[:-1]
             print(s)
+
+
+def cat_json(filename: str):
+    val = json.load(open(filename))
+    print(json.dumps(val, indent=2, sort_keys=True))
 
 
 def write(filename: str, contents: str, append: bool = False):
@@ -409,14 +421,14 @@ def cd(s: str):
     os.chdir(os.path.expandvars(s))
 
 
-def set_var_home(path: str):
-    config.set_var_home(path)
+def set_runs_home(path: str):
+    sys_config.set_runs_home(path)
 
 
 def use_example(name: str, var_home: Optional[str] = None):
     var_home = var_home or make_temp_dir()
     cd(_example(name))
-    set_var_home(var_home)
+    set_runs_home(var_home)
 
 
 def _example(name: str):
@@ -433,7 +445,7 @@ def _examples_dir():
 def use_project(project_name: str, var_home: Optional[str] = None):
     var_home = var_home or make_temp_dir()
     cd(sample("projects", project_name))
-    set_var_home(var_home)
+    set_runs_home(var_home)
 
 
 def path_join(*path: str):

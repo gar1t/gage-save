@@ -10,15 +10,16 @@ Running `gage` without arguments shows help.
       Gage ML command line interface.
     ⤶
     Options:
-      --version  Print program version and exit.
-      -C PATH    Change to PATH directory for command.
-      --help     Show this message and exit.
+      --version   Print program version and exit.
+      -C PATH     Change to PATH directory for command.
+      -h, --help  Show this message and exit.
     ⤶
     Commands:
       check            Show and validate settings.
       help             Show help for a topic.
       operations, ops  Show available operations.
       run              Start or stage an operation.
+      runs             Show or manage runs.
     <0>
 
 ## Help

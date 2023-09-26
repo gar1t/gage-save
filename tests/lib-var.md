@@ -5,9 +5,9 @@ feature is to read Runs from a runs location.
 
     >>> from gage._internal import var
 
-    >>> var_home = make_temp_dir()
+    >>> runs_home = make_temp_dir()
 
-    >>> set_var_home(var_home)
+    >>> set_runs_home(runs_home)
 
     >>> var.list_runs()
     []

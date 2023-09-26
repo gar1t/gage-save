@@ -30,6 +30,11 @@ def gagefile():
     _show_help("gagefile")
 
 
+def exec():
+    """Defining run commands."""
+    _show_help("exec")
+
+
 def _show_help(topic: str):
     help = _read_help_topic(topic)
     with cli.pager():
@@ -58,5 +63,6 @@ def help_app():
     topic(filters)
     topic(gagefile)
     topic(operations)
+    topic(exec)
 
     return app

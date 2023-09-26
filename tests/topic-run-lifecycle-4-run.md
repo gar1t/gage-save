@@ -26,25 +26,19 @@ Create an opdef that runs the script.
     ...   "config": "say.py"
     ... })
 
-Initialize a new run.
+Create a new run.
 
     >>> runs_home = make_temp_dir()
+    >>> opref = OpRef("test", "test")
+    >>> run = make_run(opref, runs_home)
 
-    >>> run = make_run(runs_home)
+Initialize run meta.
 
-TODO: do we need cmd/env? Why not just use the opdef? Or is this derived?
+    >>> config = {}
+    >>> cmd = OpCmd(["python", "say.py"], {})
+    >>> init_run_meta(run, opdef, {}, cmd)
 
-TODO: OpCmd needs to support shell command str vs list of args.
-
-    >>> init_run_meta(
-    ...     run,
-    ...     OpRef("test", "test"),
-    ...     opdef,
-    ...     {},
-    ...     OpCmd(["python", "say.py"], {})
-    ... )
-
-Stage a run.
+Stage the run.
 
     >>> stage_run(run, ".")
 
@@ -53,58 +47,108 @@ Stage a run.
 
 Start the run.
 
-    >>> p = start_run(run)
+    >>> proc = start_run(run)
 
-Open run output.
+At this point the run process is started. The run process ID is written
+to the run meta as `proc/lock`.
 
-    >>> output = open_run_output(run, p)
+    >>> ls(run_meta_path(run, "proc"))
+    cmd.json
+    env.json
+    lock
+
+    >>> cat(run_meta_path(run, "proc", "lock"))  # +parse
+    {pid:d}
+
+    >>> assert pid == proc.pid
+
+To write run output, call `open_run_output()` with the run process.
+
+    >>> output = open_run_output(run, proc)
 
 Wait for the run process to exit.
 
-    >>> p.wait()
+    >>> proc.wait()
     0
 
-Wait for output to finish.
+Wait for output to be written.
 
     >>> output.wait_and_close()
 
 List meta dir contents.
 
-    >>> ls(run_meta_dir(run))  # +diff
-    __schema__
-    config.json
-    id
-    initialized
-    log/files
-    log/patched
-    log/runner
-    manifest
-    opdef.json
-    opref
-    output/40_run
-    output/40_run.index
-    proc/cmd
-    proc/env
-    staged
+    >>> ls(run.meta_dir, permissions=True)  # +diff
+    -r--r--r-- __schema__
+    -r--r--r-- config.json
+    -r--r--r-- id
+    -r--r--r-- initialized
+    -rw-rw-r-- log/files
+    -rw-rw-r-- log/runner
+    -rw-rw-r-- manifest
+    -r--r--r-- opdef.json
+    -r--r--r-- opref
+    -rw-rw-r-- output/40_run
+    -rw-rw-r-- output/40_run.index
+    -r--r--r-- proc/cmd.json
+    -r--r--r-- proc/env.json
+    -r--r--r-- proc/lock
+    -r--r--r-- staged
+    -r--r--r-- started
+
+Note that some files are writeable. These are log, output, and manifest
+files that are updated during the run and when the run is finalized.
 
 Show run output.
 
     >>> cat(run_meta_path(run, "output", "40_run"))
     Hi there
 
+At this point the run process has completed but the run is not yet
+finalized. `finalize_run()` is responsible for finalizing a run.
+
+Finalize the run.
+
+    >>> finalize_run(run, proc.returncode)
+
+Show the meta files. All files are read only.
+
+    >>> ls(run.meta_dir, permissions=True)  # +diff
+    -r--r--r-- __schema__
+    -r--r--r-- config.json
+    -r--r--r-- id
+    -r--r--r-- initialized
+    -r--r--r-- log/files
+    -r--r--r-- log/runner
+    -r--r--r-- manifest
+    -r--r--r-- opdef.json
+    -r--r--r-- opref
+    -r--r--r-- output/40_run
+    -r--r--r-- output/40_run.index
+    -r--r--r-- proc/cmd.json
+    -r--r--r-- proc/env.json
+    -r--r--r-- proc/exit
+    -r--r--r-- staged
+    -r--r--r-- started
+    -r--r--r-- stopped
+
+Show the run files.
+
+    >>> ls(run.run_dir, permissions=True)  # +diff
+    -r--r--r-- say.py
+
+Show the finalize run manifest.
+
+    >>> cat(run_meta_path(run, "manifest"))  # +diff
+    s 3f9c639e1d6b056c071b44752ea97c694127291443065afa2689bf78ef3b8fb0 say.py
+
 ## Run with config
 
 Start another run with different config.
 
-    >>> run = make_run(runs_home)
+    >>> run = make_run(opref, runs_home)
 
-    >>> init_run_meta(
-    ...     run,
-    ...     OpRef("test", "test"),
-    ...     opdef,
-    ...     {"msg": "Ho there"},
-    ...     OpCmd(["python", "say.py"], {})
-    ... )
+    >>> config = {"msg": "Ho there"}
+    >>> init_run_meta(run, opdef, config, cmd)
 
     >>> stage_run(run, ".")
 

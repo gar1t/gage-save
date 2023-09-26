@@ -4,6 +4,9 @@ from typing import *
 
 __all__ = [
     "GageFile",
+    "GageFileError",
+    "GageFileLoadError",
+    "GageFileNotFoundError",
     "OpCmd",
     "OpDef",
     "OpDefNotFound",
@@ -13,7 +16,9 @@ __all__ = [
     "Run",
     "RunConfig",
     "RunConfigValue",
+    "RunContext",
     "RunStatus",
+    "RunTimestamp",
     "UnifiedDiff",
 ]
 
@@ -23,12 +28,23 @@ Data = dict[str, Any]
 
 
 class OpDefNotFound(Exception):
-    def __init__(self, spec: str | None):
-        self.spec = spec
+    def __init__(self, opspec: str | None, filename: str):
+        self.opspec = opspec
+        self.filename = filename
 
 
-class OpError(Exception):
+class GageFileError(Exception):
     pass
+
+
+class GageFileNotFoundError(GageFileError):
+    pass
+
+
+class GageFileLoadError(GageFileError):
+    def __init__(self, filename: str, msg: Any):
+        self.filename = filename
+        self.msg = msg
 
 
 class OpRef:
@@ -41,9 +57,15 @@ class OpRef:
             return self.op_name
         return f"{self.op_ns}:{self.op_name}"
 
+    def __repr__(self):
+        return f"<OpRef ns=\"{self.op_ns}\" name=\"{self.op_name}\">"
+
+
+CmdArgs = str | list[str]
+
 
 class OpCmd:
-    def __init__(self, args: list[str], env: dict[str, str]):
+    def __init__(self, args: CmdArgs, env: dict[str, str]):
         self.args = args
         self.env = env
 
@@ -52,19 +74,19 @@ class OpDefExec:
     def __init__(self, data: Data):
         self._data = data
 
-    def get_stage_sourcecode(self) -> str | None:
+    def get_stage_sourcecode(self) -> CmdArgs | None:
         return self._data.get("stage-sourcecode")
 
-    def get_stage_dependencies(self) -> str | None:
+    def get_stage_dependencies(self) -> CmdArgs | None:
         return self._data.get("stage-dependencies")
 
-    def get_stage_runtime(self) -> str | None:
+    def get_stage_runtime(self) -> CmdArgs | None:
         return self._data.get("stage-runtime")
 
-    def get_run(self) -> str | None:
+    def get_run(self) -> CmdArgs | None:
         return self._data.get("run")
 
-    def get_finalize_run(self) -> str | None:
+    def get_finalize_run(self) -> CmdArgs | None:
         return self._data.get("finalize-run")
 
 
@@ -157,7 +179,6 @@ class OpDef:
         return [OpDefDependency(item) for item in val]
 
 
-
 class GageFile:
     def __init__(self, filename: str, data: Data):
         self.filename = filename
@@ -170,14 +191,38 @@ class GageFile:
         }
 
 
-class Run:
-    def __init__(self, run_id: str, run_dir: str, name: str):
-        self.id = run_id
-        self.run_dir = run_dir
-        self.name = name
+class RunContext(NamedTuple):
+    command_dir: str
+    project_dir: str
+    gagefile: GageFile
+    opref: OpRef
+    opdef: OpDef
 
 
-RunStatus = Literal["unknown", "foobar"]  # TODO!
+class Run(NamedTuple):
+    id: str
+    opref: OpRef
+    meta_dir: str
+    run_dir: str
+    name: str
+
+
+RunStatus = Literal[
+    "running",
+    "completed",
+    "error",
+    "terminated",
+    "staged",
+    "pending",
+    "unknown",
+]
+
+RunTimestamp = Literal[
+    "initialized",
+    "staged",
+    "started",
+    "stopped",
+]
 
 
 RunConfigValue = None | int | float | bool | str

@@ -94,6 +94,13 @@ def incompatible_with(*params: str):
     return callback
 
 
+def call_once(f: Callable[..., Any], args: list[Any], ctx: click.Context):
+    key = f"{f.__name__}.called"
+    if not ctx.meta.get(key):
+        f(*args)
+        ctx.meta[key] = True
+
+
 class pager:
     _pager_env = os.getenv("PAGER") or os.getenv("MANPAGER")
 

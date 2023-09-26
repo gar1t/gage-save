@@ -642,7 +642,10 @@ def make_executable(path: str):
 
 
 def write_file(
-    filename: str, contents: str, append: bool = False, readonly: bool = False
+    filename: str,
+    contents: str,
+    append: bool = False,
+    readonly: bool = False,
 ):
     opts = "a" if append else "w"
     with open(filename, opts) as f:

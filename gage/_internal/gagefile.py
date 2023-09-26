@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import *
+from .types import *
 
 import json
 import os
@@ -9,7 +10,9 @@ import jschon
 import tomli
 import yaml
 
-from .types import GageFile
+from . import sys_config
+
+from .project_util import find_project_dir
 
 __all__ = [
     "ValidationError",
@@ -32,10 +35,6 @@ class ValidationError(Exception):
     def __init__(self, validation_result: jschon.Result):
         super().__init__(validation_result)
         self.validation_result = validation_result
-
-
-class LoadError(Exception):
-    pass
 
 
 def validation_error_output(e: ValidationError):
@@ -78,7 +77,7 @@ def load_gagefile(filename: str):
 
 def load_data(filename: str):
     if not os.path.exists(filename):
-        raise LoadError(f"file does not exist: {filename}")
+        raise GageFileLoadError(filename, f"file does not exist: {filename}")
     ext = os.path.splitext(filename)[1].lower()
     if ext == ".toml":
         return _load_toml(filename)
@@ -86,7 +85,7 @@ def load_data(filename: str):
         return _load_json(filename)
     if ext in (".yaml", ".yml"):
         return _load_yaml(filename)
-    raise LoadError(f"unsupported file extension for {filename}")
+    raise GageFileLoadError(filename, f"unsupported file extension for {filename}")
 
 
 def _load_toml(filename: str):
@@ -100,7 +99,7 @@ def _load_json(filename: str):
         try:
             return json.loads(s)
         except json.JSONDecodeError as e:
-            raise LoadError(f"invalid JSON: {e}")
+            raise GageFileLoadError(filename, f"invalid JSON: {e}")
 
 
 def _load_yaml(filename: str):
@@ -118,7 +117,7 @@ def gagefile_path_for_dir(dirname: str):
         if not os.path.exists(path):
             continue
         return path
-    raise FileNotFoundError()
+    raise GageFileNotFoundError(dirname)
 
 
 def gagefile_candidates():
@@ -128,3 +127,11 @@ def gagefile_candidates():
         "gage.yaml",
         "gage.json",
     ]
+
+
+def gagefile_for_project(cwd: str | None = None):
+    cwd = cwd or sys_config.cwd()
+    project_dir = find_project_dir(cwd)
+    if not project_dir:
+        raise GageFileNotFoundError(cwd)
+    return gagefile_for_dir(project_dir)

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import *
+from ..types import *
 
 import json
 import os
@@ -10,7 +11,7 @@ import sys
 import gage
 
 from .. import cli
-from .. import config
+from .. import sys_config
 from .. import gagefile
 from .. import project_util
 from .. import util
@@ -73,12 +74,12 @@ def _gagefile_find_error(path: str) -> NoReturn:
 def _gagefile_data(filename: str, args: Args):
     try:
         return gagefile.load_data(filename)
-    except gagefile.LoadError as e:
+    except gagefile.GageFileLoadError as e:
         _gagefile_load_error(e, args)
 
 
-def _gagefile_load_error(e: gagefile.LoadError, args: Args):
-    cli.exit_with_error(f"{args.path}: {e}")
+def _gagefile_load_error(e: gagefile.GageFileLoadError, args: Args):
+    cli.exit_with_error(f"{args.path}: {e.msg}")
 
 
 def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> NoReturn:
@@ -148,8 +149,8 @@ def _core_info_data() -> CheckData:
 def _maybe_verbose_info_data(verbose: bool) -> CheckData:
     if not verbose:
         return []
-    cwd = config.cwd()
-    project_dir = project_util.find_project(cwd)
+    cwd = sys_config.cwd()
+    project_dir = project_util.find_project_dir(cwd)
     gagefile = _try_gagefile(cwd)
     return [
         ("command_directory", cwd),
@@ -161,7 +162,7 @@ def _maybe_verbose_info_data(verbose: bool) -> CheckData:
 def _try_gagefile(cwd: str):
     try:
         return gagefile.gagefile_for_dir(cwd)
-    except FileNotFoundError:
+    except GageFileNotFoundError:
         return None
 
 

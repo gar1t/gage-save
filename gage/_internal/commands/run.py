@@ -7,13 +7,21 @@ from typer import Option
 
 
 def run(
-    operation: Annotated[
+    opspec: Annotated[
         str,
         Argument(
             metavar="[OPERATION]",
             help="Operation to start.",
         ),
     ] = "",
+    stage: Annotated[
+        bool,
+        Option(
+            "--stage",
+            help="Stage a run but don't run it.",
+            show_default=False,
+        ),
+    ] = False,
     preview_sourcecode: Annotated[
         bool,
         Option(
@@ -49,7 +57,8 @@ def run(
 
     run(
         Args(
-            operation=operation,
+            opspec=opspec,
+            stage=stage,
             preview_sourcecode=preview_sourcecode,
             preview_all=preview_all,
             json=json,

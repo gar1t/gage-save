@@ -1,11 +1,16 @@
 # Gage To Do
 
+
 Next up:
 
 - Basic run command support (`run <op>`)
 - Rich progress and run output
 
-- Runs list
+- Runs list - rich gives us a lot of options
+
+- Missing these commands
+  - show (was runs info)
+  - ls
 
 - Scan output for scalars and attrs - save in run dir root with special
   extensions (e.g. *.attrs - same as with Guild)
@@ -66,6 +71,24 @@ exec = "python train.py"
   blow up at the slightest problem. For now bad data leaks.
 
 - Integrate time range spec into filter spec
+
+- How can a user specify different commands for different platforms? One
+  method would be something like:
+
+```
+[train.exec]
+
+run[windows] = "..."
+run[mac] = "..."
+run[linux] = "..."
+```
+
+- Config in exec commands
+
+- Review error messages for consistency
+  - Capitalization
+  - Use of periods
+  - Phrasing of "run 'cmd' for more info/help"
 
 ## Low priority
 

@@ -5,11 +5,19 @@ from typing import *
 import os
 import threading
 
-__var_home: Optional[str] = None
+__all__ = [
+    "cwd",
+    "runs_home",
+    "set_cwd",
+    "set_runs_home",
+]
 
 
 __cwd_lock = threading.Lock()
 __cwd = None
+
+
+USER_HOME = os.path.expanduser("~")
 
 
 def set_cwd(cwd: Optional[str]):
@@ -64,15 +72,27 @@ class SetCwd:
         set_cwd(self._save)
 
 
-def var_home():
-    return __var_home or os.path.expanduser("~/.gage")
+# def var_home():
+#     return __var_home or os.path.expanduser("~/.gage")
 
 
-def set_var_home(path: str):
-    globals()["__var_home"] = path
+# def set_var_home(path: str):
+#     globals()["__var_home"] = path
 
 
-def runs_home(deleted: bool = False):
-    if deleted:
-        return os.path.join(var_home(), "trash", "runs")
-    return os.path.join(var_home(), "runs")
+# def runs_home(deleted: bool = False):
+#     if deleted:
+#         return os.path.join(var_home(), "trash", "runs")
+#     return os.path.join(var_home(), "runs")
+
+
+def set_runs_home(dirname: str):
+    os.environ["GAGE_RUNS_HOME"] = dirname
+
+
+def runs_home():
+    return os.getenv("GAGE_RUNS_HOME") or os.getenv("RUNS_HOME") or default_runs_home()
+
+
+def default_runs_home():
+    return os.path.join(USER_HOME, ".gage", "runs")

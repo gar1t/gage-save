@@ -11,7 +11,7 @@ from .__init__ import __version__
 from ._internal import cli
 from ._internal import exitcodes
 
-from ._internal.commands.main import make_app
+from ._internal.commands.main import main_app
 
 if os.getenv("TERM") in ("unknown", "dumb"):
     import typer.core
@@ -21,7 +21,7 @@ if os.getenv("TERM") in ("unknown", "dumb"):
 
 
 def main():
-    app = make_app()
+    app = main_app()
     try:
         app()
     except SystemExit as e:
