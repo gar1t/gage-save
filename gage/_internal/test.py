@@ -246,7 +246,9 @@ def cat_json(filename: str):
     print(json.dumps(val, indent=2, sort_keys=True))
 
 
-def write(filename: str, contents: str, append: bool = False):
+def write(filename: str, contents: str, append: bool = False, force: bool = True):
+    if force and os.path.exists(filename):
+        file_util.set_readonly(filename, False)
     file_util.write_file(filename, contents, append=append)
 
 

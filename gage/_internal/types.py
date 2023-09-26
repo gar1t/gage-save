@@ -199,12 +199,14 @@ class RunContext(NamedTuple):
     opdef: OpDef
 
 
-class Run(NamedTuple):
-    id: str
-    opref: OpRef
-    meta_dir: str
-    run_dir: str
-    name: str
+class Run:
+    def __init__(self, id: str, opref: OpRef, meta_dir: str, run_dir: str, name: str):
+        self.id = id
+        self.opref = opref
+        self.meta_dir = meta_dir
+        self.run_dir = run_dir
+        self.name = name
+        self._cache: dict[str, Any] = {}
 
 
 RunStatus = Literal[

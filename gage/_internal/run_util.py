@@ -36,13 +36,14 @@ __all__ = [
     "META_SCHEMA",
     "RunManifest",
     "apply_config",
-    "finalize_staged_run",
     "finalize_run",
+    "finalize_staged_run",
     "init_run_meta",
-    "make_run",
     "make_run_timestamp",
+    "make_run",
     "meta_opdef",
     "open_run_output",
+    "run_attr",
     "run_meta_path",
     "run_name_for_id",
     "run_status",
@@ -140,32 +141,76 @@ def _pending_status(run: Run) -> Literal["pending", "unknown"] | None:
 # Run attrs
 # =================================================================
 
+_RAISE = object()
+_UNREAD = object()
 
-def run_user_attr(run: Run, name: str):
+
+def run_attr(run: Run, name: str, default: Any = _RAISE):
+    """Returns a run attribute or default if attribute can't be read.
+
+    Attributes may be read from the run meta directory or from the run
+    itself depending on the attribute.
+
+    Attribute results are alway cached. To re-read a run attribute from
+    disk, read the attribute from a new run.
+    """
+    cache_name = f"_attr_{name}"
+    try:
+        return run._cache[cache_name]
+    except KeyError:
+        try:
+            reader = cast(Callable[[Any, str, Any], Any], _ATTR_READERS[name])
+        except KeyError:
+            raise AttributeError(name) from None
+        else:
+            val = reader(run, name, _UNREAD)
+            if val is _UNREAD:
+                if default is _RAISE:
+                    raise AttributeError(name) from None
+                return default
+            run._cache[cache_name] = val
+            return val
+
+
+def run_user_attr(run: Run, name: str, default: Any = None):
     filename = _meta_user_attr_filename(run, name)
     try:
         f = open(filename)
     except FileNotFoundError:
-        return None
+        return default
     else:
         with f:
             return json.load(f)
 
 
-def run_timestamp(run: Run, name: RunTimestamp):
+def run_timestamp(run: Run, name: RunTimestamp, default: Any = None):
     filename = _meta_timestamp_filename(run, name)
     try:
         timestamp_str = open(filename).read()
     except FileNotFoundError:
-        return None
+        return default
     else:
         try:
             timestamp_int = int(timestamp_str.rstrip())
         except ValueError:
             log.warning("Invalid run timestamp in \"%s\"", filename)
-            return None
+            return default
         else:
             return datetime.datetime.fromtimestamp(timestamp_int / 1000000)
+
+
+def _run_run_dir(run: Run, name: str, default: Any = None):
+    return run.run_dir
+
+
+_ATTR_READERS = {
+    "id": getattr,
+    "label": run_user_attr,
+    "name": getattr,
+    "dir": _run_run_dir,
+    "started": run_timestamp,
+    "stopped": run_timestamp,
+}
 
 
 # =================================================================
@@ -267,6 +312,39 @@ def _meta_timestamp_filename(run: Run, name: RunTimestamp):
 
 def _meta_user_attr_filename(run: Run, name: str):
     return run_meta_path(run, "user", name + ".json")
+
+
+# =================================================================
+# Load run
+# =================================================================
+
+
+def run_for_meta_dir(meta_dir: str):
+    try:
+        opref = _load_opref(meta_dir)
+    except (OSError, ValueError) as e:
+        return None
+    else:
+        try:
+            run_id = _load_run_id(meta_dir)
+        except (OSError, ValueError):
+            return None
+        else:
+            run_dir = meta_dir[:-5]
+            run_name = run_name_for_id(run_id)
+            return Run(run_id, opref, meta_dir, run_dir, run_name)
+
+
+def _load_opref(meta_dir: str):
+    filename = os.path.join(meta_dir, "opref")
+    with open(filename) as f:
+        return decode_opref(f.read())
+
+
+def _load_run_id(meta_dir: str):
+    filename = os.path.join(meta_dir, "id")
+    with open(filename) as f:
+        return f.read().rstrip()
 
 
 # =================================================================

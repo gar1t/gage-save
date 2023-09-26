@@ -253,3 +253,192 @@ List the run files.
     data.json
     setup.py
     train.py
+
+## Run attributes
+
+Run attributes may be read from the run directly or from files written
+to run meta. Use `run_attr()` to read either.
+
+Attributes supported `run_attr()` are listed in the private module
+variable `_ATTR_READERS`.
+
+    >>> from gage._internal.run_util import _ATTR_READERS
+
+    >>> sorted(_ATTR_READERS)  # +pprint
+    ['dir', 'id', 'label', 'name', 'started', 'stopped']
+
+Create a run that's not bound to a directory.
+
+    >>> run = Run(
+    ...     id="abc",
+    ...     opref=OpRef("test", "test"),
+    ...     meta_dir="/meta_dir",
+    ...     run_dir="/run_dir",
+    ...     name="def")
+
+`run_attr()` provides access to a limited number of run attributes.
+These are considered publicly accessible attributes. In one case, `dir`,
+which maps to `run_dir`, the attribute is renamed.
+
+    >>> run_attr(run, "id")
+    'abc'
+
+    >>> run_attr(run, "name")
+    'def'
+
+    >>> run_attr(run, "dir")
+    '/run_dir'
+
+Other attributes are read from disk. In this case, `run_attr()` raises
+an attribute error unless a default is provided.
+
+    >>> run_attr(run, "label")
+    Traceback (most recent call last):
+    AttributeError: label
+
+    >>> run_attr(run, "label", "a default")
+    'a default'
+
+Create a run from a run meta directory.
+
+    >>> meta_dir = make_temp_dir()
+
+    >>> run = Run(
+    ...     id="abc",
+    ...     opref=OpRef("test", "test"),
+    ...     meta_dir=meta_dir,
+    ...     run_dir="/run_dir",
+    ...     name="def")
+
+    >>> init_run_meta(
+    ...     run=run,
+    ...     opdef=OpDef("test", {}),
+    ...     config={},
+    ...     cmd=OpCmd([], {}),
+    ...     user_attrs={
+    ...         "label": "Hello run",
+    ...         "custom-123": 123
+    ...     },
+    ...     system_attrs={
+    ...         "platform": "some-tests",
+    ...         "custom-list": [1, 2, "shoe"]
+    ...     }
+    ... )
+
+Core attributes:
+
+    >>> run_attr(run, "id")
+    'abc'
+
+    >>> run_attr(run, "name")
+    'def'
+
+    >>> run_attr(run, "dir")
+    '/run_dir'
+
+User attribute `label` is available.
+
+    >>> run_attr(run, "label")
+    'Hello run'
+
+Started and stopped timestamps are read from the meta dir. Neither are
+present and attempting to read either generates an attribute error.
+
+    >>> run_attr(run, "started")
+    Traceback (most recent call last):
+    AttributeError: started
+
+    >>> run_attr(run, "stopped")
+    Traceback (most recent call last):
+    AttributeError: stopped
+
+`read_attr()` returns specified defaults.
+
+    >>> run_attr(run, "started", 123)
+    123
+
+    >>> run_attr(run, "stopped", 456)
+    456
+
+Write timestamps for started and stopped.
+
+    >>> write(
+    ...     run_meta_path(run, "started"),
+    ...     str(make_run_timestamp())
+    ... )
+
+    >>> write(
+    ...     run_meta_path(run, "stopped"),
+    ...     str(make_run_timestamp())
+    ... )
+
+Re-read the attributes.
+
+    >>> run_attr(run, "started")  # +wildcard
+    datetime.datetime(...)
+
+    >>> run_attr(run, "stopped")  # +wildcard
+    datetime.datetime(...)
+
+Reading an unsupported attribute generates an attribute error even if a
+default is provided.
+
+    >>> run_attr(run, "unknown")
+    Traceback (most recent call last):
+    AttributeError: unknown
+
+    >>> run_attr(run, "unknown", 789)
+    Traceback (most recent call last):
+    AttributeError: unknown
+
+When successfully read, attribute values are cached to avoid re-reading.
+
+Re-write the run label.
+
+    >>> write(
+    ...     run_meta_path(run, "user", "label.json"),
+    ...     "\"Modified label\"",
+    ...     force=True
+    ... )
+
+Re-reading does not change the run attribute value.
+
+    >>> run_attr(run, "label")
+    'Hello run'
+
+To force a re-read, recreate the run.
+
+    >>> run = Run(
+    ...     id="abc",
+    ...     opref=OpRef("test", "test"),
+    ...     meta_dir=meta_dir,
+    ...     run_dir="/run_dir",
+    ...     name="def")
+
+    >>> run_attr(run, "label")
+    'Modified label'
+
+In cases where recreating a run is not desireable, the cache can be
+invalidated directly by accessing `run._cache`.
+
+    >>> run._cache  # +pprint
+    {'_attr_label': 'Modified label'}
+
+Re-write the label.
+
+    >>> write(
+    ...     run_meta_path(run, "user", "label.json"),
+    ...     "\"Again modified\""
+    ... )
+
+The cached value is used.
+
+    >>> run_attr(run, "label")
+    'Modified label'
+
+Invalidate the cache and read the label again.
+
+    >>> run._cache.clear()
+
+    >>> run_attr(run, "label")
+    'Again modified'
