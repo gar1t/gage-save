@@ -8,21 +8,18 @@ from click import Context
 
 from .. import cli
 
-from .command_types import *
-
 from .runs_delete import runs_delete
-from .runs_list import runs_list
+from .runs_list import *
 
 
 def runs(
     ctx: Context,
-    where: RunsWhere = "",
-    first: RunsFirst = 20,
+    where: Where = "",
 ):
     """Show or manage runs.
 
-    If COMMAND is omitted, lists runs. Run 'gage runs list --help' for
-    details about listing runs.
+    If **COMMAND** is omitted, lists runs. Run 'gage runs list --help'
+    for detailed help.
     """
     if ctx.invoked_subcommand:
         return
@@ -31,7 +28,6 @@ def runs(
 
     args = Args(
         where=where,
-        first=first,
     )
     runs_list(args)
 

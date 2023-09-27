@@ -14,6 +14,7 @@ import rich.console
 import rich.json
 import rich.markdown
 import rich.panel
+import rich.prompt
 import rich.style
 import rich.text
 import rich.table
@@ -25,6 +26,7 @@ __all__ = [
     "Group",
     "Panel",
     "Table",
+    "confirm",
     "console_width",
     "err",
     "error_message",
@@ -44,6 +46,7 @@ is_plain = os.getenv("TERM") in ("dumb", "unknown")
 TABLE_HEADER_STYLE = "yellow"
 TABLE_BORDER_STYLE = "dim"
 LABEL_STYLE = "bold cyan"
+SECOND_LABEL_STYLE = "cyan"
 
 
 def console_width():
@@ -82,6 +85,26 @@ def label(s: str):
 
 def markdown(md: str):
     return rich.markdown.Markdown(md)
+
+
+class YesNoConfirm(rich.prompt.Confirm):
+    prompt_suffix = " "
+
+    def make_prompt(self, default: bool) -> rich.text.Text:
+        prompt = self.prompt.copy()
+        prompt.end = ""
+        prompt.append(" ")
+        default_part = rich.text.Text(
+            "(Y/n)" if default else "(y/N)",
+            style="prompt.default",
+        )
+        prompt.append(default_part)
+        prompt.append(self.prompt_suffix)
+        return prompt
+
+
+def confirm(prompt: str, default: bool = False):
+    return YesNoConfirm.ask(prompt, default=default)
 
 
 def incompatible_with(*params: str):

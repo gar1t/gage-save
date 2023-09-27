@@ -7,7 +7,7 @@
     >>> ls(sys_config.runs_home())
     <empty>
 
-    >>> run("gage run hello --stage")
+    >>> run("gage run hello --stage -y")
     <0>
 
     >>> for path in lsl(sys_config.runs_home()):

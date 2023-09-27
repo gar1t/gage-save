@@ -2,20 +2,29 @@
 
 from typing import *
 
-from .command_types import *
+from typer import *
 
-__all__ = ["runs_list"]
+__all__ = [
+    "Where",
+    "runs_list",
+]
+
+Where = Annotated[
+    str,
+    Option(
+        metavar="EXPR",
+        help="Show runs matching filter expression.",
+    ),
+]
 
 
 def runs_list(
-    where: RunsWhere = "",
-    first: RunsFirst = 20,
+    where: Where = "",
 ):
     """List runs."""
     from .runs_list_impl import runs_list, Args
 
     args = Args(
         where=where,
-        first=first,
     )
     runs_list(args)

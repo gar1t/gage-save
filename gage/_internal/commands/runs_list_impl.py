@@ -19,7 +19,6 @@ __all__ = ["Args", "runs_list"]
 
 class Args(NamedTuple):
     where: str
-    first: int
 
 
 def runs_list(args: Args):
@@ -41,12 +40,12 @@ _TRUNC_POINTS = [
 
 def _headers(width: int) -> list[cli.ColSpec]:
     headers = [
-        ("#", {"ratio": None, "no_wrap": True}),
-        ("id", {"ratio": None, "no_wrap": True}),
-        ("operation", {"ratio": None, "no_wrap": True}),
+        ("#", {"ratio": None, "no_wrap": True, "style": cli.TABLE_HEADER_STYLE}),
+        ("id", {"ratio": None, "no_wrap": True, "style": "dim"}),
+        ("operation", {"ratio": None, "no_wrap": True, "style": cli.LABEL_STYLE}),
         ("started", {"ratio": None, "no_wrap": True}),
         ("status", {"ratio": None, "no_wrap": True}),
-        ("label", {"ratio": 1, "no_wrap": True}),
+        ("label", {"ratio": 1, "no_wrap": True, "style": cli.SECOND_LABEL_STYLE}),
     ]
     return _fit(headers, width)
 
@@ -66,11 +65,25 @@ def _row(index: int, run: Run, width: int) -> list[str]:
         run_id,
         op_name,
         started_str,
-        status,
+        cli.text(status, style=_status_style(status)),
         label,
     ]
 
     return _fit(row, width)
+
+
+def _status_style(status: str):
+    match status:
+        case "completed":
+            return "green"
+        case "error" | "terminated":
+            return "red"
+        case "staged" | "pending":
+            return "dim"
+        case "running":
+            return "yellow italic"
+        case _:
+            return ""
 
 
 def _fit(l: list[Any], width: int):

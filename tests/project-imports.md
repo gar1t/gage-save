@@ -30,7 +30,6 @@
     gage._internal.cli
     gage._internal.commands.check
     gage._internal.commands.check_impl
-    gage._internal.commands.command_types
     gage._internal.commands.error_handlers
     gage._internal.commands.help
     gage._internal.commands.main

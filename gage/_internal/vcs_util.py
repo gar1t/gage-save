@@ -558,7 +558,7 @@ def _init_git_ls_files_sample_project():
 
     Returns the project directory.
     """
-    project_dir = file_util.mktempdir("guild-check-")
+    project_dir = file_util.make_temp_dir("guild-check-")
     _ = subprocess.check_output([_git_exe(), "init"], cwd=project_dir)
     os.mkdir(os.path.join(project_dir, "files"))
     file_util.touch(os.path.join(project_dir, "files", "foo.txt"))

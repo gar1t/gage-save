@@ -522,7 +522,7 @@ def stage_sourcecode(run: Run, project_dir: str):
 
 def _copy_sourcecode(run: Run, project_dir: str, opdef: OpDef, log: Logger):
     sourcecode = run_sourcecode.init(project_dir, opdef)
-    log.info(f"Copying source code (see log/files for details): {sourcecode.patterns}")
+    log.info(f"Copying source code (see log/files): {sourcecode.patterns}")
     copy_files(project_dir, run.run_dir, sourcecode.paths)
 
 
@@ -543,7 +543,7 @@ def apply_config(run: Run):
     log = _runner_log(run)
     config = meta_config(run)
     opdef = meta_opdef(run)
-    log.info("Applying configuration (see log/patched for details)")
+    log.info("Applying configuration (see log/patched)")
     diffs = run_config.apply_config(config, opdef, run.run_dir)
     if diffs:
         _write_patched(run, diffs)
@@ -583,7 +583,7 @@ def _resolve_dependencies(run: Run, project_dir: str, opdef: OpDef, log: Logger)
 
     # TODO
     # dependencies = run_dependencies.init(project_dir, opdef)
-    # log.info(f"Copying dependencies (see log/files for details): {dependencies.patterns}")
+    # log.info(f"Copying dependencies (see log/files): {dependencies.patterns}")
     # copy_files(project_dir, run.run_dir, dependencies.paths)
 
 
@@ -607,7 +607,7 @@ def finalize_staged_run(run: Run):
 
 
 def _write_staged_files_manifest(run: Run, log: Logger):
-    log.info("Finalizing staged files (see manifest for details)")
+    log.info("Finalizing staged files (see manifest)")
     m = RunManifest(run, "w")
     with m:
         for type, path in _reduce_files_log(run):
@@ -720,7 +720,7 @@ def _finalize_run_hook(run: Run, opdef: OpDef, log: Logger):
 
 
 def _write_run_files_manifest(run: Run, log: Logger):
-    log.info("Finalizing run files (see manifest for details)")
+    log.info("Finalizing run files (see manifest)")
     index = _init_manifest_index(run)
     m = RunManifest(run, "w")
     with m:
@@ -865,7 +865,7 @@ def _iter_files_log(run: Run):
                 yield _decode_files_log_line(line.rstrip())
             except TypeError:
                 raise TypeError(
-                    "bad encoding in \"{filename}\", line {lineno}: {line!r}"
+                    f"bad encoding in \"{filename}\", line {lineno}: {line!r}"
                 )
             lineno += 1
 
@@ -884,7 +884,7 @@ def _decode_files_log_line(line: str):
             raise TypeError()
     if event not in ("a", "d", "m"):
         raise TypeError()
-    if type not in ("s", "d", "r"):
+    if type not in ("s", "d", "r", "g"):
         raise TypeError()
     return LoggedFile(event, type, modified, path)
 
@@ -959,7 +959,7 @@ def _run_phase_exec(
     output_name: str,
     log: Logger,
 ):
-    log.info(f"Running {phase_name} (see output/{output_name} for output): {exec_cmd}")
+    log.info(f"Running {phase_name} (see output/{output_name}): {exec_cmd}")
     proc_args, use_shell = _proc_args(exec_cmd)
     proc_env = {
         **os.environ,

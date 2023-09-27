@@ -18,7 +18,7 @@ __all__ = [
     "TempDir",
     "TempFile",
     "compare_paths",
-    "copytree",
+    "copy_tree",
     "dir_size",
     "ensure_dir",
     "ensure_safe_rmtree",
@@ -33,12 +33,12 @@ __all__ = [
     "is_text_file",
     "make_dir",
     "make_executable",
-    "mktempdir",
+    "make_temp_dir",
     "realpath",
-    "rmtempdir",
+    "delete_temp_dir",
     "safe_filename",
-    "safe_listdir",
-    "safe_rmtree",
+    "safe_list_dir",
+    "safe_delete_tree",
     "set_readonly",
     "shorten_path",
     "standardize_path",
@@ -398,7 +398,7 @@ class TempDir(_TempBase):
         return tempfile.mkdtemp(prefix=prefix, suffix=suffix)
 
     def delete(self):
-        rmtempdir(self.path)
+        delete_temp_dir(self.path)
 
 
 class TempFile(_TempBase):
@@ -412,11 +412,11 @@ class TempFile(_TempBase):
         os.remove(self.path)
 
 
-def mktempdir(prefix: str = ""):
+def make_temp_dir(prefix: str = ""):
     return tempfile.mkdtemp(prefix=prefix)
 
 
-def rmtempdir(path: str):
+def delete_temp_dir(path: str):
     assert os.path.dirname(path) == tempfile.gettempdir(), path
     try:
         shutil.rmtree(path)
@@ -427,7 +427,7 @@ def rmtempdir(path: str):
             log.error("error removing %s: %s", path, e)
 
 
-def safe_rmtree(path: str, force: bool = False):
+def safe_delete_tree(path: str, force: bool = False):
     """Removes path if it's not top level or user dir."""
     assert not _top_level_dir(path), path
     assert path != os.path.expanduser("~"), path
@@ -441,7 +441,7 @@ def safe_rmtree(path: str, force: bool = False):
 
 def ensure_safe_rmtree(path: str):
     try:
-        safe_rmtree(path, force=True)
+        safe_delete_tree(path, force=True)
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
@@ -497,7 +497,7 @@ def symlink(target: str, link: str):
         os.symlink(target, link)
 
 
-def copyfile(src: str, dest: str):
+def copy_file(src: str, dest: str):
     shutil.copyfile(src, dest)
     shutil.copymode(src, dest)
 
@@ -536,7 +536,7 @@ def ensure_file(filename: str):
         touch(filename)
 
 
-def copytree(src: str, dest: str, preserve_links: bool = True):
+def copy_tree(src: str, dest: str, preserve_links: bool = True):
     try:
         # dirs_exist_ok was added in Python 3.8:
         # https://docs.python.org/3/library/shutil.html#shutil.copytree
@@ -573,7 +573,7 @@ def dir_size(dir: str):
     return size
 
 
-def safe_listdir(path: str) -> list[str]:
+def safe_list_dir(path: str) -> list[str]:
     try:
         return os.listdir(path)
     except OSError:

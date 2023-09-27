@@ -6,8 +6,8 @@ __all__ = ["Args", "runs_delete"]
 
 
 class Args(NamedTuple):
+    runs: list[str] | None
     where: str
-    first: int
 
 
 def runs_delete(args: Args):

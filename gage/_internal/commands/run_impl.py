@@ -25,6 +25,7 @@ class Args(NamedTuple):
     opspec: str
     label: str
     stage: bool
+    yes: bool
     preview_sourcecode: bool
     preview_all: bool
     json: bool
@@ -103,12 +104,21 @@ def _init_sourcecode_preview(opdef: OpDef):
 def _stage(ctx: RunContext, args: Args):
     run = make_run(ctx.opref, runs_home())
     config = _run_config(args)
+    _maybe_prompt(args, run, config)
     cmd = _op_cmd(ctx, config)
     user_attrs = _user_attrs(args)
     sys_attrs = _sys_attrs()
     init_run_meta(run, ctx.opdef, config, cmd, user_attrs, sys_attrs)
     stage_run(run, ctx.project_dir)
     return run
+
+
+def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
+    if args.yes:
+        return
+    cli.out(f"You are about to run [yellow]{run.opref.get_full_name()}[/yellow]")
+    if not cli.confirm(f"Continue?", default=True):
+        raise SystemExit(0)
 
 
 def _run_config(args: Args):

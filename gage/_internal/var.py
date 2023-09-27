@@ -6,15 +6,22 @@ from .types import *
 import functools
 import logging
 import os
+import shutil
 
 from . import sys_config
 
 from .run_util import run_attr
 from .run_util import run_for_meta_dir
 
+from .file_util import safe_delete_tree
+
 log = logging.getLogger(__name__)
 
 RunFilter = Callable[[Run], bool]
+
+# =================================================================
+# List runs
+# =================================================================
 
 
 def list_runs(
@@ -76,3 +83,33 @@ def _run_attr_cmp(a: Run, b: Run, attr: str):
     if y_val is None:
         return rev
     return rev * ((x_val > y_val) - (x_val < y_val))
+
+
+# =================================================================
+# Delete runs
+# =================================================================
+
+
+def delete_runs(runs: list[Run], permanent: bool = False):
+    for run in runs:
+        _delete_run(run, permanent)
+
+
+def _delete_run(run: Run, permanent: bool):
+    if permanent:
+        _delete_tree(run.meta_dir)
+        _delete_tree(run.run_dir)
+    else:
+        _move(run.meta_dir, _deleted_meta_dir(run))
+
+
+def _deleted_meta_dir(run: Run):
+    return run.meta_dir + ".deleted"
+
+
+def _delete_tree(dirname: str):
+    safe_delete_tree(dirname)
+
+
+def _move(src: str, dest: str):
+    shutil.move(src, dest)

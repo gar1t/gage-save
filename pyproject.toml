@@ -24,7 +24,9 @@ dependencies = [
     "proquint==0.2.1",
     "psutil==5.9.5",
     "pyyaml==6.0.1",
-    "tomli==2.0.1"
+    "rich==13.5.2",
+    "tomli==2.0.1",
+    "typer@git+https://github.com/gar1t/typer",
 ]
 
 [project.scripts]

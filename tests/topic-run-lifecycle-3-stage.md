@@ -209,12 +209,12 @@ The runner log contains the applied include and exclude patterns.
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard -space
     Writing meta id
     ...
-    Copying source code (see log/files for details):
+    Copying source code (see log/files):
       ['**/* text size<10000 max-matches=500',
        '-**/.* dir',
        '-**/* dir sentinel=bin/activate',
        '-**/* dir sentinel=.nocopy']
-    Running stage-sourcecode (see output/10_sourcecode for output):
+    Running stage-sourcecode (see output/10_sourcecode):
       ['...',
        '-c',
        "open('msg.txt', 'w').write('hello')"]
@@ -290,7 +290,7 @@ The runner log records the command and its exit code.
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard -space
     Writing meta id
     ...
-    Running stage-runtime (see output/20_runtime for output):
+    Running stage-runtime (see output/20_runtime):
       ['...', 'setup.py']
     Exit code for stage-runtime: 0
 
@@ -395,7 +395,7 @@ Show logged events.
     >>> cat_log(run_meta_path(run, "log", "runner"))  # +wildcard
     Writing meta id
     ...
-    Finalizing staged files (see manifest for details)
+    Finalizing staged files (see manifest)
     Writing meta staged
 
 ## Errors
