@@ -32,7 +32,10 @@ def resolve_run_context(opspec: str, command_dir: str | None = None):
 
 
 def _namespace(gagefile: GageFile, project_dir: str):
-    return os.path.basename(project_dir)
+    project_dir = os.path.realpath(project_dir)
+    project_basename = os.path.basename(project_dir)
+    assert project_basename, project_dir
+    return project_basename
 
 
 def _opdef_for_spec(spec: str, gagefile: GageFile):

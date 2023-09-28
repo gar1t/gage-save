@@ -6,10 +6,10 @@ from .types import *
 
 from subprocess import Popen
 
-import os
 import errno
 import io
 import logging
+import os
 import struct
 import threading
 import time
@@ -71,6 +71,7 @@ class RunOutput:
         self._index = None
         self._out_tee = None
         self._err_tee = None
+        self._err_tee_ready = threading.Event()
 
     @property
     def closed(self):
@@ -121,11 +122,7 @@ class RunOutput:
     def _err_tee_run(self):
         assert self._proc
         assert self._proc.stderr
-        self._err_tee_offset()
         self._gen_tee_run(self._proc.stderr, self._err_fileno, 1)
-
-    def _err_tee_offset(self):
-        time.sleep(0.1)
 
     def _gen_tee_run(
         self,
@@ -138,11 +135,20 @@ class RunOutput:
         os_read = os.read
         os_write = os.write
         input_fileno = input_stream.fileno()
-
         output_fileno = self._output.fileno()
         index_fileno = self._index.fileno()
         lock = self._output_lock
         line: list[int] = []
+
+        if stream_type == 1:
+            # Err tee to wait until ready
+            self._err_tee_ready.wait()
+        elif stream_type == 0:
+            # Out tee started, mark err tee ready
+            self._err_tee_ready.set()
+        else:
+            assert False, stream_type
+
         while True:
             buf = os_read(input_fileno, RUN_OUTPUT_STREAM_BUFFER)
             if not buf:

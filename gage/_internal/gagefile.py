@@ -6,9 +6,9 @@ from .types import *
 import json
 import os
 
-import jschon
+# Avoid jschon imports here - expensive
+
 import tomli
-import yaml
 
 from . import sys_config
 
@@ -25,14 +25,14 @@ __all__ = [
     "validation_errors",
 ]
 
-__schema: Optional[jschon.JSONSchema] = None
+__schema: Any = None
 
 
 JSONCompatible = None | bool | int | float | str | Sequence[Any] | Mapping[str, Any]
 
 
 class ValidationError(Exception):
-    def __init__(self, validation_result: jschon.Result):
+    def __init__(self, validation_result: Any):
         super().__init__(validation_result)
         self.validation_result = validation_result
 
@@ -46,6 +46,8 @@ def validation_errors(e: ValidationError):
 
 
 def validate_data(obj: JSONCompatible):
+    import jschon
+
     schema = _ensure_schema()
     result = schema.evaluate(jschon.JSON(obj))
     if not result.valid:
@@ -54,6 +56,8 @@ def validate_data(obj: JSONCompatible):
 
 def _ensure_schema():
     if not __schema:
+        import jschon
+
         catalog = jschon.create_catalog("2020-12")
         globals()["__schema"] = _load_schema()
     assert __schema
@@ -61,13 +65,15 @@ def _ensure_schema():
 
 
 def _load_schema():
+    from jschon import JSONSchema
+
     src = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
         "gagefile.schema.json",
     )
     with open(src) as f:
         schema_data = json.load(f)
-    return jschon.JSONSchema(schema_data)
+    return JSONSchema(schema_data)
 
 
 def load_gagefile(filename: str):
@@ -103,6 +109,8 @@ def _load_json(filename: str):
 
 
 def _load_yaml(filename: str):
+    import yaml
+
     with open(filename) as f:
         return yaml.safe_load(f)
 
