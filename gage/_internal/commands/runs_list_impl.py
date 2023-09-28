@@ -7,7 +7,8 @@ from ..types import *
 import human_readable
 
 from .. import cli
-from .. import var
+
+from ..var import list_runs
 
 from ..run_select import select_runs
 
@@ -27,8 +28,8 @@ class Args(NamedTuple):
 
 
 def runs_list(args: Args):
-    # TODO apply filter
-    filtered = var.list_runs(sort=["-timestamp"])
+    sorted = list_runs(sort=["-timestamp"])
+    filtered = _filter_runs(sorted, args)
     selected_with_index = _select_runs(filtered, args)
     limited_with_index = _limit_runs(selected_with_index, args)
     width = cli.console_width()
@@ -41,6 +42,11 @@ def runs_list(args: Args):
     for index, run in limited_with_index:
         table.add_row(*_row(index, run, width))
     cli.out(table)
+
+
+def _filter_runs(runs: list[Run], args: Args):
+    # TODO apply where filter
+    return runs
 
 
 def _select_runs(runs: list[Run], args: Args):
@@ -81,7 +87,7 @@ def _headers(width: int) -> list[cli.ColSpec]:
         ("#", {"ratio": None, "no_wrap": True, "style": cli.TABLE_HEADER_STYLE}),
         ("name", {"ratio": None, "no_wrap": True, "style": "dim"}),
         ("operation", {"ratio": None, "no_wrap": True, "style": cli.LABEL_STYLE}),
-        ("started", {"ratio": None, "no_wrap": True}),
+        ("started", {"ratio": None, "no_wrap": True, "style": "dim"}),
         ("status", {"ratio": None, "no_wrap": True}),
         ("description", {"ratio": 1, "no_wrap": True, "style": cli.SECOND_LABEL_STYLE}),
     ]
@@ -103,25 +109,11 @@ def _row(index: int, run: Run, width: int) -> list[str]:
         run_name,
         op_name,
         started_str,
-        cli.text(status, style=_status_style(status)),
+        cli.text(status, style=cli.run_status_style(status)),
         label,
     ]
 
     return _fit(row, width)
-
-
-def _status_style(status: str):
-    match status:
-        case "completed":
-            return "green"
-        case "error" | "terminated":
-            return "red"
-        case "staged" | "pending":
-            return "dim"
-        case "running":
-            return "yellow italic"
-        case _:
-            return ""
 
 
 def _fit(l: list[Any], width: int):

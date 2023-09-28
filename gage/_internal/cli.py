@@ -51,6 +51,20 @@ LABEL_STYLE = "cyan1"
 SECOND_LABEL_STYLE = "cyan"
 
 
+def run_status_style(status: str):
+    match status:
+        case "completed":
+            return "green4"
+        case "error" | "terminated":
+            return "red3"
+        case "staged" | "pending":
+            return "dim"
+        case "running":
+            return "yellow italic"
+        case _:
+            return ""
+
+
 def console_width():
     return _out.width
 

@@ -18,12 +18,12 @@ RunSpec = Annotated[
 ]
 
 
-def show(runspec: RunSpec = ""):
+def show(run: RunSpec = ""):
     """Show information about a run."""
     from .show_impl import show, Args
 
     show(
         Args(
-            runspec=runspec,
+            run=run,
         )
     )
