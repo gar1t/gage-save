@@ -89,6 +89,10 @@ def markdown(md: str):
     return rich.markdown.Markdown(md)
 
 
+def markup(mu: str):
+    return rich.markup.render(mu)
+
+
 def pad(val: Any, padding: rich.padding.PaddingDimensions):
     return rich.padding.Padding(val, padding)
 
@@ -113,17 +117,24 @@ def confirm(prompt: str, default: bool = False):
     return YesNoConfirm.ask(prompt, default=default)
 
 
-def incompatible_with(*params: str):
+def incompatible_with(*incompatible: str):
     """Decorator to specify incompatible params."""
 
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
-        if value:
-            for other_name in params:
-                if param.name != other_name and other_name in params:
-                    raise SystemExit(
-                        f"{param.name} and {other_name} cannot both be specified\n\n"
-                        f"Try '{ctx.command_path} --help' for more information."
-                    )
+        if not value:
+            return value
+        for used_param in ctx.params:
+            if param.name == used_param or used_param not in incompatible:
+                continue
+            err(
+                markup(
+                    f"[b cyan]{param.name}[/] and [b cyan]{used_param}[/] "
+                    "cannot be used together.\n\n"
+                    f"Try '[b]{ctx.command_path} {ctx.help_option_names[0]}[/b]' "
+                    "for help."
+                )
+            )
+            raise SystemExit()
         return value
 
     return callback

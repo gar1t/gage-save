@@ -103,6 +103,7 @@ def run(
     run(
         Args(
             opspec=opspec,
+            flags=flags,
             label=label,
             stage=stage,
             yes=yes,

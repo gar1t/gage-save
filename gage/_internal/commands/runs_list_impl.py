@@ -9,6 +9,8 @@ import human_readable
 from .. import cli
 from .. import var
 
+from ..run_select import select_runs
+
 from ..run_util import meta_opref
 from ..run_util import run_status
 from ..run_util import run_timestamp
@@ -18,6 +20,7 @@ __all__ = ["Args", "runs_list"]
 
 
 class Args(NamedTuple):
+    runs: list[str] | None
     limit: int
     all: bool
     where: str
@@ -25,17 +28,27 @@ class Args(NamedTuple):
 
 def runs_list(args: Args):
     # TODO apply filter
-    runs = var.list_runs(sort=["-timestamp"])
+    filtered = var.list_runs(sort=["-timestamp"])
+    selected_with_index = _select_runs(filtered, args)
+    limited_with_index = _limit_runs(selected_with_index, args)
     width = cli.console_width()
     table = cli.Table(
         _headers(width),
         expand=not cli.is_plain,
-        caption=_run_table_caption(runs, args),
+        caption=_run_table_caption(filtered, args),
         caption_justify="left",
     )
-    for i, run in enumerate(_limit_runs(runs, args)):
-        table.add_row(*_row(i + 1, run, width))
+    for index, run in limited_with_index:
+        table.add_row(*_row(index, run, width))
     cli.out(table)
+
+
+def _select_runs(runs: list[Run], args: Args):
+    if not args.runs:
+        return [(i + 1, run) for i, run in enumerate(runs)]
+    index_lookup = {run: i + 1 for i, run in enumerate(runs)}
+    selected = select_runs(runs, args.runs)
+    return [(index_lookup[run], run) for run in selected]
 
 
 def _run_table_caption(runs: list[Run], args: Args):
@@ -44,13 +57,13 @@ def _run_table_caption(runs: list[Run], args: Args):
     return cli.pad(
         cli.text(
             f"Showing {args.limit} of {len(runs)} runs",
-            style="dim",
+            style="italic dim",
         ),
         (0, 1),
     )
 
 
-def _limit_runs(runs: list[Run], args: Args):
+def _limit_runs(runs: list[tuple[int, Run]], args: Args):
     if args.all:
         return runs
     return runs[: args.limit]

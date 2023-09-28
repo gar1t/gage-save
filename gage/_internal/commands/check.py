@@ -15,8 +15,7 @@ Path = Annotated[
     Argument(
         metavar="[path]",
         help=(
-            "Gage file or a project directory to check. Cannot "
-            "use with --version."
+            "Gage file or a project directory to check. Cannot " "use with --version."
         ),
         callback=cli.incompatible_with("version"),
     ),

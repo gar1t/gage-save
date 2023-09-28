@@ -23,6 +23,7 @@ __all__ = ["Args", "run"]
 
 class Args(NamedTuple):
     opspec: str
+    flags: list[str] | None
     label: str
     stage: bool
     yes: bool

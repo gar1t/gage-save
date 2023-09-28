@@ -27,8 +27,8 @@
     .meta/sys/platform.json
     /gage.toml
 
-    >>> run("gage runs")  # +parse
-    | # | id       | operation   | started | status | label |
-    |---|----------|-------------|---------|--------|-------|
-    | 1 | {:aaaaa} | hello:hello |         | staged |       |
+    >>> run("gage list")  # +parse
+    | # | name  | operation   | started | status | description |
+    |---|-------|-------------|---------|--------|-------------|
+    | 1 | {:aa} | hello:hello |         | staged |             |
     <0>

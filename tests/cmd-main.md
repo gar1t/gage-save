@@ -5,21 +5,22 @@
 Running `gage` without arguments shows help.
 
     >>> run("gage")  # +diff
-    Usage: gage [OPTIONS] COMMAND [ARGS]...
+    Usage: gage [options] command
     ⤶
       Gage ML command line interface.
     ⤶
     Options:
       --version   Print program version and exit.
-      -C PATH     Change to PATH directory for command.
+      -C path     Change directory for command.
       -h, --help  Show this message and exit.
     ⤶
     Commands:
       check            Show and validate settings.
       help             Show help for a topic.
+      list, ls         List runs.
       operations, ops  Show available operations.
-      run              Start or stage an operation.
-      runs             Show or manage runs.
+      run              Start or stage a run.
+      show             Show information about a run.
     <0>
 
 ## Help
@@ -27,7 +28,7 @@ Running `gage` without arguments shows help.
 Using `--help` shows help explicitly.
 
     >>> run("gage --help")  # +wildcard
-    Usage: gage [OPTIONS] COMMAND [ARGS]...
+    Usage: gage [options] command
     ⤶
       Gage ML command line interface.
     ⤶

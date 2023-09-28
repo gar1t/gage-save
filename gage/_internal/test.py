@@ -52,7 +52,8 @@ __all__ = [
     "parse_path",
     "parse_run_id",
     "parse_run_name",
-    "parse_short_id",
+    "parse_short_run_id",
+    "parse_short_run_name",
     "parse_sha256",
     "parse_timestamp",
     "parse_ver",
@@ -134,7 +135,12 @@ def parse_run_id(s: str):
 
 
 @parse_type("aaaaa", r"[a-f0-9]{8}")
-def parse_short_id(s: str):
+def parse_short_run_id(s: str):
+    return s
+
+
+@parse_type("aa", r"[a-z]{5}")
+def parse_short_run_name(s: str):
     return s
 
 

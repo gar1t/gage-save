@@ -208,7 +208,7 @@ def _get_help_text(
     # Get remaining lines, remove single line breaks and format as dim
     if remaining_paragraphs:
         yield Text("")
-        if  markup_mode is not None:
+        if markup_mode is not None:
             # Remove single linebreaks
             remaining_paragraphs = [
                 x.replace("\n", " ").strip()

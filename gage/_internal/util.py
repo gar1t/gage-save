@@ -33,12 +33,20 @@ class TryFailed(RuntimeError):
     """Raise to indicate an attempt in try_apply failed."""
 
 
-def find_apply(funs: list[Callable[..., Any]], *args: Any, **kw: Any):
+T = TypeVar("T")
+D = TypeVar("D")
+
+
+def find_apply(
+    funs: list[Callable[..., T]],
+    *args: Any,
+    default: D | None = None,
+) -> T | D | None:
     for f in funs:
         result = f(*args)
         if result is not None:
             return result
-    return kw.get("default")
+    return default
 
 
 def try_apply(funs: Iterable[Callable[..., Any]], *args: Any):
@@ -1192,7 +1200,10 @@ def tokenize_snake_case_for_camel_case(s: str):
     return under_split
 
 
-def flatten(l: list[Any]):
+T = TypeVar("T")
+
+
+def flatten(l: list[list[T]]) -> list[T]:
     return [item for sublist in l for item in sublist]
 
 

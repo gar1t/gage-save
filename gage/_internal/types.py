@@ -208,6 +208,9 @@ class Run:
         self.name = name
         self._cache: dict[str, Any] = {}
 
+    def __repr__(self):
+        return f"<Run id=\"{self.id}\" name=\"{self.name}\">"
+
 
 RunStatus = Literal[
     "running",

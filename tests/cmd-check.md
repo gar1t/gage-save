@@ -3,21 +3,22 @@
 Help for `check`:
 
     >>> run("gage check --help", env={"COLUMNS": "72"})  # +diff
-    Usage: gage check [OPTIONS] [PATH]
+    Usage: gage check [options] [path]
     ⤶
       Show and validate settings.
     ⤶
-      Use **check** to show Gage ML version, install location, and other
-      configured settings.
+      Shows Gage ML version, install location, and other configured
+      settings.
     ⤶
-      To check a Gage file for issues, specify the file as **PATH**.
+      To check a Gage file for issues, specify path.
     ⤶
     Arguments:
-      [PATH]  Check Gage file for issues. Cannot be used with --version.
+      [path]  Gage file or a project directory to check. Cannot use with
+              --version.
     ⤶
     Options:
-      --version SPEC  Test Gage version against SPEC. Cannot be used with
-                      filename.
+      --version spec  Test Gage version against spec. Cannot be used with
+                      path.
       --json          Format check output as JSON.
       -v, --verbose   Show more information.
       -h, --help      Show this message and exit.
@@ -136,6 +137,7 @@ Non matching spec:
 ## Incompatible params
 
     >>> run("gage check --version xxx some-path")
-    gage: path and version cannot both be specified
-    Try 'gage check --help' for more information.
+    path and version cannot be used together.
+    ⤶
+    Try 'gage check -h' for help.
     <1>

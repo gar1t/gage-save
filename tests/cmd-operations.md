@@ -1,7 +1,7 @@
 # `operations` command
 
     >>> run("gage operations --help")  # +wildcard
-    Usage: gage operations [OPTIONS]
+    Usage: gage operations [options]
     ⤶
       Show available operations.
     ⤶
@@ -12,8 +12,8 @@
 
 The alias `ops` may also be used.
 
-    >>> run("gage ops --help")  # +wildcard
-    Usage: gage ops [OPTIONS]
+    >>> run("gage ops -h")  # +wildcard
+    Usage: gage ops [options]
     ⤶
       Show available operations.
     ⤶

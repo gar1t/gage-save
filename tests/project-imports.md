@@ -38,11 +38,12 @@
     gage._internal.commands.operations_impl
     gage._internal.commands.run
     gage._internal.commands.run_impl
-    gage._internal.commands.runs
     gage._internal.commands.runs_delete
     gage._internal.commands.runs_delete_impl
     gage._internal.commands.runs_list
     gage._internal.commands.runs_list_impl
+    gage._internal.commands.show
+    gage._internal.commands.show_impl
     gage._internal.exitcodes
     gage._internal.file_select
     gage._internal.file_util
@@ -56,11 +57,13 @@
     gage._internal.run_context
     gage._internal.run_dependencies
     gage._internal.run_output
+    gage._internal.run_select
     gage._internal.run_sourcecode
     gage._internal.run_util
     gage._internal.shlex_util
     gage._internal.sys_config
     gage._internal.test
+    gage._internal.typer_rich_util
     gage._internal.types
     gage._internal.util
     gage._internal.var
