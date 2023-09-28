@@ -3,6 +3,43 @@
     >>> from gage._internal.types import *
     >>> from gage._internal.run_util import *
 
+## General utils
+
+### Run IDs
+
+    >>> make_run_id()  # +parse
+    '{:run_id}'
+
+### Run names
+
+Run names are generated from run IDs.
+
+    >>> run_name_for_id('60a825b1-4196-41ff-af37-e731541cb1e4')
+    ... # spellchecker: disable-next-line
+    'kafom-fikud'
+
+Only the first 8 chars are used to calculate the name.
+
+    >>> run_name_for_id('60a825b1-4196-41ff-af37-e731541cb1e5')
+    ... # spellchecker: disable-next-line
+    'kafom-fikud'
+
+    >>> run_name_for_id('60a825b1')
+    ... # spellchecker: disable-next-line
+    'kafom-fikud'
+
+IDs must be at least 8 chars.
+
+    >>> run_name_for_id('60a82')
+    Traceback (most recent call last):
+    ValueError: run ID is too short: '60a82'
+
+The first 8 chars must be hexadecimal.
+
+    >>> run_name_for_id('gggggggg')
+    Traceback (most recent call last):
+    ValueError: invalid literal for int() with base 16: 'gggggggg'
+
 ## Make run
 
 `make_run()` creates a new run in a runs root directory.

@@ -4,6 +4,8 @@ from typing import *
 
 from typer import *
 
+from .. import cli
+
 __all__ = [
     "Where",
     "runs_list",
@@ -15,8 +17,19 @@ Limit = Annotated[
         "-n",
         "--limit",
         metavar="max",
-        help="Limit listing to [b]max[/] runs."
+        help="Limit list to [b]max[/] runs."
     )
+]
+
+AllFlag = Annotated[
+    bool,
+    Option(
+        "-a",
+        "--all",
+        help="Show all runs. Cannot use with --limit.",
+        show_default=False,
+        callback=cli.incompatible_with("limit"),
+    ),
 ]
 
 Where = Annotated[
@@ -30,12 +43,15 @@ Where = Annotated[
 
 def runs_list(
     limit: Limit = 20,
+    all: AllFlag = False,
     where: Where = "",
 ):
     """List runs."""
     from .runs_list_impl import runs_list, Args
 
     args = Args(
+        limit=limit,
+        all=all,
         where=where,
     )
     runs_list(args)

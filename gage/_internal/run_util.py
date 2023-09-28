@@ -14,6 +14,8 @@ import threading
 import time
 import uuid
 
+from proquint import uint2quint
+
 from . import sys_config
 from . import run_config
 from . import run_sourcecode
@@ -53,7 +55,7 @@ __all__ = [
     "stage_runtime",
     "stage_sourcecode",
     "start_run",
-    "unique_run_id",
+    "make_run_id",
 ]
 
 META_SCHEMA = "1"
@@ -364,7 +366,7 @@ def _load_run_id(meta_dir: str):
 
 
 def make_run(opref: OpRef, location: Optional[str] = None):
-    run_id = unique_run_id()
+    run_id = make_run_id()
     location = location or sys_config.runs_home()
     run_dir = os.path.join(location, run_id)
     meta_dir = run_dir + ".meta"
@@ -378,26 +380,14 @@ def _write_opref(opref: OpRef, meta_dir: str):
     write_file(_meta_opref_filename(meta_dir), encode_opref(opref), readonly=True)
 
 
-def unique_run_id():
+def make_run_id():
     return str(uuid.uuid4())
 
 
 def run_name_for_id(run_id: str) -> str:
-    from proquint import uint2quint_str
-
-    return uint2quint_str(_run_id_as_uint(run_id))
-
-
-def _run_id_as_uint(run_id: str):
-    if len(run_id) >= 32:
-        # Test for likely hex-encoded UUID
-        try:
-            return int(run_id[:8], 16)
-        except ValueError:
-            pass
-    from binascii import crc32
-
-    return crc32(run_id.encode())
+    if len(run_id) < 8:
+        raise ValueError(f"run ID is too short: {run_id!r}")
+    return uint2quint(int(run_id[:8], 16))
 
 
 def make_run_timestamp():

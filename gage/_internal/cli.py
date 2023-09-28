@@ -14,6 +14,7 @@ import rich.console
 import rich.json
 import rich.markdown
 import rich.markup
+import rich.padding
 import rich.panel
 import rich.prompt
 import rich.style
@@ -46,7 +47,7 @@ is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
 TABLE_HEADER_STYLE = "yellow"
 TABLE_BORDER_STYLE = "dim"
-LABEL_STYLE = "bold cyan"
+LABEL_STYLE = "cyan1"
 SECOND_LABEL_STYLE = "cyan"
 
 
@@ -88,9 +89,8 @@ def markdown(md: str):
     return rich.markdown.Markdown(md)
 
 
-# def help(s: str):
-#     # Strip rich markdown when is_plain
-#     return rich.markup.render(s).plain if is_plain else s
+def pad(val: Any, padding: rich.padding.PaddingDimensions):
+    return rich.padding.Padding(val, padding)
 
 
 class YesNoConfirm(rich.prompt.Confirm):
@@ -119,9 +119,9 @@ def incompatible_with(*params: str):
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
         if value:
             for other_name in params:
-                if param.name != other_name and other_name in ctx.params:
+                if param.name != other_name and other_name in params:
                     raise SystemExit(
-                        f"{param.name} and {other_name} cannot both be specified\n"
+                        f"{param.name} and {other_name} cannot both be specified\n\n"
                         f"Try '{ctx.command_path} --help' for more information."
                     )
         return value

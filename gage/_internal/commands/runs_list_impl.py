@@ -18,6 +18,8 @@ __all__ = ["Args", "runs_list"]
 
 
 class Args(NamedTuple):
+    limit: int
+    all: bool
     where: str
 
 
@@ -25,10 +27,33 @@ def runs_list(args: Args):
     # TODO apply filter
     runs = var.list_runs(sort=["-timestamp"])
     width = cli.console_width()
-    table = cli.Table(_headers(width), expand=not cli.is_plain)
-    for i, run in enumerate(runs):
+    table = cli.Table(
+        _headers(width),
+        expand=not cli.is_plain,
+        caption=_run_table_caption(runs, args),
+        caption_justify="left",
+    )
+    for i, run in enumerate(_limit_runs(runs, args)):
         table.add_row(*_row(i + 1, run, width))
     cli.out(table)
+
+
+def _run_table_caption(runs: list[Run], args: Args):
+    if args.all or len(runs) <= args.limit:
+        return None
+    return cli.pad(
+        cli.text(
+            f"Showing {args.limit} of {len(runs)} runs",
+            style="dim",
+        ),
+        (0, 1),
+    )
+
+
+def _limit_runs(runs: list[Run], args: Args):
+    if args.all:
+        return runs
+    return runs[: args.limit]
 
 
 _TRUNC_POINTS = [
