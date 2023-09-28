@@ -8,7 +8,7 @@ from typer import Option
 OpSpec = Annotated[
     str,
     Argument(
-        metavar="[OPERATION]",
+        metavar="[operation]",
         help="Operation to start.",
     ),
 ]
@@ -16,7 +16,7 @@ OpSpec = Annotated[
 FlagAssigns = Annotated[
     Optional[list[str]],
     Argument(
-        metavar="[FLAG=VALUE]...",
+        metavar="[flag=value]...",
         help="Flag assignments.",
         show_default=False,
     ),
@@ -27,8 +27,8 @@ Label = Annotated[
     Option(
         "-l",
         "--label",
-        metavar="LABEL",
-        help="Run label.",
+        metavar="label",
+        help="Short label to describe the run.",
     ),
 ]
 
@@ -89,11 +89,14 @@ def run(
     preview_all: PreviewAllFlag = False,
     json: JSONFlag = False,
 ):
-    """Start or stage an operation.
+    """Start or stage a run.
 
-    **OPERATION** may be a file to run or an operation name defined in a
+    [arg]operation[/] may be a file to run or an operation defined in a
     project Gage file. To list available options for the current
-    directory, use **gage operations**.
+    directory, use '[cmd]gage operations[/]'.
+
+    If [arg]operation[/] isn't specified, runs the default in the
+    project Gage file.
     """
     from .run_impl import run, Args
 

@@ -49,11 +49,11 @@ def _read_help_topic(topic: str):
 
 def help_app():
     app = Typer(
-        rich_markup_mode="markdown",
+        rich_markup_mode="rich",
         no_args_is_help=True,
         add_completion=False,
-        subcommand_metavar="TOPIC",
-        add_help_option=False,
+        subcommand_metavar="topic",
+        options_metavar="[options]",
     )
     app.callback()(help)
 

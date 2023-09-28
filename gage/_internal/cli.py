@@ -13,6 +13,7 @@ import rich.columns
 import rich.console
 import rich.json
 import rich.markdown
+import rich.markup
 import rich.panel
 import rich.prompt
 import rich.style
@@ -85,6 +86,11 @@ def label(s: str):
 
 def markdown(md: str):
     return rich.markdown.Markdown(md)
+
+
+# def help(s: str):
+#     # Strip rich markdown when is_plain
+#     return rich.markup.render(s).plain if is_plain else s
 
 
 class YesNoConfirm(rich.prompt.Confirm):
@@ -207,6 +213,14 @@ class AliasGroup(typer.core.TyperGroup):
         return default_name
 
 
+def rich_markdown_element(name: str):
+    def decorator(cls: Type[rich.markdown.MarkdownElement]):
+        rich.markdown.Markdown.elements[name] = cls
+
+    return decorator
+
+
+@rich_markdown_element("heading_open")
 class _MarkdownHeading(rich.markdown.Heading):
     """Internal Rich Markdown heading.
 
@@ -231,6 +245,7 @@ class _MarkdownHeading(rich.markdown.Heading):
             yield text
 
 
+@rich_markdown_element("table_open")
 class _TableElement(rich.markdown.TableElement):
     def __rich_console__(
         self,
@@ -251,5 +266,22 @@ class _TableElement(rich.markdown.TableElement):
         yield table
 
 
-rich.markdown.Markdown.elements["heading_open"] = _MarkdownHeading
-rich.markdown.Markdown.elements["table_open"] = _TableElement
+class PlainHelpFormatter(click.HelpFormatter):
+    def write_text(self, text: str) -> None:
+        super().write_text(_strip_markup(text))
+
+    def write_dl(
+        self,
+        rows: Sequence[Tuple[str, str]],
+        col_max: int = 30,
+        col_spacing: int = 2,
+    ) -> None:
+        super().write_dl(
+            [(name, _strip_markup(val)) for name, val in rows],
+            col_max,
+            col_spacing,
+        )
+
+
+def _strip_markup(s: str):
+    return rich.markup.render(s).plain

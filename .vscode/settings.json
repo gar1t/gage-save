@@ -27,6 +27,7 @@
   "cSpell.spellCheckOnlyWorkspaceFiles": true,
   "cSpell.words": [
     "astype",
+    "autoenv",
     "autoprint",
     "batchfile",
     "Bools",
@@ -39,6 +40,7 @@
     "copytree",
     "CPUS",
     "creationflags",
+    "delme",
     "días",
     "difflib",
     "docstrings",
@@ -132,6 +134,7 @@
     "rmtree",
     "rstrip",
     "runfiles",
+    "runspec",
     "scandir",
     "setsid",
     "Shlex",
@@ -148,6 +151,7 @@
     "tomli",
     "topdown",
     "Traceback",
+    "truecolor",
     "typer",
     "udiff",
     "unmark",
@@ -156,6 +160,7 @@
     "vals",
     "venv",
     "virtualenv",
+    "willmcgugan",
     "wordbreak",
     "xonsh"
   ]

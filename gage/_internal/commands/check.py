@@ -10,47 +10,62 @@ from .. import cli
 __all__ = ["check"]
 
 
+Path = Annotated[
+    str,
+    Argument(
+        metavar="[path]",
+        help=(
+            "Gage file or a project directory to check. Cannot "
+            "be used with --version."
+        ),
+        callback=cli.incompatible_with("version"),
+    ),
+]
+
+Version = Annotated[
+    str,
+    Option(
+        "--version",
+        metavar="spec",
+        help=(
+            "Test Gage version against [arg]spec[/]. Cannot "
+            "be used with [arg]path[/]."
+        ),
+    ),
+]
+
+JSONFlag = Annotated[
+    bool,
+    Option(
+        "--json",
+        help="Format check output as JSON.",
+        show_default=False,
+    ),
+]
+
+VerboseFlag = Annotated[
+    bool,
+    Option(
+        "-v",
+        "--verbose",
+        help="Show more information.",
+        show_default=False,
+    ),
+]
+
+
 def check(
-    path: Annotated[
-        str,
-        Argument(
-            help="Check Gage file for issues. Cannot be used with --version.",
-            metavar="[PATH]",
-            callback=cli.incompatible_with("version"),
-        ),
-    ] = "",
-    version: Annotated[
-        str,
-        Option(
-            "--version",
-            help="Test Gage version against SPEC. Cannot be used with filename.",
-            metavar="SPEC",
-        ),
-    ] = "",
-    json: Annotated[
-        bool,
-        Option(
-            "--json",
-            help="Format check output as JSON.",
-            show_default=False,
-        ),
-    ] = False,
-    verbose: Annotated[
-        bool,
-        Option(
-            "-v",
-            "--verbose",
-            help="Show more information.",
-            show_default=False,
-        ),
-    ] = False,
+    path: Path = "",
+    version: Version = "",
+    json: JSONFlag = False,
+    verbose: VerboseFlag = False,
 ):
     """Show and validate settings.
 
-    Use **check** to show Gage ML version, install location, and other
-    configured settings.
+    Shows Gage ML version, install location, and other configured
+    settings.
 
-    To check a Gage file for issues, specify the file as **PATH**.
+    To check a Gage file for issues, specify [arg]path[/].
     """
     from .check_impl import check, Args
 

@@ -11,26 +11,31 @@ from .check import check
 from .help import help_app
 from .operations import operations
 from .run import run
-from .runs import runs_app
+from .runs_list import runs_list
+from .show import show
+
+VersionFlag = Annotated[
+    bool,
+    Option(
+        "--version",
+        help="Print program version and exit.",
+        show_default=False,
+    ),
+]
+
+Cwd = Annotated[
+    str,
+    Option(
+        "-C",
+        metavar="path",
+        help="Change directory for command.",
+    ),
+]
 
 
 def main(
-    version: Annotated[
-        bool,
-        Option(
-            "--version",
-            help="Print program version and exit.",
-            show_default=False,
-        ),
-    ] = False,
-    cwd: Annotated[
-        str,
-        Option(
-            "-C",
-            help="Change to PATH directory for command.",
-            metavar="PATH",
-        ),
-    ] = "",
+    version: VersionFlag = False,
+    cwd: Cwd = "",
 ):
     """Gage ML command line interface."""
 
@@ -42,7 +47,7 @@ def main(
 def main_app():
     app = Typer(
         cls=cli.AliasGroup,
-        rich_markup_mode="markdown",
+        rich_markup_mode="rich",
         invoke_without_command=True,
         no_args_is_help=True,
         add_completion=False,
@@ -51,11 +56,14 @@ def main_app():
         context_settings={
             "help_option_names": ("-h", "--help"),
         },
+        subcommand_metavar="command",
+        options_metavar="[options]",
     )
     app.callback()(main)
-    app.command()(check)
-    app.add_typer(runs_app())
+    app.command("check")(check)
     app.add_typer(help_app())
     app.command("operations, ops")(operations)
-    app.command()(run)
+    app.command("run")(run)
+    app.command("list, ls")(runs_list)
+    app.command("show")(show)
     return app

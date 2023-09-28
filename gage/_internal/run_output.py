@@ -2,6 +2,8 @@
 
 from typing import *
 
+from .types import *
+
 from subprocess import Popen
 
 import os
@@ -309,3 +311,6 @@ class RunOutputReader:
             f.close()
         except IOError:
             pass
+
+def show(run: Run):
+    pass

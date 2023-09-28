@@ -3,9 +3,15 @@
 Next up:
 
 - Basic run command support (`run <op>`)
-  - Confirm prompt
   - Show output
   - Show progress
+
+- Flag assignments + config import
+  - Config import
+  - Parse flags
+  - Apply to config
+  - Use config in prompt
+  - Use config in run
 
 - Runs list - rich gives us a lot of options
   - Standard columns
@@ -97,6 +103,21 @@ run[linux] = "..."
   - Use of periods
   - Phrasing of "run 'cmd' for more info/help"
 
+- Review command help for consistency
+  - Case of meta vars
+  - Formatting of meta var refs
+  - Formatting of command examples
+
+- Review topic help - this is going to be quite out of date - this
+  should be the main help for Gage
+
+## CLI style
+
+- Support command and option refs using backticks and format sensibly
+  (currently uses odd color scheme)
+
+- Syntax highlighting for code blocks (this might already work)
+
 ## Low priority
 
 - Fix plain table printing and matching with Groktest (look for `-space`
@@ -110,9 +131,6 @@ run[linux] = "..."
 
 - Source code preview should show the source code stage command if
   specified.
-
-- Meta vars in help are screamingly loud (caps, bold, yellow - would be
-  better if not bold)
 
 ## Run layout
 

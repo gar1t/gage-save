@@ -4,8 +4,6 @@ from typing import *
 
 import os
 
-import typer
-
 from .__init__ import __version__
 
 from ._internal import cli
@@ -13,11 +11,23 @@ from ._internal import exitcodes
 
 from ._internal.commands.main import main_app
 
+
 if os.getenv("TERM") in ("unknown", "dumb"):
     import typer.core
+    import click.core
+    from ._internal.cli import PlainHelpFormatter
 
     # Disable use of Rich formatting
     typer.core.rich = None  # type: ignore
+
+    # Help formatter class for Click that strips rich markup
+    click.core.Context.formatter_class = PlainHelpFormatter
+else:
+    import typer.core
+    from ._internal import typer_rich_util
+
+    # Patch rich utils with Gage modified version
+    typer.core.rich_utils = typer_rich_util
 
 
 def main():

@@ -1,6 +1,6 @@
-# Exec
+# Exec Specification
 
-An 'exec' specification tells Gage what to run for an operation.
+An *exec* specification tells Gage what to run for an operation.
 
 ```toml
 [train]

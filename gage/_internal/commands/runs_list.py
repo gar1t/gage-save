@@ -9,16 +9,27 @@ __all__ = [
     "runs_list",
 ]
 
+Limit = Annotated[
+    int,
+    Option(
+        "-n",
+        "--limit",
+        metavar="max",
+        help="Limit listing to [b]max[/] runs."
+    )
+]
+
 Where = Annotated[
     str,
     Option(
-        metavar="EXPR",
+        metavar="expr",
         help="Show runs matching filter expression.",
     ),
 ]
 
 
 def runs_list(
+    limit: Limit = 20,
     where: Where = "",
 ):
     """List runs."""

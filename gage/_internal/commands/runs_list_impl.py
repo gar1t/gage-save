@@ -41,11 +41,11 @@ _TRUNC_POINTS = [
 def _headers(width: int) -> list[cli.ColSpec]:
     headers = [
         ("#", {"ratio": None, "no_wrap": True, "style": cli.TABLE_HEADER_STYLE}),
-        ("id", {"ratio": None, "no_wrap": True, "style": "dim"}),
+        ("name", {"ratio": None, "no_wrap": True, "style": "dim"}),
         ("operation", {"ratio": None, "no_wrap": True, "style": cli.LABEL_STYLE}),
         ("started", {"ratio": None, "no_wrap": True}),
         ("status", {"ratio": None, "no_wrap": True}),
-        ("label", {"ratio": 1, "no_wrap": True, "style": cli.SECOND_LABEL_STYLE}),
+        ("description", {"ratio": 1, "no_wrap": True, "style": cli.SECOND_LABEL_STYLE}),
     ]
     return _fit(headers, width)
 
@@ -53,7 +53,7 @@ def _headers(width: int) -> list[cli.ColSpec]:
 def _row(index: int, run: Run, width: int) -> list[str]:
     opref = meta_opref(run)
     index_str = str(index)
-    run_id = run.id[:8]
+    run_name = run.name[:5]
     op_name = opref.get_full_name()
     started = run_timestamp(run, "started")
     started_str = human_readable.date_time(started) if started else ""
@@ -62,7 +62,7 @@ def _row(index: int, run: Run, width: int) -> list[str]:
 
     row = [
         index_str,
-        run_id,
+        run_name,
         op_name,
         started_str,
         cli.text(status, style=_status_style(status)),
