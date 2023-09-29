@@ -35,7 +35,8 @@ def stream_fileno(stream: IO[bytes]):
         return None
 
 
-StreamType = Literal[0, 1];
+StreamType = Literal[0, 1]
+
 
 class OutputCallback:
     def output(self, stream: StreamType, out: bytes) -> None:

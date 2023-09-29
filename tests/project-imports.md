@@ -62,6 +62,7 @@
     gage._internal.run_context
     gage._internal.run_dependencies
     gage._internal.run_output
+    gage._internal.run_progress
     gage._internal.run_select
     gage._internal.run_sourcecode
     gage._internal.run_util

@@ -133,7 +133,7 @@ def _show(run: Run):
                     Text(line.text, style="orange3" if line.stream == 1 else "")
                 )
             output_title = (
-                f"Output [{output_name}]"
+                f"Output [{_output_desc(output_name)}]"
                 if len(output) > 1 or output_name != "run"
                 else "Output"
             )
@@ -144,6 +144,16 @@ def _show(run: Run):
                     box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
                 )
             )
+
+
+def _output_desc(name: str):
+    return {
+        "sourcecode": "stage source code",
+        "runtime": "stage runtime",
+        "dependencies": "stage dependencies",
+        "run": "run",
+        "finalize": "finalize run",
+    }.get(name, name)
 
 
 def _iter_run_output(run: Run) -> Generator[tuple[str, RunOutputReader], Any, None]:

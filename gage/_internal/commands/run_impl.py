@@ -9,6 +9,7 @@ import platform
 import sys
 
 from .. import cli
+from .. import run_progress
 from .. import run_sourcecode
 
 from ..sys_config import runs_home
@@ -112,7 +113,8 @@ def _stage(ctx: RunContext, args: Args):
     user_attrs = _user_attrs(args)
     sys_attrs = _sys_attrs()
     init_run_meta(run, ctx.opdef, config, cmd, user_attrs, sys_attrs)
-    stage_run(run, ctx.project_dir)
+    with run_progress.RichProgress() as progress:
+        stage_run(run, ctx.project_dir, progress)
     return run
 
 

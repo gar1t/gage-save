@@ -1,0 +1,30 @@
+[a]
+
+description = "Shows progress for run phases"
+
+[a.exec]
+
+stage-sourcecode = """
+echo Copying source code
+sleep 1
+"""
+
+stage-runtime = """
+echo Initialzing runtime
+sleep 1
+"""
+
+stage-dependencies = """
+echo Resolving dependencies
+sleep 1
+"""
+
+run = """
+echo Running the operation
+sleep 1
+"""
+
+finalizing-run = """
+echo Finalizing
+sleep 1
+"""

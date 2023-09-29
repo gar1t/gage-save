@@ -1,10 +1,18 @@
 # Gage To Do
 
+Now:
+
+- Finalize run not running or not writing to output (not running hook I
+  think)
+- Output index files are writeable (not sure why)
+- Hook up output logging for hooks to stdout/stderr
+- Funny extra blank line after progress
+
 Next up:
 
 - Basic run command support (`run <op>`)
-  - Show output
-  - Show progress
+  - [x] Show output
+  - [ ] Show progress
 
 - Flag assignments + config import
   - Config import

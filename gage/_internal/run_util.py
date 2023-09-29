@@ -19,6 +19,7 @@ from proquint import uint2quint
 
 from . import sys_config
 from . import run_config
+from . import run_progress
 from . import run_sourcecode
 from . import run_output
 from . import util
@@ -33,7 +34,6 @@ from .file_util import write_file
 
 from .opref_util import decode_opref
 from .opref_util import encode_opref
-
 
 __all__ = [
     "META_SCHEMA",
@@ -421,7 +421,7 @@ def init_run_meta(
     config: RunConfig,
     cmd: OpCmd,
     user_attrs: Optional[dict[str, Any]] = None,
-    system_attrs: Optional[dict[str, Any]] = None
+    system_attrs: Optional[dict[str, Any]] = None,
 ):
     _write_schema_file(run)
     log = _runner_log(run)
@@ -501,20 +501,21 @@ def _gen_write_attrs(dir: str, attrs: dict[str, Any], run: Run, log: Logger):
 # =================================================================
 
 
-def stage_run(run: Run, project_dir: str):
-    stage_sourcecode(run, project_dir)
-    apply_config(run)
-    stage_runtime(run, project_dir)
-    stage_dependencies(run, project_dir)
-    finalize_staged_run(run)
+def stage_run(run: Run, project_dir: str, progress: Progress | None = None):
+    stage_sourcecode(run, project_dir, progress)
+    apply_config(run, progress)
+    stage_runtime(run, project_dir, progress)
+    stage_dependencies(run, project_dir, progress)
+    finalize_staged_run(run, progress)
 
 
-def stage_sourcecode(run: Run, project_dir: str):
+def stage_sourcecode(run: Run, project_dir: str, progress: Progress | None = None):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _copy_sourcecode(run, project_dir, opdef, log)
-    _stage_sourcecode_hook(run, project_dir, opdef, log)
-    _apply_to_files_log(run, "s")
+    with _task(progress, "Staging source code"):
+        _copy_sourcecode(run, project_dir, opdef, log)
+        _stage_sourcecode_hook(run, project_dir, opdef, log)
+        _apply_to_files_log(run, "s")
 
 
 def _copy_sourcecode(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -536,21 +537,23 @@ def _stage_sourcecode_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger
         )
 
 
-def apply_config(run: Run):
+def apply_config(run: Run, progress: Progress | None = None):
     log = _runner_log(run)
     config = meta_config(run)
     opdef = meta_opdef(run)
-    log.info("Applying configuration (see log/patched)")
-    diffs = run_config.apply_config(config, opdef, run.run_dir)
-    if diffs:
-        _write_patched(run, diffs)
+    with _task(progress, "Applying run configuration"):
+        log.info("Applying configuration (see log/patched)")
+        diffs = run_config.apply_config(config, opdef, run.run_dir)
+        if diffs:
+            _write_patched(run, diffs)
 
 
-def stage_runtime(run: Run, project_dir: str):
+def stage_runtime(run: Run, project_dir: str, progress: Progress | None = None):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _stage_runtime_hook(run, project_dir, opdef, log)
-    _apply_to_files_log(run, "r")
+    with _task(progress, "Staging runtime"):
+        _stage_runtime_hook(run, project_dir, opdef, log)
+        _apply_to_files_log(run, "r")
 
 
 def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -566,12 +569,13 @@ def _stage_runtime_hook(run: Run, project_dir: str, opdef: OpDef, log: Logger):
         )
 
 
-def stage_dependencies(run: Run, project_dir: str):
+def stage_dependencies(run: Run, project_dir: str, progress: Progress | None = None):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    _resolve_dependencies(run, project_dir, opdef, log)
-    _stage_dependencies_hook(run, project_dir, opdef, log)
-    _apply_to_files_log(run, "d")
+    with _task(progress, "Staging dependencies"):
+        _resolve_dependencies(run, project_dir, opdef, log)
+        _stage_dependencies_hook(run, project_dir, opdef, log)
+        _apply_to_files_log(run, "d")
 
 
 def _resolve_dependencies(run: Run, project_dir: str, opdef: OpDef, log: Logger):
@@ -597,10 +601,11 @@ def _stage_dependencies_hook(run: Run, project_dir: str, opdef: OpDef, log: Logg
         )
 
 
-def finalize_staged_run(run: Run):
+def finalize_staged_run(run: Run, progress: Progress | None = None):
     log = _runner_log(run)
-    _write_staged_files_manifest(run, log)
-    _write_timestamp("staged", run, log)
+    with _task(progress, "Finalizing staged run"):
+        _write_staged_files_manifest(run, log)
+        _write_timestamp("staged", run, log)
 
 
 def _write_staged_files_manifest(run: Run, log: Logger):
@@ -792,6 +797,10 @@ def _runner_log(run: Run):
     formatter = logging.Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z")
     handler.setFormatter(formatter)
     return log
+
+
+def _task(progress: Progress | None, description: str):
+    return (progress or run_progress.NullProgress()).task(description)
 
 
 def _run_meta_schema(run: Run):
