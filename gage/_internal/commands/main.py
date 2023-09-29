@@ -9,9 +9,11 @@ from .. import cli
 
 from .check import check
 from .help import help_app
+from .open import open
 from .operations import operations
 from .run import run
 from .runs_list import runs_list
+from .select import select
 from .show import show
 
 VersionFlag = Annotated[
@@ -62,8 +64,10 @@ def main_app():
     app.callback()(main)
     app.command("check")(check)
     app.add_typer(help_app())
+    app.command("open")(open)
     app.command("operations, ops")(operations)
     app.command("run")(run)
     app.command("list, ls")(runs_list)
+    app.command("select")(select)
     app.command("show")(show)
     return app

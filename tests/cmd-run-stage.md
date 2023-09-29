@@ -28,7 +28,7 @@
     /gage.toml
 
     >>> run("gage list")  # +parse
-    | # | name  | operation   | started | status | description |
-    |---|-------|-------------|---------|--------|-------------|
-    | 1 | {:aa} | hello:hello |         | staged |             |
+    | #   | name     | operation       | started    | status   |
+    |-----|----------|-----------------|------------|----------|
+    | 1   | {:rn}    | hello:hello     |            | staged   |
     <0>

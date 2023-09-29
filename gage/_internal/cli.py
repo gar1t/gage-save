@@ -45,10 +45,12 @@ _err = rich.console.Console(stderr=True, soft_wrap=False)
 
 is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
-TABLE_HEADER_STYLE = "yellow"
+TABLE_HEADER_STYLE = "bright_yellow"
 TABLE_BORDER_STYLE = "dim"
+PANEL_TITLE_STYLE = "bright_yellow"
 LABEL_STYLE = "cyan1"
 SECOND_LABEL_STYLE = "cyan"
+VALUE_STYLE = "dim"
 
 
 def run_status_style(status: str):
@@ -79,7 +81,7 @@ def err(val: Any, style: str | None = None):
 
 
 def error_message(msg: str):
-    err(f"[red bold]ERROR:[/red bold] {msg}")
+    err(msg)
 
 
 def exit_with_error(msg: str, code: int = 1) -> NoReturn:

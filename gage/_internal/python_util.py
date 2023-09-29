@@ -607,7 +607,7 @@ def _parse_req_for_version_spec(version_spec: str):
     version_spec = _maybe_apply_equals(version_spec)
     if version_spec[:1] not in "=<>":
         raise ValueError(
-            f"invalid version spec {version_spec!r}: missing comparison "
+            f"Invalid version spec {version_spec!r}: missing comparison "
             "operator (==, <, >, etc.)"
         )
     try:
@@ -619,7 +619,14 @@ def _parse_req_for_version_spec(version_spec: str):
             "InvalidRequirement",
             "RequirementParseError",
         ), e.__class__
-        raise ValueError(f"invalid version spec {version_spec!r}: {e}") from None
+        raise ValueError(
+            f"Invalid version spec {version_spec!r}: {_norm_e(e)}"
+        ) from None
+
+
+def _norm_e(e: Exception):
+    msg = str(e)
+    return msg[:1].lower() + msg[1:]
 
 
 def _maybe_apply_equals(version_spec: str):

@@ -1,4 +1,4 @@
-# Run command
+# `run` command
 
 ## Incompatible params
 

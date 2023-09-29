@@ -168,7 +168,7 @@ with an ISO 8601 formatted date.
     >>> logfile = run_meta_path(run, "log", "runner")
 
     >>> cat(logfile)  # +parse
-    {x:date} Writing meta id
+    {x:isodate} Writing meta id
     {}
 
     >>> assert datetime_fromiso(x) <= datetime_now()

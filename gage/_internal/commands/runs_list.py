@@ -71,10 +71,4 @@ def runs_list(
     """
     from .runs_list_impl import runs_list, Args
 
-    args = Args(
-        runs=runs,
-        limit=limit,
-        all=all,
-        where=where,
-    )
-    runs_list(args)
+    runs_list(Args(runs, limit, all, where))

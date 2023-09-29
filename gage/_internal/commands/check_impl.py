@@ -69,7 +69,7 @@ def _gagefile_find_error(path: str) -> NoReturn:
             "For help with Gage files try 'gage help gagefile'"
         )
     else:
-        cli.exit_with_error(f"{path} does not exist")
+        cli.exit_with_error(f"File \"{path}\" does not exist")
 
 
 def _gagefile_data(filename: str, args: Args):
@@ -80,7 +80,7 @@ def _gagefile_data(filename: str, args: Args):
 
 
 def _gagefile_load_error(e: gagefile.GageFileLoadError, args: Args):
-    cli.exit_with_error(f"{args.path}: {e.msg}")
+    cli.exit_with_error(f"Error loading {args.path}: {e.msg}")
 
 
 def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> NoReturn:
@@ -94,7 +94,7 @@ def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> No
 
 
 def _gagefile_validation_error(e: gagefile.ValidationError, args: Args) -> NoReturn:
-    cli.error_message(f"{args.path} has problems")
+    cli.error_message(f"There are errors in {args.path}")
     if args.verbose:
         output = gagefile.validation_error_output(e)
         cli.err(json.dumps(output, indent=2, sort_keys=True))
@@ -111,15 +111,15 @@ def _check_version_and_exit(args: Args):
         _bad_version_spec_error(e)
     else:
         if not match:
-            raise SystemExit(
-                f"version mismatch: current version '{gage.__version__}' "
+            cli.exit_with_error(
+                f"Version mismatch: current version '{gage.__version__}' "
                 f"does not match '{args.version}'"
             )
         raise SystemExit(0)
 
 
 def _bad_version_spec_error(e: ValueError):
-    err_msg = e.args[0].split("\n")[0].lower()
+    err_msg = e.args[0].split("\n")[0]
     cli.exit_with_error(
         f"{err_msg}\nSee https://bit.ly/45AerAj for help with version specs."
     )

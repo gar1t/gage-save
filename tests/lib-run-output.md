@@ -23,9 +23,10 @@ Create a sample script to generate output.
     ...
     ... for i in range(5):
     ...     sys.stdout.write(f"stdout line {i}\\n")
-    ...     sys.stdout.flush()
+    ... sys.stdout.flush()
+    ...
+    ... for i in range(5):
     ...     sys.stderr.write(f"stderr line {i}\\n")
-    ...     sys.stderr.flush()
     ... """)
 
 Create a run output instance.
@@ -142,14 +143,14 @@ Show captured output.
 
     >>> cat("output")
     stdout line 0
-    stderr line 0
     stdout line 1
-    stderr line 1
     stdout line 2
-    stderr line 2
     stdout line 3
-    stderr line 3
     stdout line 4
+    stderr line 0
+    stderr line 1
+    stderr line 2
+    stderr line 3
     stderr line 4
 
 The order is the same using an output reader.
@@ -158,12 +159,12 @@ The order is the same using an output reader.
     ...     for timestamp, stream, line in reader:
     ...         print(timestamp, stream, line)
     {:timestamp} 0 stdout line 0
-    {:timestamp} 0 stderr line 0
     {:timestamp} 0 stdout line 1
-    {:timestamp} 0 stderr line 1
     {:timestamp} 0 stdout line 2
-    {:timestamp} 0 stderr line 2
     {:timestamp} 0 stdout line 3
-    {:timestamp} 0 stderr line 3
     {:timestamp} 0 stdout line 4
+    {:timestamp} 0 stderr line 0
+    {:timestamp} 0 stderr line 1
+    {:timestamp} 0 stderr line 2
+    {:timestamp} 0 stderr line 3
     {:timestamp} 0 stderr line 4

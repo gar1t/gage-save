@@ -26,7 +26,7 @@ Help for `check`:
 
 Default output:
 
-    >>> run("gage check")  # -space +parse
+    >>> run("gage check", cols=999)  # +parse -space
     | gage_version          | 0.1.0     |
     | gage_install_location | {:path}   |
     | python_version        | {:ver} {} |
@@ -72,7 +72,7 @@ If a directory is specified, `check` looks for a Gage file.
 If a specified path doesn't exist, `check` exits with an error.
 
     >>> run("gage check not-there.toml")
-    ERROR: not-there.toml does not exist
+    File "not-there.toml" does not exist
     <1>
 
 Generate an invalid Gage file.
@@ -84,7 +84,7 @@ Generate an invalid Gage file.
     ... """)
 
     >>> run("gage check gage.json")
-    ERROR: gage.json has problems
+    There are errors in gage.json
     The instance must be of type "object"
     <1>
 
@@ -112,24 +112,24 @@ Matching spec:
 Non matching spec:
 
     >>> run(f"gage check --version '<{__version__}'")  # +parse
-    gage: version mismatch: current version '{:ver}' does not match '<{:ver}'
+    Version mismatch: current version '{:ver}' does not match '<{:ver}'
     <1>
 
     >>> run(f"gage check --version '>{__version__}'")  # +parse
-    gage: version mismatch: current version '{:ver}' does not match '>{:ver}'
+    Version mismatch: current version '{:ver}' does not match '>{:ver}'
     <1>
 
     >>> run("gage check --version 999")  # +parse
-    gage: version mismatch: current version '{:ver}' does not match '999'
+    Version mismatch: current version '{:ver}' does not match '999'
     <1>
 
     >>> run("gage check --version foobar")
-    ERROR: invalid version spec 'foobar': missing comparison operator (==, <, >, etc.)
+    Invalid version spec 'foobar': missing comparison operator (==, <, >, etc.)
     See https://bit.ly/45AerAj for help with version specs.
     <1>
 
     >>> run("gage check --version ==foobar")  # -space
-    ERROR: invalid version spec '==foobar': expected end or semicolon (after name and
+    Invalid version spec '==foobar': expected end or semicolon (after name and
     no valid version specifier)
     See https://bit.ly/45AerAj for help with version specs.
     <1>

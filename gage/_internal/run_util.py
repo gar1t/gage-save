@@ -40,6 +40,7 @@ __all__ = [
     "apply_config",
     "finalize_run",
     "finalize_staged_run",
+    "format_run_timestamp",
     "init_run_meta",
     "make_run_timestamp",
     "make_run",
@@ -87,27 +88,14 @@ def run_status(run: Run):
 
 
 def _exit_status(run: Run) -> Literal["completed", "terminated", "error"] | None:
-    filename = _meta_proc_exit_filename(run)
-    try:
-        exit_str = open(filename).read().rstrip()
-    except FileNotFoundError:
+    exit_code = run_attr(run, "exit_code", None)
+    if exit_code is None:
         return None
-    except Exception as e:
-        log.warning("Error reading exit status in \"%s\": %s", filename, e)
-        return None
-    else:
-        try:
-            exit = int(exit_str)
-        except ValueError:
-            log.warning("Invalid exit status in \"%s\": %s", filename, exit_str)
-            return None
-        else:
-            if exit == 0:
-                return "completed"
-            elif exit < 0:
-                return "terminated"
-            else:
-                return "error"
+    if exit_code == 0:
+        return "completed"
+    elif exit_code < 0:
+        return "terminated"
+    return "error"
 
 
 def _running_status(run: Run) -> Literal["running", "terminated"] | None:
@@ -214,6 +202,23 @@ def _run_adaptive_timestamp_reader(run: Run, name: str, default: Any = None):
     return default
 
 
+def _run_exit_code_reader(run: Run, name: str, default: Any = None):
+    filename = _meta_proc_exit_filename(run)
+    try:
+        exit_str = open(filename).read().rstrip()
+    except FileNotFoundError:
+        return default
+    except Exception as e:
+        log.warning("Error reading exit status in \"%s\": %s", filename, e)
+        return default
+    else:
+        try:
+            return int(exit_str)
+        except ValueError:
+            log.warning("Invalid exit status in \"%s\": %s", filename, exit_str)
+            return default
+
+
 _ATTR_READERS = {
     "id": getattr,
     "label": run_user_attr,
@@ -223,6 +228,7 @@ _ATTR_READERS = {
     "started": run_timestamp,
     "stopped": run_timestamp,
     "timestamp": _run_adaptive_timestamp_reader,
+    "exit_code": _run_exit_code_reader,
 }
 
 
@@ -992,3 +998,9 @@ def _hook_env(run: Run, project_dir: str | None = None):
         "run_dir": run.run_dir,
         **({"project_dir": project_dir} if project_dir else {}),
     }
+
+
+def format_run_timestamp(ts: datetime.datetime | None):
+    if not ts:
+        return ""
+    return ts.strftime("%x %X")

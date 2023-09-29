@@ -13,7 +13,7 @@ Use `load_gagefile()` to load a Gage file.
 An empty file is invalid JSON and can't be loaded.
 
     >>> run("gage check empty.json")
-    ERROR: empty.json: invalid JSON: Expecting value: line 1 column 1 (char 0)
+    Error loading empty.json: invalid JSON: Expecting value: line 1 column 1 (char 0)
     <1>
 
 ## Empty object
@@ -93,7 +93,7 @@ various stages of a run lifecycle.
 Exec commands must be either strings or arrays of strings.
 
     >>> run("gage check invalid-exec.json")  # +wildcard
-    ERROR: invalid-exec.json has problems
+    There are errors in invalid-exec.json
     Properties ['train'] are invalid
     Properties ['exec'] are invalid
     ...
@@ -124,7 +124,7 @@ resolved dependency must be written, the dependency may specify
 `keys` is required.
 
     >>> run("gage check empty-config.json")  # +wildcard
-    ERROR: empty-config.json has problems
+    There are errors in empty-config.json
     Properties ['train'] are invalid
     Properties ['config'] are invalid
     ...
@@ -137,7 +137,7 @@ resolved dependency must be written, the dependency may specify
 At a minimum, `files` is required for `depends`.
 
     >>> run("gage check empty-depends.json")  # +wildcard
-    ERROR: empty-depends.json has problems
+    There are errors in empty-depends.json
     Properties ['a'] are invalid
     Properties ['depends'] are invalid
     ...

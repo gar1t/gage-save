@@ -68,11 +68,4 @@ def check(
     """
     from .check_impl import check, Args
 
-    check(
-        Args(
-            path=path,
-            version=version,
-            json=json,
-            verbose=verbose,
-        )
-    )
+    check(Args(path, version, json, verbose))

@@ -516,7 +516,7 @@ Provide an invalid spec (error message varies across Python versions).
 
     >>> check_gage_version("not a valid spec")  # +wildcard
     Traceback (most recent call last):
-    ValueError: invalid version spec 'not a valid spec': ...
+    ValueError: Invalid version spec 'not a valid spec': ...
 
 ## Format duration
 

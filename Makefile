@@ -11,4 +11,4 @@ clean:
 	rm -rf dist build
 
 build-dist:
-	pyinstaller bundle_main.py --name gage
+	pyinstaller gage.py

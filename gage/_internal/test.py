@@ -48,7 +48,8 @@ __all__ = [
     "normlf",
     "os",
     "parse_any",
-    "parse_date",
+    "parse_datetime",
+    "parse_isodate",
     "parse_path",
     "parse_run_id",
     "parse_run_name",
@@ -134,12 +135,12 @@ def parse_run_id(s: str):
     return s
 
 
-@parse_type("aaaaa", r"[a-f0-9]{8}")
+@parse_type("rid", r"[a-f0-9]{8}")
 def parse_short_run_id(s: str):
     return s
 
 
-@parse_type("aa", r"[a-z]{5}")
+@parse_type("rn", r"[a-z]{5}")
 def parse_short_run_name(s: str):
     return s
 
@@ -154,8 +155,13 @@ def parse_timestamp(s: str):
     return int(s)
 
 
-@parse_type("date", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
-def parse_date(s: str):
+@parse_type("datetime", r"[\d\-/]+ [\d:]+")
+def parse_datetime(s: str):
+    return datetime.datetime.strptime(s, "%x %X").isoformat()
+
+
+@parse_type("isodate", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{4}(?:\d{2})?)?")
+def parse_isodate(s: str):
     return datetime.datetime.fromisoformat(_format_tz(s)).isoformat()
 
 
@@ -302,11 +308,16 @@ def run(
     cwd: Optional[str] = None,
     env: Optional[Env] = None,
     rstrip: bool = True,
+    cols: int | None = None,
     _capture: bool = False,
 ):
     proc_env = dict(os.environ)
     _apply_venv_bin_path(proc_env)
     proc_env["TERM"] = "unknown"
+    if cols is None:
+        proc_env["COLUMNS"] = "60"
+    elif cols >= 0:
+        proc_env["COLUMNS"] = str(cols)
     proc_env.update(env or {})
     p = _popen(cmd, proc_env, cwd)
     with _kill_after(p, timeout) as timeout_context:
@@ -476,7 +487,7 @@ def udiff(s1: str, s2: str, n: int = 3):
 
 
 def cat_log(filename: str):
-    date_p = re.compile(parse_date.pattern)
+    date_p = re.compile(parse_isodate.pattern)
     for line in open(filename).readlines():
         date, rest = line.split(" ", 1)
         assert date_p.match(date)

@@ -302,8 +302,9 @@ variable `_ATTR_READERS`.
 
     >>> from gage._internal.run_util import _ATTR_READERS
 
-    >>> sorted(_ATTR_READERS)  # +pprint
+    >>> sorted(_ATTR_READERS)  # +pprint +diff
     ['dir',
+     'exit_code',
      'id',
      'label',
      'name',

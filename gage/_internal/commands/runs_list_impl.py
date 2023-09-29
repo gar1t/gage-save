@@ -35,7 +35,7 @@ def runs_list(args: Args):
     width = cli.console_width()
     table = cli.Table(
         _headers(width),
-        expand=not cli.is_plain,
+        expand=True,
         caption=_run_table_caption(filtered, args),
         caption_justify="left",
     )

@@ -71,7 +71,6 @@ class RunOutput:
         self._index = None
         self._out_tee = None
         self._err_tee = None
-        self._err_tee_ready = threading.Event()
 
     @property
     def closed(self):
@@ -139,15 +138,6 @@ class RunOutput:
         index_fileno = self._index.fileno()
         lock = self._output_lock
         line: list[int] = []
-
-        if stream_type == 1:
-            # Err tee to wait until ready
-            self._err_tee_ready.wait()
-        elif stream_type == 0:
-            # Out tee started, mark err tee ready
-            self._err_tee_ready.set()
-        else:
-            assert False, stream_type
 
         while True:
             buf = os_read(input_fileno, RUN_OUTPUT_STREAM_BUFFER)
@@ -236,12 +226,15 @@ class RunOutput:
         self.close()
 
 
-RunOutputLine = tuple[float, int, str]
+class RunOutputLine(NamedTuple):
+    timestamp: float
+    stream: Literal[0, 1]
+    text: str
 
 
 class RunOutputReader:
-    def __init__(self, output_filename: str):
-        self._output_filename = output_filename
+    def __init__(self, filename: str):
+        self.filename = filename
         self._lines: list[RunOutputLine] = []
         self._output: Optional[BinaryIO] = None
         self._index: Optional[BinaryIO] = None
@@ -292,14 +285,14 @@ class RunOutputReader:
                 if len(header) < 9:
                     break
                 time, stream = struct.unpack("!QB", header)
-                self._lines.append((time, stream, line))
+                self._lines.append(RunOutputLine(time, stream, line))
                 if end is not None and end < len(self._lines):
                     break
 
     def _ensure_open(self):
         if self._output is None:
-            output = open(self._output_filename, "rb")
-            index = open(self._output_filename + ".index", "rb")
+            output = open(self.filename, "rb")
+            index = open(self.filename + ".index", "rb")
             self._output, self._index = output, index
         assert self._output is not None
         assert self._index is not None
@@ -317,7 +310,3 @@ class RunOutputReader:
             f.close()
         except IOError:
             pass
-
-
-def show(run: Run):
-    pass

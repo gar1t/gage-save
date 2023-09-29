@@ -33,8 +33,4 @@ def runs_delete(runs: Runs = None, where: Where = ""):
     """
     from .runs_delete_impl import runs_delete, Args
 
-    args = Args(
-        runs=runs,
-        where=where,
-    )
-    runs_delete(args)
+    runs_delete(Args(runs, where))

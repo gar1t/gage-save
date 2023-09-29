@@ -22,8 +22,4 @@ def show(run: RunSpec = ""):
     """Show information about a run."""
     from .show_impl import show, Args
 
-    show(
-        Args(
-            run=run,
-        )
-    )
+    show(Args(run))

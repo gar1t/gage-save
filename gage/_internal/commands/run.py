@@ -102,13 +102,13 @@ def run(
 
     run(
         Args(
-            opspec=opspec,
-            flags=flags,
-            label=label,
-            stage=stage,
-            yes=yes,
-            preview_sourcecode=preview_sourcecode,
-            preview_all=preview_all,
+            opspec,
+            flags,
+            label,
+            stage,
+            yes,
+            preview_sourcecode,
+            preview_all,
             json=json,
         )
     )

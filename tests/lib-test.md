@@ -56,21 +56,21 @@ The example should use `any`.
 ISO 8601 formats:
 
     >>> print("2023-09-03T11:21:33-0500")
-    {:date}
+    {:isodate}
 
     >>> print("2023-09-03T11:21:33+0500")
-    {:date}
+    {:isodate}
 
     >>> print("2023-09-03T11:21:33+050030")
-    {:date}
+    {:isodate}
 
 Valid formats but not supported:
 
     >>> print("2023-09-03T11:21:33-05:00")  # +fails
-    {:date}
+    {:isodate}
 
     >>> print("2023-09-03T11:21:33-05:00:30")  # +fails
-    {:date}
+    {:isodate}
 
 ## `cat_json`
 
