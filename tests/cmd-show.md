@@ -16,7 +16,7 @@
 Generate a run.
 
     >>> use_example("hello")
-    >>> run("gage run -y")
+    >>> run("gage run -q -y")
     <0>
 
 Show the run.

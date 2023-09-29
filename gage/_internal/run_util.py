@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import *
-from .types import *
+
 from logging import Logger
-from os import DirEntry
+
+from .types import *
 
 import datetime
 import json
@@ -420,7 +421,7 @@ def init_run_meta(
     config: RunConfig,
     cmd: OpCmd,
     user_attrs: Optional[dict[str, Any]] = None,
-    system_attrs: Optional[dict[str, Any]] = None,
+    system_attrs: Optional[dict[str, Any]] = None
 ):
     _write_schema_file(run)
     log = _runner_log(run)
@@ -654,10 +655,21 @@ def _write_proc_lock(proc: subprocess.Popen[bytes], run: Run, log: Logger):
     write_file(filename, str(proc.pid), readonly=True)
 
 
-def open_run_output(run: Run, p: subprocess.Popen[bytes]):
+def open_run_output(
+    run: Run,
+    p: subprocess.Popen[bytes],
+    out_fileno: int | None = None,
+    err_fileno: int | None = None,
+    output_cb: run_output.OutputCallback | None = None,
+):
     ensure_dir(run_meta_path(run, "output"))
     output_filename = run_meta_path(run, "output", "40_run")
-    output = run_output.RunOutput(output_filename)
+    output = run_output.RunOutput(
+        output_filename,
+        out_fileno,
+        err_fileno,
+        output_cb,
+    )
     output.open(p)
     return output
 
@@ -818,7 +830,7 @@ def _iter_run_files(run: Run):
     return _scan_files(run.run_dir)
 
 
-def _scan_files(dir: str) -> Generator[DirEntry[str], Any, None]:
+def _scan_files(dir: str) -> Generator[os.DirEntry[str], Any, None]:
     try:
         scanner = os.scandir(dir)
     except FileNotFoundError:

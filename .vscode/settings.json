@@ -56,6 +56,7 @@
     "ESRCH",
     "exitcodes",
     "fakepkg",
+    "fileno",
     "findl",
     "fnmatch",
     "followlinks",

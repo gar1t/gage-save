@@ -5,7 +5,7 @@
 Generate a sample run.
 
     >>> use_example("hello")
-    >>> run("gage run -y")
+    >>> run("gage run -q -y")
     <0>
 
 Select the latest run.

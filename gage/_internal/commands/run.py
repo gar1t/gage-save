@@ -41,6 +41,16 @@ StageFlag = Annotated[
     ),
 ]
 
+QuietFlag = Annotated[
+    bool,
+    Option(
+        "-q",
+        "--quiet",
+        show_default=False,
+        help="Don't show output.",
+    ),
+]
+
 YesFlag = Annotated[
     bool,
     Option(
@@ -84,6 +94,7 @@ def run(
     flags: FlagAssigns = None,
     label: Label = "",
     stage: StageFlag = False,
+    quiet: QuietFlag = False,
     yes: YesFlag = False,
     preview_sourcecode: PreviewSourceCodeFlag = False,
     preview_all: PreviewAllFlag = False,
@@ -106,6 +117,7 @@ def run(
             flags,
             label,
             stage,
+            quiet,
             yes,
             preview_sourcecode,
             preview_all,

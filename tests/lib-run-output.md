@@ -19,11 +19,12 @@ Create a sample script to generate output.
     >>> cd(make_temp_dir())
 
     >>> write("test.py", """
-    ... import sys
+    ... import sys, time
     ...
     ... for i in range(5):
     ...     sys.stdout.write(f"stdout line {i}\\n")
     ... sys.stdout.flush()
+    ... time.sleep(0.5)
     ...
     ... for i in range(5):
     ...     sys.stderr.write(f"stderr line {i}\\n")
@@ -168,3 +169,52 @@ The order is the same using an output reader.
     {:timestamp} 0 stderr line 2
     {:timestamp} 0 stderr line 3
     {:timestamp} 0 stderr line 4
+
+## Callback
+
+Run output supports a callback interface, which can be used to respond
+to output.
+
+Create a sample program that generates output.
+
+    >>> cd(make_temp_dir())
+
+    >>> write("prog.py", """
+    ... print("Line 1")
+    ... print("Line 2")
+    ... print("Line 3")
+    ... """)
+
+Create a callback to handle output.
+
+    >>> class OutputHandler:
+    ...     def output(self, stream, line):
+    ...         print(f"Got output [{stream}]: {line}")
+    ...
+    ...     def close(self):
+    ...         print("Handler close")
+
+Create a run output object with a callback.
+
+    >>> output = RunOutput("output", output_cb=OutputHandler())
+
+    >>> p = subprocess.Popen(
+    ...     [sys.executable, "prog.py"],
+    ...     stdout=subprocess.PIPE,
+    ...     stderr=subprocess.STDOUT
+    ... )
+
+    >>> output.open(p)
+    >>> p.wait()
+    Got output [0]: b'Line 1\n'
+    Got output [0]: b'Line 2\n'
+    Got output [0]: b'Line 3\n'
+    0
+
+    >>> output.wait_and_close()
+    Handler close
+
+    >>> cat("output")
+    Line 1
+    Line 2
+    Line 3

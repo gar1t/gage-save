@@ -33,16 +33,16 @@ Generate some sample runs.
 
     >>> use_example("hello")
 
-    >>> run("gage run hello -l run-1 -y")
+    >>> run("gage run hello -l run-1 -q -y")
     <0>
 
-    >>> run("gage run hello -l run-2 -y")
+    >>> run("gage run hello -l run-2 -q -y")
     <0>
 
-    >>> run("gage run hello -l run-3 -y")
+    >>> run("gage run hello -l run-3 -q -y")
     <0>
 
-    >>> run("gage run hello -l run-4 -y")
+    >>> run("gage run hello -l run-4 -q -y")
     <0>
 
 List runs.

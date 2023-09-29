@@ -35,8 +35,10 @@ def stream_fileno(stream: IO[bytes]):
         return None
 
 
+StreamType = Literal[0, 1];
+
 class OutputCallback:
-    def write(self, out: bytes) -> None:
+    def output(self, stream: StreamType, out: bytes) -> None:
         raise NotImplementedError()
 
     def close(self) -> None:
@@ -127,7 +129,7 @@ class RunOutput:
         self,
         input_stream: IO[bytes],
         tee_fileno: int | None,
-        stream_type: int,
+        stream_type: StreamType,
     ):
         assert self._output
         assert self._index
@@ -157,13 +159,13 @@ class RunOutput:
                         self._output_eol(index_fileno, line, stream_type)
                         del line[:]
 
-    def _output_eol(self, index_fileno: int, line: list[int], stream_type: int):
+    def _output_eol(self, index_fileno: int, line: list[int], stream_type: StreamType):
         line_bytes = bytes(line)
         entry = struct.pack("!QB", time.time_ns() // 1000000, stream_type)
         os.write(index_fileno, entry)
         if self._output_cb:
             try:
-                self._output_cb.write(line_bytes)
+                self._output_cb.output(stream_type, line_bytes)
             except Exception:
                 log.exception("error in output callback (will be removed)")
                 self._output_cb = None

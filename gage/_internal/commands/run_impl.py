@@ -6,6 +6,7 @@ from ..types import *
 
 import os
 import platform
+import sys
 
 from .. import cli
 from .. import run_sourcecode
@@ -26,6 +27,7 @@ class Args(NamedTuple):
     flags: list[str] | None
     label: str
     stage: bool
+    quiet: bool
     yes: bool
     preview_sourcecode: bool
     preview_all: bool
@@ -148,7 +150,9 @@ def _sys_attrs():
 def _run(ctx: RunContext, args: Args):
     run = _stage(ctx, args)
     p = start_run(run)
-    output = open_run_output(run, p)
+    out_fileno = sys.stdout.fileno() if not args.quiet else None
+    err_fileno = sys.stderr.fileno() if not args.quiet else None
+    output = open_run_output(run, p, out_fileno, err_fileno)
     exit_code = p.wait()
     output.wait_and_close()
     finalize_run(run, exit_code)
