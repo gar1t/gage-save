@@ -7,7 +7,10 @@ from ..types import *
 import logging
 import os
 
+import rich.box
+
 from rich.console import Group
+from rich.padding import Padding
 from rich.text import Text
 from rich.table import Table, Column
 
@@ -112,13 +115,14 @@ def Files(run: Run):
         files = list(m)
     files_table = cli.Table(
         expand=True,
-        show_edge=False,
         show_footer=True,
+        show_edge=False,
+        box=rich.box.SIMPLE,
+        padding=0,
     )
     files_table.add_column(
         "name",
-        "total",
-        footer_style="not b yellow",
+        style=cli.LABEL_STYLE,
     )
     files_table.add_column(
         "type",
@@ -126,7 +130,7 @@ def Files(run: Run):
     )
     files_table.add_column(
         "size",
-        "",
+        justify="right",
         style="magenta",
         footer_style="not b magenta",
     )
@@ -140,7 +144,7 @@ def Files(run: Run):
         )
         total_size += stat.st_size
 
-    files_table.columns[2].footer = _format_file_size(total_size)
+    files_table.columns[2].footer = f"total: {_format_file_size(total_size)}"
 
     return cli.Panel(files_table, title="Files")
 
@@ -166,32 +170,46 @@ def _format_file_size(size: int):
     return human_readable.file_size(size, formatting=".1f")
 
 
+def OutputTable(reader: RunOutputReader, name: str = "", pad: bool = False):
+    table = cli.Table(
+        (name, {"style": "dim"}),
+        show_header=name != "",
+        expand=True,
+        show_edge=False,
+        padding=0,
+        box=rich.box.SIMPLE_HEAD,
+    )
+    try:
+        lines = list(reader)
+    except Exception as e:
+        log.warning(
+            "Error reading run output (%s): %s",
+            reader.filename,
+            e,
+        )
+    else:
+        # TODO truncate lines and show message if too long
+        for line in lines:
+            table.add_row(Text(line.text, style="orange3" if line.stream == 1 else ""))
+    return Padding(table, (1 if pad else 0, 0, 0, 0))
+
+
 def Output(run: Run):
     output = list(_iter_run_output(run))
-    panels = []
-    for output_name, output_reader in output:
-        try:
-            output_lines = list(output_reader)
-        except Exception as e:
-            log.warning(
-                "Error reading run output (%s): %s",
-                output_reader.filename,
-                e,
+    if not output:
+        return Group()
+    if len(output) == 1:
+        name, reader = output[0]
+        return cli.Panel(OutputTable(reader), title="Output")
+    return cli.Panel(
+        Group(
+            *(
+                OutputTable(reader, name, pad=i > 0)
+                for i, (name, reader) in enumerate(output)
             )
-        else:
-            output_table = Table.grid(Column(style="dim"))
-            # TODO truncate lines and show message if too long
-            for line in output_lines:
-                output_table.add_row(
-                    Text(line.text, style="orange3" if line.stream == 1 else "")
-                )
-            output_title = f"[{cli.PANEL_TITLE_STYLE}]Output" + (
-                f" [dim]({_output_desc(output_name)})"  # \
-                if output_name != "run"
-                else ""
-            )
-            panels.append(cli.Panel(output_table, title=cli.markup(output_title)))
-    return Group(*panels)
+        ),
+        title="Output",
+    )
 
 
 def _iter_run_output(run: Run) -> Generator[tuple[str, RunOutputReader], Any, None]:

@@ -1,18 +1,8 @@
 # Gage To Do
 
-Now:
-
-- Finalize run not running or not writing to output (not running hook I
-  think)
-- Output index files are writeable (not sure why)
-- Hook up output logging for hooks to stdout/stderr
-- Funny extra blank line after progress
-
 Next up:
 
-- Basic run command support (`run <op>`)
-  - [x] Show output
-  - [ ] Show progress
+- Consolidate Output to a single top-level panel with subsections/panels
 
 - Flag assignments + config import
   - Config import
@@ -39,14 +29,10 @@ Next up:
 
 - API and View
 
-## CLI factor
-
-- Get -H and -C core opts working again
-- Drop Click
-- Add `__all__` to all modules
-
 ## General
 
+- Get -H and -C core opts working again
+- Add `__all__` to all modules
 - Do tags, label, and comments from the `run` command land in the meta
   dir or in user? I suspect in meta under `./user` but want to sanity
   check why.

@@ -608,7 +608,6 @@ def _stage_dependencies_hook(run: Run, project_dir: str, opdef: OpDef, log: Logg
 
 def finalize_staged_run(run: Run):
     log = _runner_log(run)
-    run_phase_channel.notify("stage-finalize")
     _write_staged_files_manifest(run, log)
     _write_timestamp("staged", run, log)
 
@@ -687,6 +686,7 @@ def open_run_output(
 def finalize_run(run: Run, exit_code: int):
     log = _runner_log(run)
     opdef = meta_opdef(run)
+    run_phase_channel.notify("finalize")
     ensure_dir(run.run_dir)
     _finalize_run_output(run)
     _write_timestamp("stopped", run, log)
@@ -726,7 +726,6 @@ def _delete_proc_lock(run: Run, log: Logger):
 
 def _finalize_run_hook(run: Run, opdef: OpDef, log: Logger):
     exec = opdef.get_exec().get_finalize_run()
-    assert False, exec
     if exec:
         _run_phase_exec(
             run,

@@ -128,7 +128,7 @@ class _RunPhaseStatus:
         "stage-config": "Applying configuration",
         "stage-runtime": "Staging runtime",
         "stage-dependencies": "Staging dependencies",
-        "stage-finalize": "Finalizing staged run",
+        "finalize": "Finalizing run",
     }
 
     def __init__(self, args: Args):
@@ -206,7 +206,7 @@ def _run(context: RunContext, args: Args):
         output = open_run_output(run, proc, output_cb=output_cb)
         exit_code = proc.wait()
         output.wait_and_close()
-        status.update("Finalizing run")
+    with _RunPhaseStatus(args):
         finalize_run(run, exit_code)
 
 

@@ -150,6 +150,7 @@
     "startfile",
     "struct",
     "subdir",
+    "Subpanel",
     "subschema",
     "textorbinary",
     "tomli",

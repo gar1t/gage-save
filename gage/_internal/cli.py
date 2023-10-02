@@ -203,10 +203,13 @@ ColSpec = str | tuple[str, dict[str, Any]]
 
 
 def Table(*cols: ColSpec, **kw: Any):
+    box = kw.pop("box", None) or rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN
+    border_style = kw.pop("border_style", None) or TABLE_BORDER_STYLE
+    header_style = kw.pop("header_style", None) or TABLE_HEADER_STYLE
     t = rich.table.Table(
-        box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
-        border_style=TABLE_BORDER_STYLE,
-        header_style=TABLE_HEADER_STYLE,
+        box=box,
+        border_style=border_style,
+        header_style=header_style,
         **kw,
     )
     for col in cols:
