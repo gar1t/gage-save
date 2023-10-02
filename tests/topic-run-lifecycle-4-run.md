@@ -22,7 +22,10 @@ Use a simple Python script to print a message.
 Create an opdef that runs the script.
 
     >>> opdef = OpDef("test", {
-    ...   "exec": "python say.py",
+    ...   "exec": {
+    ...     "stage-sourcecode": "python -c \"print('Stage source')\"",
+    ...     "run": "python say.py"
+    ...   },
     ...   "config": "say.py"
     ... })
 
@@ -87,6 +90,8 @@ List meta dir contents.
     -rw-rw-r-- manifest
     -r--r--r-- opdef.json
     -r--r--r-- opref
+    -r--r--r-- output/10_sourcecode
+    -r--r--r-- output/10_sourcecode.index
     -rw-rw-r-- output/40_run
     -rw-rw-r-- output/40_run.index
     -r--r--r-- proc/cmd.json
@@ -99,6 +104,9 @@ Note that some files are writeable. These are log, output, and manifest
 files that are updated during the run and when the run is finalized.
 
 Show run output.
+
+    >>> cat(run_meta_path(run, "output", "10_sourcecode"))
+    Stage source
 
     >>> cat(run_meta_path(run, "output", "40_run"))
     Hi there
@@ -122,6 +130,8 @@ Show the meta files. All files are read only.
     -r--r--r-- manifest
     -r--r--r-- opdef.json
     -r--r--r-- opref
+    -r--r--r-- output/10_sourcecode
+    -r--r--r-- output/10_sourcecode.index
     -r--r--r-- output/40_run
     -r--r--r-- output/40_run.index
     -r--r--r-- proc/cmd.json

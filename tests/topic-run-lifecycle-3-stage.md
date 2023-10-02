@@ -338,7 +338,7 @@ Finalize the staged run.
 
     >>> finalize_staged_run(run)
 
-The run files are now read only.
+The run files are read only.
 
     >>> ls(run.run_dir, permissions=True)  # +diff
     -r--r--r-- .venv/bin/activate
@@ -371,24 +371,27 @@ config.
 
 List meta runs.
 
-    >>> ls(run.meta_dir)  # +diff
-    __schema__
-    config.json
-    id
-    initialized
-    log/files
-    log/patched
-    log/runner
-    manifest
-    opdef.json
-    opref
-    output/10_sourcecode
-    output/10_sourcecode.index
-    output/20_runtime
-    output/20_runtime.index
-    proc/cmd.json
-    proc/env.json
-    staged
+    >>> ls(run.meta_dir, permissions=True)  # +diff
+    -r--r--r-- __schema__
+    -r--r--r-- config.json
+    -r--r--r-- id
+    -r--r--r-- initialized
+    -rw-rw-r-- log/files
+    -r--r--r-- log/patched
+    -rw-rw-r-- log/runner
+    -rw-rw-r-- manifest
+    -r--r--r-- opdef.json
+    -r--r--r-- opref
+    -r--r--r-- output/10_sourcecode
+    -r--r--r-- output/10_sourcecode.index
+    -r--r--r-- output/20_runtime
+    -r--r--r-- output/20_runtime.index
+    -r--r--r-- proc/cmd.json
+    -r--r--r-- proc/env.json
+    -r--r--r-- staged
+
+`log/files`, `log/runner`, and `manifest` are left writeable as these
+are modified when the staged run is started.
 
 Show logged events.
 

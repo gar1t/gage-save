@@ -1010,6 +1010,7 @@ def _run_phase_exec(
     output.wait_and_close()
     log.info(f"Exit code for {phase_name}: {exit_code}")
     set_readonly(output_filename)
+    set_readonly(output_filename + ".index")
     if exit_code != 0:
         raise RunExecError(phase_name, proc_args, exit_code)
 
