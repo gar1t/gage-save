@@ -726,6 +726,7 @@ def _delete_proc_lock(run: Run, log: Logger):
 
 def _finalize_run_hook(run: Run, opdef: OpDef, log: Logger):
     exec = opdef.get_exec().get_finalize_run()
+    assert False, exec
     if exec:
         _run_phase_exec(
             run,

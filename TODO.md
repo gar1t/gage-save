@@ -119,6 +119,8 @@ run[linux] = "..."
 - Review topic help - this is going to be quite out of date - this
   should be the main help for Gage
 
+- Warn on invalid Gage file??
+
 ## CLI style
 
 - Support command and option refs using backticks and format sensibly

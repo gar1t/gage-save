@@ -87,14 +87,16 @@ def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> No
     try:
         gagefile.validate_data(data)
     except gagefile.ValidationError as e:
-        _gagefile_validation_error(e, args)
+        _gagefile_validation_error(e, filename, args)
     else:
         cli.err(f"{filename} is a valid Gage file")
         raise SystemExit(0)
 
 
-def _gagefile_validation_error(e: gagefile.ValidationError, args: Args) -> NoReturn:
-    cli.error_message(f"There are errors in {args.path}")
+def _gagefile_validation_error(
+    e: gagefile.ValidationError, filename: str, args: Args
+) -> NoReturn:
+    cli.error_message(f"There are errors in {filename}")
     if args.verbose:
         output = gagefile.validation_error_output(e)
         cli.err(json.dumps(output, indent=2, sort_keys=True))
