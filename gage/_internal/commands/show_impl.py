@@ -43,12 +43,18 @@ log = logging.getLogger(__name__)
 
 class Args(NamedTuple):
     run: str
+    files: bool
 
 
 def show(args: Args):
     run = one_run(args)
-    with cli.pager():
-        _show(run)
+    default = True
+    if args.files:
+        _show_files(run)
+        default = False
+    if default:
+        with cli.pager():
+            _show(run)
 
 
 def Header(run: Run):
@@ -110,19 +116,18 @@ def Config(run: Run):
     return cli.Panel(config_table, title="Configuration")
 
 
-def Files(run: Run):
+def Files(run: Run, table_only: bool = False):
     with RunManifest(run) as m:
         files = list(m)
     files_table = cli.Table(
-        expand=True,
-        show_footer=True,
-        show_edge=False,
-        box=rich.box.SIMPLE,
-        padding=0,
+        expand=not table_only,
+        show_footer=not table_only,
+        show_edge=table_only,
+        box=None if table_only else rich.box.SIMPLE,
+        padding=(0, 1) if table_only else 0,
     )
     files_table.add_column(
         "name",
-        style=cli.LABEL_STYLE,
     )
     files_table.add_column(
         "type",
@@ -146,6 +151,8 @@ def Files(run: Run):
 
     files_table.columns[2].footer = f"total: {_format_file_size(total_size)}"
 
+    if table_only:
+        return files_table
     return cli.Panel(files_table, title="Files")
 
 
@@ -242,3 +249,7 @@ def _show(run: Run):
     cli.out(Config(run))
     cli.out(Files(run))
     cli.out(Output(run))
+
+
+def _show_files(run: Run):
+    cli.out(Files(run, table_only=True))

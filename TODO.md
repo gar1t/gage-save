@@ -2,8 +2,6 @@
 
 Next up:
 
-- Consolidate Output to a single top-level panel with subsections/panels
-
 - Flag assignments + config import
   - Config import
   - Parse flags
@@ -105,7 +103,10 @@ run[linux] = "..."
 - Review topic help - this is going to be quite out of date - this
   should be the main help for Gage
 
-- Warn on invalid Gage file??
+- Warn on invalid Gage file?? We can detect invalid files but what to do
+  with them?
+
+- How does this look under different terminal color combos?
 
 ## CLI style
 

@@ -35,5 +35,9 @@ for i in range(10):
 finalize-run = """
 echo Deleting temp files
 rm -f *.tmp
-sleep 1
+echo Finishing up other important work
+for i in `seq 3`; do
+    echo "Item $i"
+    sleep 1
+done
 """

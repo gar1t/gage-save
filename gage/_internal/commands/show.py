@@ -3,6 +3,7 @@
 from typing import *
 
 from typer import Argument
+from typer import Option
 
 __all__ = ["show"]
 
@@ -18,8 +19,18 @@ RunSpec = Annotated[
 ]
 
 
-def show(run: RunSpec = ""):
+FilesFlag = Annotated[
+    bool,
+    Option(
+        "-f",
+        "--files",
+        help="Show run files.",
+    )
+]
+
+
+def show(run: RunSpec = "", files: FilesFlag = False):
     """Show information about a run."""
     from .show_impl import show, Args
 
-    show(Args(run))
+    show(Args(run, files))

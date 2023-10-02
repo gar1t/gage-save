@@ -2,4 +2,5 @@
 
 description = "Say hello to my friend"
 
-exec = "python -c \"print('Hello Gage!')\""
+exec = "python hello.py"
+config = "hello.py"
