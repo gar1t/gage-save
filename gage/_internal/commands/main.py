@@ -12,6 +12,7 @@ from .help import help_app
 from .open import open
 from .operations import operations
 from .run import run
+from .runs_delete import runs_delete
 from .runs_list import runs_list
 from .select import select
 from .show import show
@@ -21,7 +22,6 @@ VersionFlag = Annotated[
     Option(
         "--version",
         help="Print program version and exit.",
-        show_default=False,
     ),
 ]
 
@@ -34,16 +34,25 @@ Cwd = Annotated[
     ),
 ]
 
+DebugFlag = Annotated[
+    bool,
+    Option(
+        "--debug",
+        help="Show debug messages.",
+    ),
+]
+
 
 def main(
     version: VersionFlag = False,
     cwd: Cwd = "",
+    debug: DebugFlag = False,
 ):
     """Gage ML command line interface."""
 
     from .main_impl import main, Args
 
-    main(Args(version=version, cwd=cwd))
+    main(Args(version, cwd, debug))
 
 
 def main_app():
@@ -63,6 +72,7 @@ def main_app():
     )
     app.callback()(main)
     app.command("check")(check)
+    app.command("delete, rm")(runs_delete)
     app.add_typer(help_app())
     app.command("open")(open)
     app.command("operations, ops")(operations)

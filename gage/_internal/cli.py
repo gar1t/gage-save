@@ -2,6 +2,7 @@
 
 from typing import *
 
+import logging
 import os
 import re
 import shlex
@@ -17,6 +18,7 @@ import rich.markup
 import rich.padding
 import rich.panel
 import rich.prompt
+import rich.status
 import rich.style
 import rich.text
 import rich.table
@@ -40,6 +42,8 @@ __all__ = [
     "status",
 ]
 
+log = logging.getLogger(__name__)
+
 _out = rich.console.Console(soft_wrap=False)
 
 _err = rich.console.Console(stderr=True, soft_wrap=False)
@@ -48,7 +52,7 @@ is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
 TABLE_HEADER_STYLE = "bright_yellow"
 TABLE_BORDER_STYLE = "dim"
-PANEL_TITLE_STYLE = "bright_yellow"
+PANEL_TITLE_STYLE = "yellow"
 LABEL_STYLE = "cyan1"
 SECOND_LABEL_STYLE = "cyan"
 VALUE_STYLE = "dim"
@@ -134,7 +138,17 @@ def confirm(prompt: str, default: bool = False):
     return YesNoConfirm.ask(prompt, default=default)
 
 
-def status(description: str):
+class _NullStatus(rich.status.Status):
+    def __init__(self):
+        super().__init__("", console=rich.console.Console(quiet=True))
+
+    def start(self):
+        pass
+
+
+def status(description: str, quiet: bool = False):
+    if quiet or log.getEffectiveLevel() < logging.WARN:
+        return _NullStatus()
     return _out.status(description)
 
 

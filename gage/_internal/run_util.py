@@ -554,7 +554,7 @@ def apply_config(run: Run):
 def stage_runtime(run: Run, project_dir: str):
     log = _runner_log(run)
     opdef = meta_opdef(run)
-    run_phase_channel.notify("runtime")
+    run_phase_channel.notify("stage-runtime")
     _stage_runtime_hook(run, project_dir, opdef, log)
     _apply_to_files_log(run, "r")
 
@@ -967,6 +967,17 @@ class RunExecError(Exception):
     pass
 
 
+class _PhaseExecOutputCallback(run_output.OutputCallback):
+    def __init__(self, phase_name: str):
+        self.phase_name = phase_name
+
+    def output(self, stream: run_output.StreamType, out: bytes):
+        run_phase_channel.notify("exec-output", (self.phase_name, stream, out))
+
+    def close(self):
+        pass
+
+
 def _run_phase_exec(
     run: Run,
     phase_name: str,
@@ -992,7 +1003,8 @@ def _run_phase_exec(
     )
     ensure_dir(run_meta_path(run, "output"))
     output_filename = run_meta_path(run, "output", output_name)
-    output = run_output.RunOutput(output_filename)
+    output_cb = _PhaseExecOutputCallback(phase_name)
+    output = run_output.RunOutput(output_filename, output_cb=output_cb)
     output.open(p)
     exit_code = p.wait()
     output.wait_and_close()

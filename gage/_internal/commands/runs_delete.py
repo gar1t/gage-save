@@ -10,7 +10,7 @@ Runs = Annotated[
     Optional[list[str]],
     Argument(
         help="Runs to delete.",
-        metavar="[RUN]...",
+        metavar="[run]...",
         show_default=False,
     ),
 ]
@@ -18,7 +18,7 @@ Runs = Annotated[
 Where = Annotated[
     str,
     Option(
-        metavar="EXPR",
+        metavar="expr",
         help="Delete runs matching filter expression.",
     ),
 ]
@@ -27,9 +27,9 @@ Where = Annotated[
 def runs_delete(runs: Runs = None, where: Where = ""):
     """Delete runs.
 
-    **RUN** is either a run index, a run ID, or a run name. Partial values
-    may be specified for run ID and run name if they uniquely identify a
-    run. Multiple runs may be specified.
+    [arg]run[/] is either a run index, a run ID, or a run name. Partial
+    values may be specified for run ID and run name if they uniquely
+    identify a run. Multiple runs may be specified.
     """
     from .runs_delete_impl import runs_delete, Args
 

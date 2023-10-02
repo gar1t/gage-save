@@ -9,10 +9,19 @@ import sys
 
 from . import ansi_util
 
+__all__ = [
+    "init_logging",
+]
+
 __last_init_kw = {}
 
 _isatty = sys.stderr.isatty()
 _shell = os.getenv("SHELL")
+
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARN = logging.WARN
+ERROR = logging.ERROR
 
 
 class _FakeTTY:
@@ -84,7 +93,7 @@ class ConsoleLogHandler(logging.StreamHandler):
         return super().format(record)
 
 
-def init_logging(level: Optional[int] = None, formats: Optional[dict[str, str]] = None):
+def init_logging(level: int | None = None, formats: Optional[dict[str, str]] = None):
     level = _log_level_for_arg(level)
     console_handler = {
         "class": "gage._internal.log.ConsoleLogHandler",
@@ -112,9 +121,3 @@ def _log_level_for_arg(arg: Optional[int]):
 
 def current_settings() -> dict[str, Any]:
     return __last_init_kw
-
-
-def dim(text: str):
-    if not _shell:
-        return text
-    return f"\x1b[2m{text}\x1b[0m"

@@ -37,7 +37,6 @@ AllFlag = Annotated[
         "-a",
         "--all",
         help="Show all runs. Cannot use with --limit.",
-        show_default=False,
         callback=cli.incompatible_with("limit"),
     ),
 ]

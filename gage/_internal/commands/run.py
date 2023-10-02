@@ -37,7 +37,6 @@ StageFlag = Annotated[
     Option(
         "--stage",
         help="Stage a run but don't run it.",
-        show_default=False,
     ),
 ]
 
@@ -46,7 +45,6 @@ QuietFlag = Annotated[
     Option(
         "-q",
         "--quiet",
-        show_default=False,
         help="Don't show output.",
     ),
 ]
@@ -56,7 +54,6 @@ YesFlag = Annotated[
     Option(
         "-y",
         "--yes",
-        show_default=False,
         help="Proceed without prompting.",
     ),
 ]
@@ -66,7 +63,6 @@ PreviewSourceCodeFlag = Annotated[
     Option(
         "--preview-sourcecode",
         help="Preview source code selection.",
-        show_default=False,
     ),
 ]
 
@@ -75,7 +71,6 @@ PreviewAllFlag = Annotated[
     Option(
         "--preview-all",
         help="Preview all run steps without making changes.",
-        show_default=False,
     ),
 ]
 
@@ -84,7 +79,6 @@ JSONFlag = Annotated[
     Option(
         "--json",
         help="Output preview information as JSON.",
-        show_default=False,
     ),
 ]
 

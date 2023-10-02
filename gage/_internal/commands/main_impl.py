@@ -8,19 +8,26 @@ from ...__init__ import __version__
 
 from .. import cli
 from .. import sys_config
+from .. import log
 
 
 class Args(NamedTuple):
     version: bool
     cwd: str
+    debug: bool
 
 
 def main(args: Args):
+    _init_logging(args)
     if args.version:
         cli.out(f"gage {__version__}")
         raise SystemExit(0)
     if args.cwd:
         _apply_cwd(args.cwd)
+
+
+def _init_logging(args: Args):
+    log.init_logging(log.DEBUG if args.debug else log.WARN)
 
 
 def _apply_cwd(cwd: str):

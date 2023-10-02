@@ -5,17 +5,21 @@ description = "Shows progress for run phases"
 [a.exec]
 
 stage-sourcecode = """
-echo Copying source code
+echo Patching foobar.py
+touch foobar.py
 sleep 1
 """
 
 stage-runtime = """
-echo Initialzing runtime
+echo Creating virtual env
+touch venv
 sleep 1
 """
 
 stage-dependencies = """
-echo Resolving dependencies
+echo Downloading data set
+touch data.csv
+touch data.tmp
 sleep 1
 """
 
@@ -29,6 +33,7 @@ for i in range(10):
 """
 
 finalizing-run = """
-echo Finalizing
+echo Deleting temp files
+rm -f *.tmp
 sleep 1
 """

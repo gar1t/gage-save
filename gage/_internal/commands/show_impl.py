@@ -132,15 +132,15 @@ def _show(run: Run):
                 output_table.add_row(
                     Text(line.text, style="orange3" if line.stream == 1 else "")
                 )
-            output_title = (
-                f"Output [{_output_desc(output_name)}]"
-                if len(output) > 1 or output_name != "run"
-                else "Output"
+            output_title = f"[{cli.PANEL_TITLE_STYLE}]Output" + (
+                f" [dim]\\[{_output_desc(output_name)}]"  # \
+                if output_name != "run"
+                else ""
             )
             cli.out(
                 Panel(
                     output_table,
-                    title=Text(output_title, style=cli.PANEL_TITLE_STYLE),
+                    title=output_title,
                     box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
                 )
             )

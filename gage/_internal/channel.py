@@ -14,11 +14,12 @@ class Channel:
     def __init__(self):
         self._listeners = []
 
-    def listen(self, listener: Listener):
+    def add(self, listener: Listener):
         self._listeners.append(listener)
 
-    def remove_listener(self, listener: Listener):
+    def remove(self, listener: Listener):
         self._listeners.remove(listener)
 
     def notify(self, name: str, arg: Any | None = None):
-        pass
+        for l in self._listeners:
+            l(name, arg)

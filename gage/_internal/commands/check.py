@@ -38,7 +38,6 @@ JSONFlag = Annotated[
     Option(
         "--json",
         help="Format check output as JSON.",
-        show_default=False,
     ),
 ]
 
@@ -48,7 +47,6 @@ VerboseFlag = Annotated[
         "-v",
         "--verbose",
         help="Show more information.",
-        show_default=False,
     ),
 ]
 

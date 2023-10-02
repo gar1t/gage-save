@@ -12,10 +12,12 @@ Running `gage` without arguments shows help.
     Options:
       --version   Print program version and exit.
       -C path     Change directory for command.
+      --debug     Show debug messages.
       -h, --help  Show this message and exit.
     ⤶
     Commands:
       check            Show and validate settings.
+      delete, rm       Delete runs.
       help             Show help for a topic.
       list, ls         List runs.
       open             Open a run in the file explorer.
