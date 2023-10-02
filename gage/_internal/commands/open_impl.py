@@ -25,7 +25,7 @@ class Args(NamedTuple):
 def open(args: Args):
     run = one_run(args)
     dirname = run.meta_dir if args.meta else run.run_dir
-    path = os.path.join(dirname, args.path)
+    path = os.path.join(dirname, args.path) if args.path else dirname
     _open(path, args)
     _flush_streams_and_exit()
 
@@ -58,11 +58,7 @@ def _proc_f(prog: str):
     cmd = shlex.split(prog)
 
     def f(path: str):
-        p = subprocess.Popen(
-            cmd + [path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT,
-        )
+        p = subprocess.Popen(cmd + [path])
         p.wait()
 
     return f

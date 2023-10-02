@@ -1,6 +1,6 @@
 # `show` command
 
-    >>> run("gage show -h")
+    >>> run("gage show -h")  # +diff
     Usage: gage show [options] [run]
     ⤶
       Show information about a run.
@@ -10,7 +10,8 @@
              index number, run ID, or run name.
     ⤶
     Options:
-      -h, --help  Show this message and exit.
+      -f, --files  Show run files.
+      -h, --help   Show this message and exit.
     <0>
 
 Generate a run.
@@ -34,12 +35,22 @@ Show the run.
     | exit_code  0                                             |
     ⤶
                                Files
-    |  name               | type                   | size      |
-    | --------------------|------------------------|---------- |
-    |  gage.toml          | source code            | 93 B      |
-    | --------------------|------------------------|---------- |
-    |  total              |                        | 93 B      |
+    | name            |type               |               size |
+    | ----------------|-------------------|------------------- |
+    | gage.toml       |source code        |               94 B |
+    | hello.py        |source code        |               38 B |
+    | ----------------|-------------------|------------------- |
+    |                 |                   |       total: 132 B |
     ⤶
                                Output
-    | Hello Gage!                                              |
+    | Hello Gage                                               |
+    <0>
+
+Show files.
+
+    >>> run("gage show --files")
+    | name      | type        | size |
+    |-----------|-------------|------|
+    | gage.toml | source code | 94 B |
+    | hello.py  | source code | 38 B |
     <0>

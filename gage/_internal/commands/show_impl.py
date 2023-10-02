@@ -123,7 +123,11 @@ def Files(run: Run, table_only: bool = False):
         expand=not table_only,
         show_footer=not table_only,
         show_edge=table_only,
-        box=None if table_only else rich.box.SIMPLE,
+        box=None
+        if table_only
+        else rich.box.MARKDOWN
+        if cli.is_plain
+        else rich.box.SIMPLE,
         padding=(0, 1) if table_only else 0,
     )
     files_table.add_column(

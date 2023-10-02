@@ -14,7 +14,8 @@ possible Gage project.
     ⤶
     description = "Say hello to my friend"
     ⤶
-    exec = "python -c \"print('Hello Gage!')\""
+    exec = "python hello.py"
+    config = "hello.py"
 
 List operations.
 
@@ -26,7 +27,30 @@ List operations.
 
 Run hello.
 
-FIXME - expects something to be said, namely "Hello"
+    >>> run("gage run hello -y")
+    Hello Gage
+    <0>
 
-    >> run("gage run hello -y")
+    >>> run("gage show")  # +parse -space
+    {:run_id}
+    | hello:hello                                    completed |
+    ⤶
+                             Attributes
+    | id         {:run_id}                                     |
+    | name       {:run_name}                                   |
+    | started    {:datetime}                                   |
+    | stopped    {:datetime}                                   |
+    | location   {:path}                                       |
+    | exit_code  0                                             |
+    ⤶
+                               Files
+    | name            |type               |               size |
+    | ----------------|-------------------|------------------- |
+    | gage.toml       |source code        |               94 B |
+    | hello.py        |source code        |               38 B |
+    | ----------------|-------------------|------------------- |
+    |                 |                   |       total: 132 B |
+    ⤶
+                               Output
+    | Hello Gage                                               |
     <0>

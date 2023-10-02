@@ -29,6 +29,9 @@ Next up:
 
 ## General
 
+- Get command line completion working again (want support for bash, zsh,
+  fish, nu)
+
 - Get -H and -C core opts working again
 - Add `__all__` to all modules
 - Do tags, label, and comments from the `run` command land in the meta

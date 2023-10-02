@@ -26,6 +26,7 @@
     .meta/staged
     .meta/sys/platform.json
     /gage.toml
+    /hello.py
 
     >>> run("gage list")  # +parse
     | #   | name     | operation       | started    | status   |
