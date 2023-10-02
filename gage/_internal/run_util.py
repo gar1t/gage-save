@@ -38,6 +38,8 @@ from .opref_util import encode_opref
 __all__ = [
     "META_SCHEMA",
     "RunManifest",
+    "RunManifestEntry",
+    "RunFileType",
     "apply_config",
     "finalize_run",
     "finalize_staged_run",
@@ -774,7 +776,7 @@ def _finalize_runner_log(run: Run):
 
 
 # =================================================================
-# Utils
+# Log support
 # =================================================================
 
 LoggedFileEvent = Literal[
@@ -915,6 +917,21 @@ def _encode_logged_file(file: LoggedFile):
     return f"{file.event} {file.type} {file.modified or '-'} {file.path}\n"
 
 
+# =================================================================
+# Run manifest
+# =================================================================
+
+
+class RunManifestDecodeError(Exception):
+    pass
+
+
+class RunManifestEntry(NamedTuple):
+    type: RunFileType
+    digest: str
+    path: str
+
+
 class RunManifest:
     def __init__(self, run: Run, mode: Literal["r", "w", "a"] = "r"):
         self.filename = _meta_manifest_filename(run)
@@ -942,8 +959,11 @@ def _encode_run_manifest_entry(type: RunFileType, digest: str, path: str):
     return f"{type} {digest} {path}\n"
 
 
-def _decode_run_manifest_entry(entry: str):
-    return entry.rstrip().split(" ", 2)
+def _decode_run_manifest_entry(entry: str) -> RunManifestEntry:
+    parts = entry.rstrip().split(" ", 2)
+    if len(parts) != 3:
+        raise RunManifestDecodeError("invalid entry: {entry!r}")
+    return RunManifestEntry(cast(RunFileType, parts[0]), parts[1], parts[2])
 
 
 def _init_manifest_index(run: Run) -> dict[str, str]:
@@ -952,6 +972,11 @@ def _init_manifest_index(run: Run) -> dict[str, str]:
         for type, digest, path in m:
             index[path] = digest
     return index
+
+
+# =================================================================
+# Util
+# =================================================================
 
 
 def _write_patched(run: Run, diffs: list[tuple[str, UnifiedDiff]]):

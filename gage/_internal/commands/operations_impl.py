@@ -22,7 +22,7 @@ def operations():
 
 def operations_table():
     gf = gagefile_for_project()
-    table = cli.Table(header=["operation", "description"])
+    table = cli.Table("operation", "description")
     for name, opdef in sorted(gf.get_operations().items()):
         table.add_row(cli.label(name), _opdef_desc(opdef))
     return table

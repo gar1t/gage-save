@@ -2,14 +2,14 @@
 
 `list` shows runs.
 
-    >>> run("gage list -h")
+    >>> run("gage list -h")  # +diff
     Usage: gage list [options] [run]...
     ⤶
       List runs.
     ⤶
-      By default the latest 20 runs are shown. To show more,
-      use '-n / --limit' with higher number. Use '-a / --all'
-      to show all runs.
+      By default the latest 20 runs are shown. To show more
+      runs, use '-m / --more' or '-n / --limit'. Use '-a /
+      --all' to show all runs.
     ⤶
       Use '-w / --where' to filter runs. Try 'gage help
       filters' for help with filter expressions.
@@ -23,6 +23,7 @@
                 index or slice.
     ⤶
     Options:
+      -m, --more       Show more runs.
       -n, --limit max  Limit list to max runs.
       -a, --all        Show all runs. Cannot use with --limit.
       --where expr     Show runs matching filter expression.

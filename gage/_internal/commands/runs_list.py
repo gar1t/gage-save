@@ -21,6 +21,15 @@ RunArgs = Annotated[
     ),
 ]
 
+More = Annotated[
+    Optional[list[bool]],
+    Option(
+        "-m",
+        "--more",
+        help="Show more runs.",
+    ),
+]
+
 Limit = Annotated[
     int,
     Option(
@@ -52,14 +61,15 @@ Where = Annotated[
 
 def runs_list(
     runs: RunArgs = None,
+    more: More = None,
     limit: Limit = 20,
     all: AllFlag = False,
     where: Where = "",
 ):
     """List runs.
 
-    By default the latest 20 runs are shown. To show more, use '-n /
-    --limit' with higher number. Use '-a / --all' to show all runs.
+    By default the latest 20 runs are shown. To show more runs, use '-m
+    / --more' or '-n / --limit'. Use '-a / --all' to show all runs.
 
     Use '-w / --where' to filter runs. Try '[cmd]gage help filters[/]'
     for help with filter expressions.
@@ -70,4 +80,4 @@ def runs_list(
     """
     from .runs_list_impl import runs_list, Args
 
-    runs_list(Args(runs, limit, all, where))
+    runs_list(Args(runs, more, limit, all, where))

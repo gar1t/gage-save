@@ -22,6 +22,7 @@ __all__ = ["Args", "runs_list"]
 
 class Args(NamedTuple):
     runs: list[str] | None
+    more: list[bool] | None
     limit: int
     all: bool
     where: str
@@ -34,13 +35,13 @@ def runs_list(args: Args):
     limited_with_index = _limit_runs(selected_with_index, args)
     width = cli.console_width()
     table = cli.Table(
-        _headers(width),
+        *_table_cols(width),
         expand=True,
-        caption=_run_table_caption(filtered, args),
+        caption=_run_table_caption(len(limited_with_index), len(filtered), args),
         caption_justify="left",
     )
     for index, run in limited_with_index:
-        table.add_row(*_row(index, run, width))
+        table.add_row(*_table_row(index, run, width))
     cli.out(table)
 
 
@@ -57,12 +58,18 @@ def _select_runs(runs: list[Run], args: Args):
     return [(index_lookup[run], run) for run in selected]
 
 
-def _run_table_caption(runs: list[Run], args: Args):
-    if args.all or len(runs) <= args.limit:
+def _run_table_caption(shown: int, filtered: int, args: Args):
+    if shown == filtered:
         return None
+    assert shown < filtered, (shown, filtered)
+    more_help = (
+        f" (use -{'m' * (len(args.more or []) + 1)} to show more)"
+        if not args.runs
+        else ""
+    )
     return cli.pad(
         cli.text(
-            f"Showing {args.limit} of {len(runs)} runs",
+            f"Showing {shown} of {filtered} runs{more_help}",
             style="italic dim",
         ),
         (0, 1),
@@ -72,7 +79,8 @@ def _run_table_caption(runs: list[Run], args: Args):
 def _limit_runs(runs: list[tuple[int, Run]], args: Args):
     if args.all:
         return runs
-    return runs[: args.limit]
+    limit = (sum(args.more or []) + 1) * args.limit
+    return runs[:limit]
 
 
 _TRUNC_POINTS = [
@@ -82,7 +90,7 @@ _TRUNC_POINTS = [
 ]
 
 
-def _headers(width: int) -> list[cli.ColSpec]:
+def _table_cols(width: int) -> list[cli.ColSpec]:
     headers = [
         ("#", {"ratio": None, "no_wrap": True, "style": cli.TABLE_HEADER_STYLE}),
         ("name", {"ratio": None, "no_wrap": True, "style": "dim"}),
@@ -94,7 +102,7 @@ def _headers(width: int) -> list[cli.ColSpec]:
     return _fit(headers, width)
 
 
-def _row(index: int, run: Run, width: int) -> list[str]:
+def _table_row(index: int, run: Run, width: int) -> list[str]:
     opref = meta_opref(run)
     index_str = str(index)
     run_name = run.name[:5]

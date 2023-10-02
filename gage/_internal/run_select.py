@@ -57,8 +57,21 @@ def _parse_slice(spec: str):
     m = re.match("(-?\\d+)?:(-?\\d+)?", spec)
     if m:
         start, end = m.groups()
-        return int(start) if start else None, int(end) if end else None
+        return _slice_start(start), _slice_end(end)
     raise ValueError(spec) from None
+
+
+def _slice_start(s: str | None):
+    if not s:
+        return None
+    i = int(s)
+    return i - 1 if i > 0 else i
+
+
+def _slice_end(s: str | None):
+    if not s:
+        return None
+    return int(s)
 
 
 def _select_id_or_name(runs: list[Run], spec: str):

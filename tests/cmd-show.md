@@ -33,6 +33,13 @@ Show the run.
     | location   {:path}                                       |
     | exit_code  0                                             |
     ⤶
+                               Files
+    |  name               | type                   | size      |
+    | --------------------|------------------------|---------- |
+    |  gage.toml          | source code            | 93 B      |
+    | --------------------|------------------------|---------- |
+    |  total              |                        | 93 B      |
+    ⤶
                                Output
     | Hello Gage!                                              |
     <0>

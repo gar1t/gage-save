@@ -7,10 +7,20 @@ from ..types import *
 import logging
 import os
 
+from rich.console import Group
+from rich.text import Text
+from rich.table import Table, Column
+
+import human_readable
+
+from natsort import natsorted
+
 from .. import cli
 
 from ..run_output import RunOutputReader
 
+from ..run_util import RunManifest
+from ..run_util import RunFileType
 from ..run_util import format_run_timestamp
 from ..run_util import meta_config
 from ..run_util import run_attr
@@ -38,17 +48,8 @@ def show(args: Args):
         _show(run)
 
 
-def _show(run: Run):
-    # TODO consolidate this vvvv
-
-    import rich.box
-    from rich.panel import Panel
-    from rich.text import Text
-    from rich.table import Table, Column
-
+def Header(run: Run):
     status = run_status(run)
-    started = run_timestamp(run, "started")
-    stopped = run_timestamp(run, "stopped")
     label = run_user_attr(run, "label") or ""
 
     header = Table.grid(
@@ -65,14 +66,12 @@ def _show(run: Run):
     if label:
         header.add_row(Text(label, style=cli.SECOND_LABEL_STYLE))
 
-    cli.out(
-        Panel(
-            header,
-            title=Text(run.id, style=cli.PANEL_TITLE_STYLE),
-            box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
-        )
-    )
+    return cli.Panel(header, title=run.id)
 
+
+def Attributes(run: Run):
+    started = run_timestamp(run, "started")
+    stopped = run_timestamp(run, "stopped")
     location = format_dir(os.path.dirname(run.run_dir))
     exit_code = str(run_attr(run, "exit_code", None))
 
@@ -89,34 +88,87 @@ def _show(run: Run):
     attributes.add_row("location", location)
     attributes.add_row("exit_code", str(exit_code) if exit_code is not None else "")
 
-    cli.out(
-        Panel(
-            attributes,
-            title=Text("Attributes", style=cli.PANEL_TITLE_STYLE),
-            box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
-        )
-    )
+    return cli.Panel(attributes, title="Attributes")
 
+
+def Config(run: Run):
     config = meta_config(run)
-    if config:
-        config_table = Table.grid(
-            Column(style=cli.LABEL_STYLE),
-            Column(style=cli.VALUE_STYLE),
-            padding=(0, 1),
-            collapse_padding=False,
-        )
-        for name in sorted(config):
-            config_table.add_row(name, str(config[name]))
+    if not config:
+        return Group()
+    config_table = Table.grid(
+        Column(style=cli.LABEL_STYLE),
+        Column(style=cli.VALUE_STYLE),
+        padding=(0, 1),
+        collapse_padding=False,
+    )
+    for name in sorted(config):
+        config_table.add_row(name, str(config[name]))
 
-        cli.out(
-            Panel(
-                config_table,
-                title=Text("Configuration", style=cli.PANEL_TITLE_STYLE),
-                box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
-            )
-        )
+    return cli.Panel(config_table, title="Configuration")
 
+
+def Files(run: Run):
+    with RunManifest(run) as m:
+        files = list(m)
+    files_table = cli.Table(
+        expand=True,
+        show_edge=False,
+        show_footer=True,
+    )
+    files_table.add_column(
+        "name",
+        "total",
+        footer_style="not b yellow",
+    )
+    files_table.add_column(
+        "type",
+        style="dim",
+    )
+    files_table.add_column(
+        "size",
+        "",
+        style="magenta",
+        footer_style="not b magenta",
+    )
+    total_size = 0
+    for type, digest, path in natsorted(files):
+        stat = os.stat(os.path.join(run.run_dir, path))
+        files_table.add_row(
+            path,
+            _type_desc(type),
+            _format_file_size(stat.st_size),
+        )
+        total_size += stat.st_size
+
+    files_table.columns[2].footer = _format_file_size(total_size)
+
+    return cli.Panel(files_table, title="Files")
+
+
+def _type_desc(type: RunFileType):
+    match type:
+        case "s":
+            return "source code"
+        case "d":
+            return "dependency"
+        case "r":
+            return "runtime"
+        case "g":
+            return "generated"
+        case _:
+            return f"unknown (type)"
+
+
+def _format_file_size(size: int):
+    if size < 1000:
+        # human_readable applies (decimal) formatting to bytes, bypass
+        return f"{size} B"
+    return human_readable.file_size(size, formatting=".1f")
+
+
+def Output(run: Run):
     output = list(_iter_run_output(run))
+    panels = []
     for output_name, output_reader in output:
         try:
             output_lines = list(output_reader)
@@ -128,32 +180,18 @@ def _show(run: Run):
             )
         else:
             output_table = Table.grid(Column(style="dim"))
+            # TODO truncate lines and show message if too long
             for line in output_lines:
                 output_table.add_row(
                     Text(line.text, style="orange3" if line.stream == 1 else "")
                 )
             output_title = f"[{cli.PANEL_TITLE_STYLE}]Output" + (
-                f" [dim]\\[{_output_desc(output_name)}]"  # \
+                f" [dim]({_output_desc(output_name)})"  # \
                 if output_name != "run"
                 else ""
             )
-            cli.out(
-                Panel(
-                    output_table,
-                    title=output_title,
-                    box=rich.box.ROUNDED if not cli.is_plain else rich.box.MARKDOWN,
-                )
-            )
-
-
-def _output_desc(name: str):
-    return {
-        "sourcecode": "stage source code",
-        "runtime": "stage runtime",
-        "dependencies": "stage dependencies",
-        "run": "run",
-        "finalize": "finalize run",
-    }.get(name, name)
+            panels.append(cli.Panel(output_table, title=cli.markup(output_title)))
+    return Group(*panels)
 
 
 def _iter_run_output(run: Run) -> Generator[tuple[str, RunOutputReader], Any, None]:
@@ -168,3 +206,21 @@ def _iter_run_output(run: Run) -> Generator[tuple[str, RunOutputReader], Any, No
         parts = name.split("_")
         output_name = parts[1] if len(parts) == 2 else parts[0]
         yield output_name, RunOutputReader(filename)
+
+
+def _output_desc(name: str):
+    return {
+        "sourcecode": "stage source code",
+        "runtime": "stage runtime",
+        "dependencies": "stage dependencies",
+        "run": "run",
+        "finalize": "finalize run",
+    }.get(name, name)
+
+
+def _show(run: Run):
+    cli.out(Header(run))
+    cli.out(Attributes(run))
+    cli.out(Config(run))
+    cli.out(Files(run))
+    cli.out(Output(run))

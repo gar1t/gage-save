@@ -156,7 +156,7 @@ def incompatible_with(*incompatible: str):
     """Decorator to specify incompatible params."""
 
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
-        if not value:
+        if value == param.default:
             return value
         for used_param in ctx.params:
             if param.name == used_param or used_param not in incompatible:
@@ -202,15 +202,14 @@ def _pager_supports_styles(pager: str | None):
 ColSpec = str | tuple[str, dict[str, Any]]
 
 
-def Table(header: list[ColSpec] | None = None, **kw: Any):
+def Table(*cols: ColSpec, **kw: Any):
     t = rich.table.Table(
-        show_header=header is not None,
         box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
         border_style=TABLE_BORDER_STYLE,
         header_style=TABLE_HEADER_STYLE,
         **kw,
     )
-    for col in header or []:
+    for col in cols:
         col_header, col_kw = _split_col(col)
         t.add_column(col_header, **col_kw)
     return t
@@ -225,8 +224,12 @@ def _split_col(col: ColSpec) -> tuple[str, dict[str, Any]]:
 
 
 def Panel(renderable: rich.console.RenderableType, **kw: Any):
+    title = kw.pop("title", None)
+    if isinstance(title, str):
+        title = rich.text.Text(title, PANEL_TITLE_STYLE)
     return rich.panel.Panel(
         renderable,
+        title=title,
         box=rich.box.ROUNDED if not is_plain else rich.box.MARKDOWN,
         **kw,
     )

@@ -66,7 +66,7 @@ def preview(sourcecode: RunSourceCode):
 
 
 def _preview_patterns_table(patterns: list[str]):
-    table = cli.Table(["patterns"])
+    table = cli.Table("patterns")
     if not patterns:
         table.add_row("[dim]<none>[/dim]")
     else:
@@ -76,7 +76,7 @@ def _preview_patterns_table(patterns: list[str]):
 
 
 def _preview_matched_files_table(paths: list[str]):
-    table = cli.Table(["matched files"])
+    table = cli.Table("matched files")
     if not paths:
         table.add_row("[dim]<none>[/dim]")
     else:

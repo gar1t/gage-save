@@ -58,11 +58,14 @@ Slice based scheme:
     >>> select_runs(runs, [":1"])
     [<Run id="a" name="A">]
 
-    >>> select_runs(runs, ["5:"])
+    >>> select_runs(runs, ["6:"])
     [<Run id="9" name="nine">]
 
+    >>> select_runs(runs, ["0:2"])
+    [<Run id="a" name="A">, <Run id="b" name="B">]
+
     >>> select_runs(runs, ["2:4"])
-    [<Run id="c" name="C">, <Run id="dd" name="DD">]
+    [<Run id="b" name="B">, <Run id="c" name="C">, <Run id="dd" name="DD">]
 
     >>> select_runs(runs, ["-2:"])
     [<Run id="de" name="DE">, <Run id="9" name="nine">]
@@ -71,7 +74,7 @@ Slice based scheme:
     [<Run id="a" name="A">, <Run id="b" name="B">]
 
     >>> select_runs(runs, ["2:-2"])
-    [<Run id="c" name="C">, <Run id="dd" name="DD">]
+    [<Run id="b" name="B">, <Run id="c" name="C">, <Run id="dd" name="DD">]
 
     >>> select_runs(runs, ["-2:6"])
     [<Run id="de" name="DE">, <Run id="9" name="nine">]
