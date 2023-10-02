@@ -27,6 +27,7 @@
     gage.__main__
     gage._internal.__init__
     gage._internal.ansi_util
+    gage._internal.channel
     gage._internal.cli
     gage._internal.commands.check
     gage._internal.commands.check_impl
@@ -62,7 +63,6 @@
     gage._internal.run_context
     gage._internal.run_dependencies
     gage._internal.run_output
-    gage._internal.run_progress
     gage._internal.run_select
     gage._internal.run_sourcecode
     gage._internal.run_util

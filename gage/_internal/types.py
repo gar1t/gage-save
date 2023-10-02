@@ -13,8 +13,6 @@ __all__ = [
     "OpRef",
     "OpDefExec",
     "OpDefConfig",
-    "Progress",
-    "ProgressTask",
     "Run",
     "RunConfig",
     "RunConfigValue",
@@ -249,31 +247,3 @@ class RunConfig(dict[str, RunConfigValue]):
 
 
 UnifiedDiff = list[str]
-
-
-class ProgressTask(Protocol):
-    def __enter__(self) -> 'ProgressTask':
-        ...
-
-    def __exit__(self, *exc: Any):
-        ...
-
-    def update(
-        self,
-        advance: float | None = None,
-        description: str | None = None,
-        total: float | None = None,
-        completed: float | None = None,
-    ):
-        ...
-
-
-class Progress(Protocol):
-    def task(self, description: str, total: float | None = None) -> ProgressTask:
-        ...
-
-    def __enter__(self) -> 'Progress':
-        ...
-
-    def __exit__(self, *exc: Any):
-        ...

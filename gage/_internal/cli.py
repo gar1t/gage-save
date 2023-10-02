@@ -37,6 +37,7 @@ __all__ = [
     "label",
     "markdown",
     "out",
+    "status",
 ]
 
 _out = rich.console.Console(soft_wrap=False)
@@ -131,6 +132,10 @@ class YesNoConfirm(rich.prompt.Confirm):
 
 def confirm(prompt: str, default: bool = False):
     return YesNoConfirm.ask(prompt, default=default)
+
+
+def status(description: str):
+    return _out.status(description)
 
 
 def incompatible_with(*incompatible: str):

@@ -20,8 +20,12 @@ sleep 1
 """
 
 run = """
-echo Running the operation
-sleep 1
+python -u -c "
+import time
+for i in range(10):
+    print(f'Step {i}')
+    time.sleep(0.5)
+"
 """
 
 finalizing-run = """

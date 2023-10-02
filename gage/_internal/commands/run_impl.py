@@ -6,10 +6,9 @@ from ..types import *
 
 import os
 import platform
-import sys
 
 from .. import cli
-from .. import run_progress
+from .. import run_output
 from .. import run_sourcecode
 
 from ..sys_config import runs_home
@@ -37,22 +36,22 @@ class Args(NamedTuple):
 
 def run(args: Args):
     try:
-        ctx = resolve_run_context(args.opspec)
+        context = resolve_run_context(args.opspec)
     except GageFileError as e:
         error_handlers.gagefile_error(e)
     except OpDefNotFound as e:
         error_handlers.opdef_not_found(e)
     else:
-        _handle_run_context(ctx, args)
+        _handle_run_context(context, args)
 
 
-def _handle_run_context(ctx: RunContext, args: Args):
+def _handle_run_context(context: RunContext, args: Args):
     if _preview_opts(args):
-        _preview(ctx, args)
+        _preview(context, args)
     elif args.stage:
-        _stage(ctx, args)
+        _stage(context, args)
     else:
-        _run(ctx, args)
+        _run(context, args)
 
 
 # =================================================================
@@ -64,8 +63,8 @@ def _preview_opts(args: Args):
     return args.preview_sourcecode or args.preview_all
 
 
-def _preview(ctx: RunContext, args: Args):
-    previews = _init_previews(ctx.opdef, args)
+def _preview(context: RunContext, args: Args):
+    previews = _init_previews(context.opdef, args)
     if args.json:
         cli.out(
             cli.json({name: as_json() for name, as_renderable, as_json in previews})
@@ -105,16 +104,15 @@ def _init_sourcecode_preview(opdef: OpDef):
 # =================================================================
 
 
-def _stage(ctx: RunContext, args: Args):
-    run = make_run(ctx.opref, runs_home())
+def _stage(context: RunContext, args: Args):
+    run = make_run(context.opref, runs_home())
     config = _run_config(args)
     _maybe_prompt(args, run, config)
-    cmd = _op_cmd(ctx, config)
+    cmd = _op_cmd(context, config)
     user_attrs = _user_attrs(args)
     sys_attrs = _sys_attrs()
-    init_run_meta(run, ctx.opdef, config, cmd, user_attrs, sys_attrs)
-    with run_progress.RichProgress() as progress:
-        stage_run(run, ctx.project_dir, progress)
+    init_run_meta(run, context.opdef, config, cmd, user_attrs, sys_attrs)
+    stage_run(run, context.project_dir)
     return run
 
 
@@ -130,10 +128,10 @@ def _run_config(args: Args):
     return cast(RunConfig, {})
 
 
-def _op_cmd(ctx: RunContext, config: RunConfig):
-    cmd_args = ctx.opdef.get_exec().get_run()
+def _op_cmd(context: RunContext, config: RunConfig):
+    cmd_args = context.opdef.get_exec().get_run()
     if not cmd_args:
-        error_handlers.missing_exec_error(ctx)
+        error_handlers.missing_exec_error(context)
     env = {}
     return OpCmd(cmd_args, env)
 
@@ -149,12 +147,24 @@ def _sys_attrs():
     return {"platform": platform.platform()}
 
 
-def _run(ctx: RunContext, args: Args):
-    run = _stage(ctx, args)
-    p = start_run(run)
-    out_fileno = sys.stdout.fileno() if not args.quiet else None
-    err_fileno = sys.stderr.fileno() if not args.quiet else None
-    output = open_run_output(run, p, out_fileno, err_fileno)
-    exit_code = p.wait()
+import rich.console
+
+
+class _OutputCallback(run_output.OutputCallback):
+    def __init__(self, console: rich.console.Console):
+        self._console = console
+
+    def output(self, stream: run_output.StreamType, out: bytes):
+        self._console.out(out.decode(), end="")
+
+    def close(self):
+        pass
+
+
+def _run(context: RunContext, args: Args):
+    run = _stage(context, args)
+    proc = start_run(run)
+    output = open_run_output(run, proc)
+    exit_code = proc.wait()
     output.wait_and_close()
     finalize_run(run, exit_code)
