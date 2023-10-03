@@ -46,6 +46,8 @@
     gage._internal.commands.runs_delete_impl
     gage._internal.commands.runs_list
     gage._internal.commands.runs_list_impl
+    gage._internal.commands.runs_purge
+    gage._internal.commands.runs_purge_impl
     gage._internal.commands.runs_restore
     gage._internal.commands.runs_restore_impl
     gage._internal.commands.select

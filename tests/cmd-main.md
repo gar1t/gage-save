@@ -22,6 +22,7 @@ Running `gage` without arguments shows help.
       list, ls         List runs.
       open             Open a run in the file explorer.
       operations, ops  Show available operations.
+      purge            Remove deleted runs.
       restore          Restore runs.
       run              Start or stage a run.
       select           Selects runs and their attributes.

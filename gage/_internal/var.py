@@ -18,6 +18,7 @@ from .file_util import safe_delete_tree
 __all__ = [
     "list_runs",
     "delete_runs",
+    "purge_runs",
     "restore_runs",
 ]
 
@@ -153,3 +154,13 @@ def _restore_run(run: Run):
     if os.path.exists(restored_meta_dir):
         raise FileExistsError(restored_meta_dir)
     _move(run.meta_dir, restored_meta_dir)
+
+
+# =================================================================
+# Purge runs
+# =================================================================
+
+
+def purge_runs(runs: list[Run]):
+    removed = delete_runs(runs, permanent=True)
+    return removed

@@ -21,10 +21,10 @@ class Args(NamedTuple):
     yes: bool
 
 
-def runs_restore(args: Args):
+def runs_purge(args: Args):
     if not args.runs and not args.all:
         cli.exit_with_error(
-            f"Specify a deleted run to restore or use '--all'.\n\n"
+            f"Specify a deleted run to remove or use '--all'.\n\n"
             f"Use '[b]gage list --deleted[/]' to show deleted runs.\n\n"
             f"Try '[b]{args.ctx.command_path} {args.ctx.help_option_names[0]}[/]' "
             "for additional help."
@@ -33,8 +33,8 @@ def runs_restore(args: Args):
     if not runs:
         cli.exit_with_message("Nothing selected")
     _maybe_prompt(args, runs)
-    restored = var.restore_runs(_strip_index(runs))
-    cli.err(_restored_msg(restored, args))
+    removed = var.purge_runs(_strip_index(runs))
+    cli.err(_removed_msg(removed, args))
 
 
 def _maybe_prompt(args: Args, runs: list[tuple[int, Run]]):
@@ -42,8 +42,8 @@ def _maybe_prompt(args: Args, runs: list[tuple[int, Run]]):
         return
     table = runs_table(runs, deleted=True)
     cli.out(table)
-    run_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
-    cli.err(f"You are about to restore {run_count}.")
+    run_count = "1 deleted run" if len(runs) == 1 else f"{len(runs)} deleted runs"
+    cli.err(f"You are about to permanently remove {run_count}.")
     if not cli.confirm(f"Continue?"):
         raise SystemExit(0)
 
@@ -52,9 +52,9 @@ def _strip_index(runs: list[tuple[int, Run]]):
     return [run[1] for run in runs]
 
 
-def _restored_msg(runs: list[Run], args: Args):
+def _removed_msg(runs: list[Run], args: Args):
     if not runs:
-        return "Nothing restored"
+        return "Nothing removed"
     if len(runs) == 1:
-        return f"Restored 1 run"
-    return f"Restored {len(runs)} runs"
+        return f"Permanently removed 1 run"
+    return f"Permanently removed {len(runs)} runs"

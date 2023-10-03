@@ -355,7 +355,7 @@ def run_for_meta_dir(meta_dir: str):
         except (OSError, ValueError):
             return None
         else:
-            run_dir = meta_dir[:-5]
+            run_dir = _run_dir_for_meta_dir(meta_dir)
             run_name = run_name_for_id(run_id)
             return Run(run_id, opref, meta_dir, run_dir, run_name)
 
@@ -370,6 +370,14 @@ def _load_run_id(meta_dir: str):
     filename = os.path.join(meta_dir, "id")
     with open(filename) as f:
         return f.read().rstrip()
+
+
+def _run_dir_for_meta_dir(meta_dir: str):
+    if meta_dir.endswith(".meta"):
+        return meta_dir[:-5]
+    if meta_dir.endswith(".meta.deleted"):
+        return meta_dir[:-13]
+    assert False, meta_dir
 
 
 # =================================================================
