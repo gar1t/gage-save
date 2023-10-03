@@ -33,7 +33,7 @@
     gage._internal.commands.check_impl
     gage._internal.commands.error_handlers
     gage._internal.commands.help
-    gage._internal.commands.impl_util
+    gage._internal.commands.impl_support
     gage._internal.commands.main
     gage._internal.commands.main_impl
     gage._internal.commands.open
@@ -46,6 +46,8 @@
     gage._internal.commands.runs_delete_impl
     gage._internal.commands.runs_list
     gage._internal.commands.runs_list_impl
+    gage._internal.commands.runs_restore
+    gage._internal.commands.runs_restore_impl
     gage._internal.commands.select
     gage._internal.commands.select_impl
     gage._internal.commands.show

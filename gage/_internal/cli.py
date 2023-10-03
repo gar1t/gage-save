@@ -33,8 +33,8 @@ __all__ = [
     "confirm",
     "console_width",
     "err",
-    "error_message",
     "exit_with_error",
+    "exit_with_message",
     "incompatible_with",
     "label",
     "markdown",
@@ -65,7 +65,7 @@ def run_status_style(status: str):
         case "error" | "terminated":
             return "red3"
         case "staged" | "pending":
-            return "dim"
+            return "bright_black"
         case "running":
             return "yellow italic"
         case _:
@@ -85,13 +85,14 @@ def err(val: Any, style: str | None = None):
     out(val, err=True)
 
 
-def error_message(msg: str):
-    err(msg)
-
-
 def exit_with_error(msg: str, code: int = 1) -> NoReturn:
-    error_message(msg)
+    err(msg)
     raise SystemExit(code)
+
+
+def exit_with_message(msg: str) -> NoReturn:
+    err(msg)
+    raise SystemExit(0)
 
 
 def text(s: str, style: str | rich.style.Style = ""):
@@ -134,7 +135,7 @@ class YesNoConfirm(rich.prompt.Confirm):
         return prompt
 
 
-def confirm(prompt: str, default: bool = False):
+def confirm(prompt: str, default: bool = True):
     return YesNoConfirm.ask(prompt, default=default)
 
 
@@ -156,7 +157,7 @@ def incompatible_with(*incompatible: str):
     """Decorator to specify incompatible params."""
 
     def callback(value: Any, param: typer.core.TyperArgument, ctx: click.Context):
-        if value == param.default:
+        if not _param_changed(param, value):
             return value
         for used_param in ctx.params:
             if param.name == used_param or used_param not in incompatible:
@@ -165,7 +166,7 @@ def incompatible_with(*incompatible: str):
                 markup(
                     f"[b cyan]{param.name}[/] and [b cyan]{used_param}[/] "
                     "cannot be used together.\n\n"
-                    f"Try '[b]{ctx.command_path} {ctx.help_option_names[0]}[/b]' "
+                    f"Try '[b]{ctx.command_path} {ctx.help_option_names[0]}[/]' "
                     "for help."
                 )
             )
@@ -173,6 +174,14 @@ def incompatible_with(*incompatible: str):
         return value
 
     return callback
+
+
+def _param_changed(param: typer.core.TyperArgument, value: Any):
+    if param.default is None and value == []:
+        # Special case where default is None and value is coerced to an
+        # empty list - this is considered unchanged
+        return False
+    return param.default != value
 
 
 class pager:

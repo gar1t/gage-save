@@ -7,11 +7,6 @@ from typer import Option
 
 from .. import cli
 
-__all__ = [
-    "Where",
-    "runs_list",
-]
-
 RunArgs = Annotated[
     Optional[list[str]],
     Argument(
@@ -53,8 +48,28 @@ AllFlag = Annotated[
 Where = Annotated[
     str,
     Option(
+        "-w",
+        "--where",
         metavar="expr",
         help="Show runs matching filter expression.",
+    ),
+]
+
+DeletedFlag = Annotated[
+    bool,
+    Option(
+        "-d",
+        "--deleted",
+        help="Show deleted runs.",
+    ),
+]
+
+SimplifiedFlag = Annotated[
+    bool,
+    Option(
+        "-s",
+        help="Simplified listing - used for tests",
+        hidden=True,
     ),
 ]
 
@@ -65,6 +80,8 @@ def runs_list(
     limit: Limit = 20,
     all: AllFlag = False,
     where: Where = "",
+    deleted: DeletedFlag = False,
+    simplified: SimplifiedFlag = False,
 ):
     """List runs.
 
@@ -80,4 +97,14 @@ def runs_list(
     """
     from .runs_list_impl import runs_list, Args
 
-    runs_list(Args(runs, more, limit, all, where))
+    runs_list(
+        Args(
+            runs or [],
+            more,
+            limit,
+            all,
+            where,
+            deleted,
+            simplified,
+        )
+    )

@@ -7,8 +7,6 @@ from typer import Option
 
 from .. import cli
 
-__all__ = ["check"]
-
 
 Path = Annotated[
     str,

@@ -27,7 +27,7 @@ def opdef_not_found(e: OpDefNotFound) -> NoReturn:
         and f"Cannot find operation '{e.opspec}'"
         or "Cannot find a default operation"
     )
-    cli.error_message(msg)
+    cli.err(msg)
     try:
         ops = operations_table()
     except FileNotFoundError:

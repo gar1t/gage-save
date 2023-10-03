@@ -5,8 +5,6 @@ from typing import *
 from typer import Argument
 from typer import Option
 
-__all__ = ["select"]
-
 RunSpecs = Annotated[
     Optional[list[str]],
     Argument(

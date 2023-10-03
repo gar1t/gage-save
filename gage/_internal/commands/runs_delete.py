@@ -4,27 +4,67 @@ from typing import *
 
 from typer import *
 
-__all__ = ["runs_delete"]
+import click
 
-Runs = Annotated[
+from .. import cli
+
+
+RunSpecs = Annotated[
     Optional[list[str]],
     Argument(
-        help="Runs to delete.",
+        help="Runs to delete. Required unless '--all' is specified.",
         metavar="[run]...",
         show_default=False,
+        callback=cli.incompatible_with("all"),
     ),
 ]
 
 Where = Annotated[
     str,
     Option(
+        "-w",
+        "--where",
         metavar="expr",
         help="Delete runs matching filter expression.",
     ),
 ]
 
+AllFlag = Annotated[
+    bool,
+    Option(
+        "-a",
+        "--all",
+        help="Delete all runs.",
+    ),
+]
 
-def runs_delete(runs: Runs = None, where: Where = ""):
+PermanentFlag = Annotated[
+    bool,
+    Option(
+        "-p",
+        "--permanent",
+        help="Permanently delete runs. By default deleted runs can be restored.",
+    ),
+]
+
+YesFlag = Annotated[
+    bool,
+    Option(
+        "-y",
+        "--yes",
+        help="Delete runs without prompting.",
+    ),
+]
+
+
+def runs_delete(
+    ctx: click.Context,
+    runs: RunSpecs = None,
+    where: Where = "",
+    all: AllFlag = False,
+    permanent: PermanentFlag = False,
+    yes: YesFlag = False,
+):
     """Delete runs.
 
     [arg]run[/] is either a run index, a run ID, or a run name. Partial
@@ -33,4 +73,4 @@ def runs_delete(runs: Runs = None, where: Where = ""):
     """
     from .runs_delete_impl import runs_delete, Args
 
-    runs_delete(Args(runs, where))
+    runs_delete(Args(ctx, runs or [], where, all, permanent, yes))

@@ -572,23 +572,37 @@ Create a directory with configuration sources.
 
     >>> cd(make_temp_dir())
 
-    >>> write("hello.py", """
-    ... msg = "Hello"
-    ... print(msg)
+    >>> write("test.py", """
+    ... a = 1
+    ... b = "Hello"
+    ... c = {
+    ...   "d": 123,
+    ...   "e": [6, 7, 8],
+    ...   "f": {
+    ...     "g": 1.123
+    ...   }
+    ... }
     ... """)
+
 
 Create an op def that includes `hello.py` as config.
 
     >>> opdef = OpDef("test", {
-    ...   "config": "hello.py"
+    ...   "config": "test.py"
     ... })
 
 Read the configuration from the directory.
 
     >>> config = read_config(".", opdef)
 
-    >>> config
-    {'msg': 'Hello'}
+    >>> config  # +pprint
+    {'a': 1,
+     'b': 'Hello',
+     'c.d': 123,
+     'c.e.0': 6,
+     'c.e.1': 7,
+     'c.e.2': 8,
+     'c.f.g': 1.123}
 
 ## To Do / Notes
 

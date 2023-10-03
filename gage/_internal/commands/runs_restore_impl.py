@@ -18,35 +18,33 @@ class Args(NamedTuple):
     runs: list[str]
     where: str
     all: bool
-    permanent: bool
     yes: bool
 
 
-def runs_delete(args: Args):
+def runs_restore(args: Args):
     if not args.runs and not args.all:
         cli.exit_with_error(
-            f"Specify a run to delete or use '--all'.\n\n"
+            f"Specify a run to restore or use '--all'.\n\n"
             f"Use '[b]gage list[/]' to show available runs.\n\n"
             f"Try '[b]{args.ctx.command_path} {args.ctx.help_option_names[0]}[/]' "
             "for additional help."
         )
-    runs, from_count = selected_runs(args)
+    runs, from_count = selected_runs(args, deleted=True)
     if not runs:
-        cli.exit_with_error("Nothing selected")
+        cli.exit_with_message("Nothing selected")
     _maybe_prompt(args, runs)
-    deleted = var.delete_runs(_strip_index(runs), args.permanent)
-    cli.err(_deleted_msg(deleted, args))
+    restored = var.restore_runs(_strip_index(runs))
+    cli.err(_restored_msg(restored, args))
 
 
 def _maybe_prompt(args: Args, runs: list[tuple[int, Run]]):
     if args.yes:
         return
-    table = runs_table(runs)
+    table = runs_table(runs, deleted=True)
     cli.out(table)
-    permanent_prefix = "permanently " if args.permanent else ""
     run_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
-    cli.err(f"You are about to {permanent_prefix}delete {run_count}.")
-    if not cli.confirm(f"Continue?", default=not args.permanent):
+    cli.err(f"You are about to restore {run_count}.")
+    if not cli.confirm(f"Continue?"):
         raise SystemExit(0)
 
 
@@ -54,10 +52,9 @@ def _strip_index(runs: list[tuple[int, Run]]):
     return [run[1] for run in runs]
 
 
-def _deleted_msg(runs: list[Run], args: Args):
+def _restored_msg(runs: list[Run], args: Args):
     if not runs:
-        return "Nothing deleted"
-    action = "Permanently deleted" if args.permanent else "Deleted"
+        return "Nothing restored"
     if len(runs) == 1:
-        return f"{action} 1 run"
-    return f"{action} {len(runs)} runs"
+        return f"Restored 1 run"
+    return f"Restored {len(runs)} runs"

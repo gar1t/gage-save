@@ -22,8 +22,6 @@ from ..run_util import *
 
 from . import error_handlers
 
-__all__ = ["Args", "run"]
-
 log = logging.getLogger(__name__)
 
 
@@ -158,12 +156,14 @@ class _RunPhaseStatus:
 def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
     if args.yes:
         return
-    cli.out(f"You are about to run [yellow]{run.opref.get_full_name()}[/]")
-    if not cli.confirm(f"Continue?", default=True):
+    action = "stage" if args.stage else "run"
+    cli.err(f"You are about to {action} [yellow]{run.opref.get_full_name()}[/]")
+    if not cli.confirm(f"Continue?"):
         raise SystemExit(0)
 
 
 def _run_config(args: Args):
+    #assert False, args.flags
     return cast(RunConfig, {})
 
 

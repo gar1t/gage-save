@@ -14,6 +14,7 @@ from .operations import operations
 from .run import run
 from .runs_delete import runs_delete
 from .runs_list import runs_list
+from .runs_restore import runs_restore
 from .select import select
 from .show import show
 
@@ -78,6 +79,7 @@ def main_app():
     app.command("operations, ops")(operations)
     app.command("run")(run)
     app.command("list, ls")(runs_list)
+    app.command("restore")(runs_restore)
     app.command("select")(select)
     app.command("show")(show)
     return app

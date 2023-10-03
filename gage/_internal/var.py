@@ -15,23 +15,32 @@ from .run_util import run_for_meta_dir
 
 from .file_util import safe_delete_tree
 
+__all__ = [
+    "list_runs",
+    "delete_runs",
+    "restore_runs",
+]
+
 log = logging.getLogger(__name__)
 
-RunFilter = Callable[[Run], bool]
 
 # =================================================================
 # List runs
 # =================================================================
 
 
+RunFilter = Callable[[Run], bool]
+
+
 def list_runs(
     root: str | None = None,
     filter: RunFilter | None = None,
     sort: list[str] | None = None,
+    deleted: bool = False,
 ):
     root = root or sys_config.runs_home()
     filter = filter or _all_runs_filter
-    runs = [run for run in _iter_runs(root) if filter(run)]
+    runs = [run for run in _iter_runs(root, deleted) if filter(run)]
     if not sort:
         return runs
     return sorted(runs, key=_run_sort_key(sort))
@@ -41,18 +50,23 @@ def _all_runs_filter(run: Run):
     return True
 
 
-def _iter_runs(root: str):
+def _iter_runs(root: str, deleted: bool = False):
     try:
         names = set(os.listdir(root))
     except OSError:
-        names: Set[str] = set()
-    for name in names:
-        if not name.endswith(".meta"):
-            continue
-        meta_dir = os.path.join(root, name)
-        run = run_for_meta_dir(meta_dir)
-        if run:
-            yield run
+        pass
+    else:
+        for name in names:
+            if not _is_meta_name(name, deleted):
+                continue
+            meta_dir = os.path.join(root, name)
+            run = run_for_meta_dir(meta_dir)
+            if run:
+                yield run
+
+
+def _is_meta_name(name: str, deleted: bool):
+    return name.endswith(".meta.deleted") if deleted else name.endswith(".meta")
 
 
 def _run_sort_key(sort: list[str]):
@@ -93,6 +107,7 @@ def _run_attr_cmp(a: Run, b: Run, attr: str):
 def delete_runs(runs: list[Run], permanent: bool = False):
     for run in runs:
         _delete_run(run, permanent)
+    return runs
 
 
 def _delete_run(run: Run, permanent: bool):
@@ -113,3 +128,28 @@ def _delete_tree(dirname: str):
 
 def _move(src: str, dest: str):
     shutil.move(src, dest)
+
+
+# =================================================================
+# Restore runs
+# =================================================================
+
+
+def restore_runs(runs: list[Run]):
+    restored: list[Run] = []
+    for run in runs:
+        try:
+            _restore_run(run)
+        except FileExistsError as e:
+            log.warning("%s has already been restored", run.id)
+        else:
+            restored.append(run)
+    return restored
+
+
+def _restore_run(run: Run):
+    assert run.meta_dir.endswith(".deleted")
+    restored_meta_dir = run.meta_dir[:-8]
+    if os.path.exists(restored_meta_dir):
+        raise FileExistsError(restored_meta_dir)
+    _move(run.meta_dir, restored_meta_dir)

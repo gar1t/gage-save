@@ -96,7 +96,7 @@ def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> No
 def _gagefile_validation_error(
     e: gagefile.ValidationError, filename: str, args: Args
 ) -> NoReturn:
-    cli.error_message(f"There are errors in {filename}")
+    cli.err(f"There are errors in {filename}")
     if args.verbose:
         output = gagefile.validation_error_output(e)
         cli.err(json.dumps(output, indent=2, sort_keys=True))
