@@ -28,8 +28,15 @@ class UnsupportedFileFormat(Exception):
     pass
 
 
-def read_config(src_dir: str):
-    assert False, "TODO"
+def read_config(src_dir: str, opdef: OpDef):
+    config: dict[str, RunConfigValue] = {}
+    for opdef_config in opdef.get_config():
+        parsed_paths = _parse_paths(opdef_config.get_keys())
+        files_config = _selected_files_config(src_dir, parsed_paths)
+        keys = _select_keys(src_dir, files_config, parsed_paths)
+        for path, file_config in files_config:
+            config.update(file_config)
+    return config
 
 
 def apply_config(config: RunConfig, opdef: OpDef, dest_dir: str):

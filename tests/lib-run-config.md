@@ -3,6 +3,7 @@
 `run_config` provides support for run configuration implementation.
 
     >>> from gage._internal.run_config import *
+    >>> from gage._internal.types import *
 
 ## RunConfig base class
 
@@ -449,7 +450,6 @@ files according to opdef config paths. It prints the diffs of applied
 config.
 
     >>> def apply(config, keys):
-    ...     from gage._internal.types import OpDef
     ...     copy_dir = make_temp_dir()
     ...     copytree(target_dir, copy_dir)
     ...     opdef = OpDef("test", {
@@ -562,6 +562,33 @@ Run a modified `op.py` script.
     >>> run("python op.py", cwd=applied)
     10 - 7 = 3
     <0>
+
+## Reading configuration
+
+`read_config()` reads configuration from a source directory given op def
+settings.
+
+Create a directory with configuration sources.
+
+    >>> cd(make_temp_dir())
+
+    >>> write("hello.py", """
+    ... msg = "Hello"
+    ... print(msg)
+    ... """)
+
+Create an op def that includes `hello.py` as config.
+
+    >>> opdef = OpDef("test", {
+    ...   "config": "hello.py"
+    ... })
+
+Read the configuration from the directory.
+
+    >>> config = read_config(".", opdef)
+
+    >>> config
+    {'msg': 'Hello'}
 
 ## To Do / Notes
 
