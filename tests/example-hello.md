@@ -50,7 +50,7 @@ Run hello.
     Hello Gage
     <0>
 
-    >>> run("gage show")  # +parse -space
+    >>> run("gage show")  # +parse -space +diff
     {:run_id}
     | hello:hello                                    completed |
     ⤶
@@ -61,6 +61,9 @@ Run hello.
     | stopped    {:datetime}                                   |
     | location   {runs_dir:path}                               |
     | exit_code  0                                             |
+    ⤶
+                           Configuration
+    | name  Gage                                               |
     ⤶
                                Files
     | name            |type               |               size |
@@ -172,9 +175,22 @@ Show files log.
     >>> cat(path_join(meta_dir, "log", "files"))  # +parse
     a s {:timestamp} gage.toml
     a s {:timestamp} hello.py
-    m s {:timestamp} hello.py
 
-Run as default op with different name.
+Show patched files.
+
+    >>> cat(path_join(meta_dir, "log", "patched"))
+    --- hello.py
+    +++ hello.py
+    @@ -1,3 +1,3 @@
+    -name = "Gage"
+    +name = "Joe"
+    ⤶
+     print(f"Hello {name}")
+
+## Flag with default operation
+
+Run as default op with different name. Gage applies special handling to
+prevent the flag assignment from being treated as the operation spec.
 
     >>> run("gage run name=Mike -y")
     Hello Mike

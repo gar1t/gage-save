@@ -16,10 +16,16 @@ from . import cli
 from . import typer_rich_util
 from . import run_config
 
+__all__ = [
+    "get_help",
+    "config_table",
+]
+
+
 def get_help(opspec: str, context: RunContext):
     usage = render(f"[b]Usage: gage run {opspec}")
     help = render((context.opdef.get_description() or "").strip())
-    config = run_config.read_config(context.project_dir, context.opdef)
+    config = run_config.read_project_config(context.project_dir, context.opdef)
     flags_table = Table(
         highlight=True,
         show_header=True,
@@ -47,3 +53,12 @@ def get_help(opspec: str, context: RunContext):
         ),
         Padding(flags, (1, 0, 0, 0)),
     )
+
+
+def config_table(config: RunConfig):
+    table = Table.grid(padding=(0, 2))
+    table.add_column(style=typer_rich_util.STYLE_OPTION)
+    table.add_column(header_style="dim i")
+    for key, val in sorted(config.items()):
+        table.add_row(key, str(val))
+    return Padding(table, 1)

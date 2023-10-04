@@ -16,9 +16,9 @@ __all__ = [
     "RunConfigValue",
     "UnsupportedFileFormat",
     "apply_config",
-    "load_config",
     "match_keys",
-    "read_config",
+    "read_file_config",
+    "read_project_config",
 ]
 
 log = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class UnsupportedFileFormat(Exception):
     pass
 
 
-def read_config(src_dir: str, opdef: OpDef):
+def read_project_config(src_dir: str, opdef: OpDef):
     config: dict[str, RunConfigValue] = {}
     for opdef_config in opdef.get_config():
         parsed_paths = _parse_paths(opdef_config.get_keys())
@@ -110,7 +110,7 @@ def _select_pattern(path: str, exclude: bool):
     return "-" + path if exclude else path
 
 
-def load_config(filename: str) -> RunConfig:
+def read_file_config(filename: str) -> RunConfig:
     _, ext = os.path.splitext(filename)
     if ext == ".py":
         from .run_config_py import PythonConfig
@@ -159,7 +159,7 @@ def _selected_files_config(dest_dir: str, parsed_paths: list[ParsedPath]):
     for path in _select_files(dest_dir, parsed_paths):
         filename = os.path.join(dest_dir, path)
         try:
-            config = load_config(filename)
+            config = read_file_config(filename)
         except Exception as e:
             log.warning("Cannot load configuration for \"%s\": %s", filename)
             print(f"WARNING: {e}")

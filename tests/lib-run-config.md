@@ -309,24 +309,24 @@ excluded but files they apply to are not.
     config.json
     op.py
 
-## Loading file config
+## Reading file config
 
-The function `load_config()` loads config for file. If the file format
-is not supported, the function raises `UnsupportedFileFormat`.
+The function `read_file_config()` loads config for file. If the file
+format is not supported, the function raises `UnsupportedFileFormat`.
 
-    >>> load_config(path_join(target_dir, "greet.py"))  # +pprint
+    >>> read_file_config(path_join(target_dir, "greet.py"))  # +pprint
     {'name': 'Bob', 'opts.loud': False, 'opts.short': True}
 
-    >>> load_config(path_join(target_dir, "op.py"))  # +pprint
+    >>> read_file_config(path_join(target_dir, "op.py"))  # +pprint
     {'op': '+', 'x': 1, 'y': 2}
 
-    >>> load_config(path_join(target_dir, "config.json"))  # +parse
+    >>> read_file_config(path_join(target_dir, "config.json"))  # +parse
     Traceback (most recent call last):
     gage._internal.run_config.UnsupportedFileFormat: {:path}/config.json
 
 Raises `FileNotFoundError` if the specified file doesn't exist.
 
-    >>> load_config(path_join(target_dir, "not-here.py"))  # +parse
+    >>> read_file_config(path_join(target_dir, "not-here.py"))  # +parse
     Traceback (most recent call last):
     FileNotFoundError: [Errno 2] No such file or directory: '{:path}/not-here.py'
 
@@ -350,7 +350,7 @@ Create a function to select keys.
     ...     selected = []
     ...     for path in _select_files(target_dir, parsed):
     ...         try:
-    ...             file_config = load_config(path_join(target_dir, path))
+    ...             file_config = read_file_config(path_join(target_dir, path))
     ...         except Exception as e:
     ...             print(f"WARNING: {e}")
     ...         else:
@@ -563,10 +563,10 @@ Run a modified `op.py` script.
     10 - 7 = 3
     <0>
 
-## Reading configuration
+## Reading project configuration
 
-`read_config()` reads configuration from a source directory given op def
-settings.
+`read_project_config()` reads configuration from a source directory
+given op def settings.
 
 Create a directory with configuration sources.
 
@@ -593,7 +593,7 @@ Create an op def that includes `hello.py` as config.
 
 Read the configuration from the directory.
 
-    >>> config = read_config(".", opdef)
+    >>> config = read_project_config(".", opdef)
 
     >>> config  # +pprint
     {'a': 1,

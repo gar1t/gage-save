@@ -17,7 +17,7 @@ from .. import run_output
 from .. import run_sourcecode
 
 from ..sys_config import runs_home
-
+from ..run_config import read_project_config
 from ..run_context import resolve_run_context
 
 from ..run_util import *
@@ -163,7 +163,7 @@ def _init_sourcecode_preview(opdef: OpDef):
 
 def _stage(context: RunContext, args: Args):
     run = make_run(context.opref, runs_home())
-    config = _run_config(args)
+    config = _run_config(context, args)
     _maybe_prompt(args, run, config)
     cmd = _op_cmd(context, config)
     user_attrs = _user_attrs(args)
@@ -212,11 +212,21 @@ def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
         return
     action = "stage" if args.stage else "run"
     cli.err(f"You are about to {action} [yellow]{run.opref.get_full_name()}[/]")
+    if config:
+        cli.err(run_help.config_table(config))
+    else:
+        cli.err("")
     if not cli.confirm(f"Continue?"):
         raise SystemExit(0)
 
 
-def _run_config(args: Args):
+def _run_config(context: RunContext, args: Args):
+    project_config = read_project_config(context.project_dir, context.opdef)
+    flags_config = _parse_flags_config(args)
+    return cast(RunConfig, {**project_config, **flags_config})
+
+
+def _parse_flags_config(args: Args):
     return cast(RunConfig, dict([_parse_flag_assign(flag) for flag in args.flags]))
 
 

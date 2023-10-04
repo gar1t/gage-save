@@ -34,6 +34,9 @@ Show the run.
     | location   {:path}                                       |
     | exit_code  0                                             |
     ⤶
+                           Configuration
+    | name  Gage                                               |
+    ⤶
                                Files
     | name            |type               |               size |
     | ----------------|-------------------|------------------- |

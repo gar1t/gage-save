@@ -1,18 +1,8 @@
 # Gage To Do
 
-
-- Use flags config in run/stage/start prompt
-
-- Runs list - rich gives us a lot of options
-  - Standard columns
+- Runs list
   - Where filter
   - Sort filter
-
-- Missing these commands
-  - show (was runs info)
-  - ls
-  - open
-  - delete run
 
 - Scan output for scalars and attrs - save in run dir root with special
   extensions (e.g. *.attrs - same as with Guild)
@@ -21,20 +11,23 @@
 
 - API and View
 
-## General
-
 - Get command line completion working again (want support for bash, zsh,
   fish, nu)
 
-- Get -H and -C core opts working again
-- Add `__all__` to all modules
-- Do tags, label, and comments from the `run` command land in the meta
-  dir or in user? I suspect in meta under `./user` but want to sanity
-  check why.
+- Labels, tags, and notes
+  - Should any of these land in the meta dir, ever?
+  - Get `.user` going
+  - Research a distributed file store data scheme - or can we get by
+    with time sortable UUIDs?
 
-- Pointer to original project.
+- Dependencies
+  - Project files
+  - Run files
+  - Run summaries
 
-- How to identify runs by their project.
+- Replace links with ref files
+
+- How to identify runs by their project?
 
 - How to re-associate runs with their project? Do we ask users to
   generate a unique ID for the project?
@@ -57,8 +50,6 @@ exec = "python train.py"
 }
 ```
 
-- Make sure we're using the new uuid formats (with dashes)
-
 - Gagefile validation messages *suck* (see `lib-gagefile.md` tests) -
   must clean up before shipping to anyone. These are being passed
   through from the jschon library. Need to work with the low level error
@@ -72,8 +63,6 @@ exec = "python train.py"
   error is in order but we should load and use as much as we can and not
   blow up at the slightest problem. For now bad data leaks.
 
-- Integrate time range spec into filter spec
-
 - How can a user specify different commands for different platforms? One
   method would be something like:
 
@@ -85,7 +74,17 @@ run[mac] = "..."
 run[linux] = "..."
 ```
 
-- Config in exec commands
+- Use config in exec commands
+
+``` toml
+[hello]
+
+exec = "echo {msg}"
+
+[[hello.config]]
+
+name = "msg"
+```
 
 - Review error messages for consistency
   - Capitalization
@@ -108,58 +107,21 @@ run[linux] = "..."
 - "No such command 'ops'" error message on `gage help ops` - "command"
   there needs to be "topic"
 
-## CLI style
-
-- Support command and option refs using backticks and format sensibly
-  (currently uses odd color scheme)
-
-- Syntax highlighting for code blocks (this might already work)
-
-## Low priority
-
-- Fix plain table printing and matching with Groktest (look for `-space`
-  options in tests associated with commands that print a table)
-
-- Gage file validation should show the line/col numbers of errors (note
-  that we strip comments so adjust for that)
-
 - Gage file comments for JSON can't be inline - find a parser or get the
   comment stripping right
 
 - Source code preview should show the source code stage command if
   specified.
 
-## Run layout
+## Lifting by `gage check`
 
-- Init run by creating `.meta` (done)
-- Implement runs list using `.meta`
-- Implement `stage_run` function
-  - Copy source code to `.run` + update manifest
-  - Resolve dependencies + update manifest
-- Implement `start_run`
-  - Start process
-  - Launch output summaries
-  - Pipe output to output + output.index
-  - Handle process exit
-    - Write process exits, delete locks, etc
-    - Finalize manifest
-    - Mark run files as readonly
+Fanciful (down the road):
 
-## Lifting by `guild check`
-
-- Validate a Gage file
-- Other fanciful musings
-  - Validate a staged run
-  - Validate a generated run
+  - Validate a run
 
 ``` bash
 $ gage check [--run] <run ID>
-$ gage check <path>
 ```
-
-Here we're inferring a run by a run ID shaped arg. Can be partial. If
-it's a file then we know what to do. If it points to a run, we know what
-to do. Otherwise we assume it's a project.
 
 ## Dependencies
 

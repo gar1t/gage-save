@@ -45,14 +45,11 @@ def _table_caption(shown_count: int, from_count: int, args: Args):
         return None
     assert shown_count < from_count, (shown_count, from_count)
     more_help = (
-        f" (use -{'m' * (len(args.more or []) + 1)} to show more)"
+        f" [bright_black i](use -{'m' * (len(args.more or []) + 1)} to show more)"
         if not args.runs
         else ""
     )
     return cli.pad(
-        cli.text(
-            f"Showing {shown_count} of {from_count} runs{more_help}",
-            style="italic dim",
-        ),
+        cli.markup(f"[dim i]Showing {shown_count} of {from_count} runs[/]{more_help}"),
         (0, 1),
     )

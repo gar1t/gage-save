@@ -517,20 +517,21 @@ def _gen_write_attrs(dir: str, attrs: dict[str, Any], run: Run, log: Logger):
 
 
 def stage_run(run: Run, project_dir: str):
-    stage_sourcecode(run, project_dir)
+    stage_sourcecode(run, project_dir, _log_files=False)
     apply_config(run)
     stage_runtime(run, project_dir)
     stage_dependencies(run, project_dir)
     finalize_staged_run(run)
 
 
-def stage_sourcecode(run: Run, project_dir: str):
+def stage_sourcecode(run: Run, project_dir: str, _log_files: bool = True):
     log = _runner_log(run)
     opdef = meta_opdef(run)
     run_phase_channel.notify("stage-sourcecode")
     _copy_sourcecode(run, project_dir, opdef, log)
     _stage_sourcecode_hook(run, project_dir, opdef, log)
-    _apply_to_files_log(run, "s")
+    if _log_files:
+        _apply_to_files_log(run, "s")
 
 
 def _copy_sourcecode(run: Run, project_dir: str, opdef: OpDef, log: Logger):

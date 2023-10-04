@@ -136,7 +136,7 @@ class YesNoConfirm(rich.prompt.Confirm):
 
 
 def confirm(prompt: str, default: bool = True):
-    return YesNoConfirm.ask(prompt, default=default)
+    return YesNoConfirm.ask(prompt, default=default, console=_err)
 
 
 class _NullStatus(rich.status.Status):
