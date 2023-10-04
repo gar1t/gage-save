@@ -7,8 +7,13 @@
     >>> ls(sys_config.runs_home())
     <empty>
 
-    >>> run("gage run hello --stage -y")
+    >>> run("gage run hello --stage -y")  # +parse
+    Run "{x:run_name}" is staged
+    ⤶
+    To start it, run 'gage run --start {y:run_name}'
     <0>
+
+    >>> assert x == y
 
     >>> for path in lsl(sys_config.runs_home()):
     ...     print(path[36:])  # +diff

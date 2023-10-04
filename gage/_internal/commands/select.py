@@ -22,8 +22,29 @@ NameFlag = Annotated[
     ),
 ]
 
+RunDirFlag = Annotated[
+    bool,
+    Option(
+        "--run-dir",
+        help="Select run directory.",
+    ),
+]
 
-def select(runs: RunSpecs = None, name: NameFlag = False):
+MetaDirFlag = Annotated[
+    bool,
+    Option(
+        "--meta-dir",
+        help="Select meta directory.",
+    ),
+]
+
+
+def select(
+    runs: RunSpecs = None,
+    name: NameFlag = False,
+    run_dir: RunDirFlag = False,
+    meta_dir: MetaDirFlag = False,
+):
     """Selects runs and their attributes.
 
     Prints the run ID for each selected run. Selects the latest run by
@@ -31,4 +52,4 @@ def select(runs: RunSpecs = None, name: NameFlag = False):
     """
     from .select_impl import select, Args
 
-    select(Args(runs, name))
+    select(Args(runs, name, run_dir, meta_dir))

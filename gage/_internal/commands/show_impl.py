@@ -224,6 +224,8 @@ def Output(run: Run):
 
 def _iter_run_output(run: Run) -> Generator[tuple[str, RunOutputReader], Any, None]:
     output_dirname = run_meta_path(run, "output")
+    if not os.path.exists(output_dirname):
+        return
     for name in sorted(os.listdir(output_dirname)):
         if os.path.splitext(name)[1] != ".index":
             continue

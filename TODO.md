@@ -1,13 +1,7 @@
 # Gage To Do
 
-Next up:
 
-- Flag assignments + config import
-  - Config import
-  - Parse flags
-  - Apply to config
-  - Use config in prompt
-  - Use config in run
+- Use flags config in run/stage/start prompt
 
 - Runs list - rich gives us a lot of options
   - Standard columns
@@ -225,3 +219,20 @@ operation = "prepare-data"
   use anything else. Might just drop download support for 1.0 though.
 
 """
+
+## Use cases
+
+Running
+
+- Basic run
+- Custom config via flags
+- Batches (grid, random, drive-from-file)
+
+Sharing
+
+- Archives runs of interest (or all runs?)
+  - GitHub
+  - DropBox
+  - Cloud storage
+
+- Sync with a colleague

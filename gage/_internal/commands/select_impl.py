@@ -10,6 +10,8 @@ from .impl_support import one_run
 class Args(NamedTuple):
     runs: list[str] | None
     name: bool
+    run_dir: bool
+    meta_dir: bool
 
 
 class RunSupport(NamedTuple):
@@ -19,8 +21,11 @@ class RunSupport(NamedTuple):
 def select(args: Args):
     for spec in args.runs or [""]:
         run = one_run(RunSupport(spec))
-        if run:
-            if args.name:
-                cli.out(run.name)
-            else:
-                cli.out(run.id)
+        if args.name:
+            cli.out(run.name)
+        elif args.run_dir:
+            cli.out(run.run_dir)
+        elif args.meta_dir:
+            cli.out(run.meta_dir)
+        else:
+            cli.out(run.id)

@@ -58,7 +58,7 @@ Debug is not logged by default:
 
 ## Enable debug
 
-Reinit with debug enabled.
+Re-init with debug enabled.
 
     >>> loglib.init_logging(logging.DEBUG)
 
@@ -126,6 +126,6 @@ Define the WARN and ERROR formats.
 
 ## Restoring logging
 
-Rrestore logging to its defaults.
+Restore logging to its defaults.
 
     >> gage._internal.log.init_logging(**original_log_settings)

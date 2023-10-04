@@ -40,6 +40,16 @@ StageFlag = Annotated[
     ),
 ]
 
+StartRun = Annotated[
+    str,
+    Option(
+        "--start",
+        metavar="run",
+        help="Start a staged run. [arg]run[/] may be an ID, name, or index.",
+        show_default=False,
+    ),
+]
+
 QuietFlag = Annotated[
     bool,
     Option(
@@ -96,6 +106,7 @@ def run(
     flags: FlagAssigns = None,
     label: Label = "",
     stage: StageFlag = False,
+    start: StartRun = "",
     quiet: QuietFlag = False,
     yes: YesFlag = False,
     help_op: HelpOpFlag = False,
@@ -117,9 +128,10 @@ def run(
     run(
         Args(
             opspec,
-            flags,
+            flags or [],
             label,
             stage,
+            start,
             quiet,
             yes,
             help_op,

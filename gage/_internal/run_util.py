@@ -47,7 +47,9 @@ __all__ = [
     "init_run_meta",
     "make_run_timestamp",
     "make_run",
+    "meta_config",
     "meta_opdef",
+    "meta_opref",
     "open_run_output",
     "run_attr",
     "run_meta_path",
@@ -559,6 +561,7 @@ def apply_config(run: Run):
     diffs = run_config.apply_config(config, opdef, run.run_dir)
     if diffs:
         _write_patched(run, diffs)
+    _apply_to_files_log(run, "s")
 
 
 def stage_runtime(run: Run, project_dir: str):
@@ -770,7 +773,8 @@ def _maybe_log_file_changed(
     except KeyError:
         pass
     else:
-        log.info(f"File \"{path}\" was modified during the run")
+        if digest != orig_digest:
+            log.info(f"File \"{path}\" was modified during the run")
 
 
 def _finalize_files_log(run: Run):

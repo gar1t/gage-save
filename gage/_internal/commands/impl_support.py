@@ -33,12 +33,13 @@ class OneRunSupport(Protocol):
         ...
 
 
-def one_run(args: OneRunSupport):
+def one_run(args: OneRunSupport | str):
+    run = args if isinstance(args, str) else args.run
     sorted = var.list_runs(sort=["-timestamp"])
-    selected = run_select.select_runs(sorted, [args.run or "1"])
+    selected = run_select.select_runs(sorted, [run or "1"])
     if not selected:
         cli.err(
-            f"No runs match {args.run!r}\n\n"  # \
+            f"No runs match {run!r}\n\n"  # \
             "Use '[b]gage list[/]' to show available runs."
         )
         raise SystemExit()

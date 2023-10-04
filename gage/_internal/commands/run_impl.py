@@ -11,6 +11,7 @@ import platform
 from rich.console import Console
 
 from .. import cli
+from .. import lang
 from .. import run_help
 from .. import run_output
 from .. import run_sourcecode
@@ -22,15 +23,17 @@ from ..run_context import resolve_run_context
 from ..run_util import *
 
 from . import error_handlers
+from . import impl_support
 
 log = logging.getLogger(__name__)
 
 
 class Args(NamedTuple):
     opspec: str
-    flags: list[str] | None
+    flags: list[str]
     label: str
     stage: bool
+    start: str | None
     quiet: bool
     yes: bool
     help_op: bool
@@ -40,14 +43,44 @@ class Args(NamedTuple):
 
 
 def run(args: Args):
-    try:
-        context = resolve_run_context(args.opspec)
-    except GageFileError as e:
-        error_handlers.gagefile_error(e)
-    except OpDefNotFound as e:
-        error_handlers.opdef_not_found(e)
+    args = _apply_default_op_flag_assign(args)
+    if args.start:
+        _handle_start(args)
     else:
-        _handle_run_context(context, args)
+        try:
+            context = resolve_run_context(args.opspec)
+        except GageFileError as e:
+            error_handlers.gagefile_error(e)
+        except OpDefNotFound as e:
+            error_handlers.opdef_not_found(e)
+        else:
+            _handle_run_context(context, args)
+
+
+def _handle_start(args: Args):
+    assert args.start
+    run = impl_support.one_run(args.start)
+    status = run_status(run)
+    if status != "staged":
+        cli.exit_with_error(
+            f"Run \"{run.id}\" is '{status}'\n\n"
+            "Only staged runs can be started with '--start'."
+        )
+    config = meta_config(run)
+    _maybe_prompt(args, run, config)
+    _run_staged(run, args)
+
+
+def _apply_default_op_flag_assign(args: Args):
+    if not args.opspec:
+        return args
+    try:
+        lang.parse_flag_assign(args.opspec)
+    except ValueError:
+        return args
+    else:
+        # opspec is actually a flag assign
+        return Args("", [args.opspec] + args.flags, *args[2:])
 
 
 def _handle_run_context(context: RunContext, args: Args):
@@ -56,9 +89,17 @@ def _handle_run_context(context: RunContext, args: Args):
     elif _preview_opts(args):
         _preview(context, args)
     elif args.stage:
-        _stage(context, args)
+        _handle_stage(context, args)
     else:
         _run(context, args)
+
+
+def _handle_stage(context: RunContext, args: Args):
+    run = _stage(context, args)
+    cli.out(
+        f"Run \"{run.name}\" is staged\n\n"
+        f"To start it, run '[cmd]gage run --start {run.name}[/]'"
+    )
 
 
 # =================================================================
@@ -176,8 +217,14 @@ def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
 
 
 def _run_config(args: Args):
-    # assert False, args.flags
-    return cast(RunConfig, {})
+    return cast(RunConfig, dict([_parse_flag_assign(flag) for flag in args.flags]))
+
+
+def _parse_flag_assign(flag_assign: str) -> tuple[str, RunConfigValue]:
+    try:
+        return lang.parse_flag_assign(flag_assign)
+    except ValueError as e:
+        cli.exit_with_error(f"Invalid flag assignment: {e}")
 
 
 def _op_cmd(context: RunContext, config: RunConfig):
@@ -212,7 +259,11 @@ class _OutputCallback(run_output.OutputCallback):
 
 def _run(context: RunContext, args: Args):
     run = _stage(context, args)
-    status = cli.status(_running_status_desc(context), args.quiet)
+    _run_staged(run, args)
+
+
+def _run_staged(run: Run, args: Args):
+    status = cli.status(_running_status_desc(run), args.quiet)
     output_cb = _OutputCallback(status.console)
     with status:
         proc = start_run(run)
@@ -223,5 +274,6 @@ def _run(context: RunContext, args: Args):
         finalize_run(run, exit_code)
 
 
-def _running_status_desc(context: RunContext):
-    return f"[dim]Running [{cli.PANEL_TITLE_STYLE}]{context.opref.get_full_name()}"
+def _running_status_desc(run: Run):
+    opref = meta_opref(run)
+    return f"[dim]Running [{cli.PANEL_TITLE_STYLE}]{opref.get_full_name()}"
