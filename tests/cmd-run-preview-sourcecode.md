@@ -1,4 +1,4 @@
-# Preview source code
+# `run` command - preview source code
 
 Use `--preview-sourcecode` to show source code that is copied for an
 operation.

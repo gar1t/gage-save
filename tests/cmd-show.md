@@ -37,10 +37,10 @@ Show the run.
                                Files
     | name            |type               |               size |
     | ----------------|-------------------|------------------- |
-    | gage.toml       |source code        |               94 B |
+    | gage.toml       |source code        |              143 B |
     | hello.py        |source code        |               38 B |
     | ----------------|-------------------|------------------- |
-    |                 |                   |       total: 132 B |
+    |                 |                   |       total: 181 B |
     ⤶
                                Output
     | Hello Gage                                               |
@@ -49,8 +49,8 @@ Show the run.
 Show files.
 
     >>> run("gage show --files")
-    | name      | type        | size |
-    |-----------|-------------|------|
-    | gage.toml | source code | 94 B |
-    | hello.py  | source code | 38 B |
+    | name      | type        |  size |
+    |-----------|-------------|-------|
+    | gage.toml | source code | 143 B |
+    | hello.py  | source code |  38 B |
     <0>

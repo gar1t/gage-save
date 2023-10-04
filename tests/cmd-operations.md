@@ -25,7 +25,7 @@ Show operations for sample projects.
     >>> use_example("hello")
 
     >>> run("gage ops")
-    | operation | description            |
-    |-----------|------------------------|
-    | hello     | Say hello to my friend |
+    | operation | description             |
+    |-----------|-------------------------|
+    | hello     | Say hello to my friend. |
     <0>

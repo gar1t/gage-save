@@ -29,10 +29,9 @@ def operations_table():
 
 
 def _opdef_desc(opdef: OpDef):
-    if not opdef.get_description:
-        return ""
-    return (
-        f"{opdef.get_description()} [dim](default)[/dim]"
-        if opdef.get_default()
-        else opdef.get_description()
-    )
+    desc = _first_line(opdef.get_description() or "")
+    return f"{desc} [dim](default)[/dim]" if opdef.get_default() else desc
+
+
+def _first_line(s: str):
+    return s.split("\n", 1)[0].strip()

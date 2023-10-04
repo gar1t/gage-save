@@ -11,6 +11,7 @@ import platform
 from rich.console import Console
 
 from .. import cli
+from .. import run_help
 from .. import run_output
 from .. import run_sourcecode
 
@@ -32,6 +33,7 @@ class Args(NamedTuple):
     stage: bool
     quiet: bool
     yes: bool
+    help_op: bool
     preview_sourcecode: bool
     preview_all: bool
     json: bool
@@ -49,12 +51,23 @@ def run(args: Args):
 
 
 def _handle_run_context(context: RunContext, args: Args):
-    if _preview_opts(args):
+    if args.help_op:
+        _show_op_help(context, args)
+    elif _preview_opts(args):
         _preview(context, args)
     elif args.stage:
         _stage(context, args)
     else:
         _run(context, args)
+
+
+# =================================================================
+# Op help
+# =================================================================
+
+
+def _show_op_help(context: RunContext, args: Args):
+    cli.out(run_help.get_help(args.opspec, context))
 
 
 # =================================================================
@@ -163,7 +176,7 @@ def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
 
 
 def _run_config(args: Args):
-    #assert False, args.flags
+    # assert False, args.flags
     return cast(RunConfig, {})
 
 

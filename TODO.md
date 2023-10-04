@@ -111,6 +111,9 @@ run[linux] = "..."
 
 - How does this look under different terminal color combos?
 
+- "No such command 'ops'" error message on `gage help ops` - "command"
+  there needs to be "topic"
+
 ## CLI style
 
 - Support command and option refs using backticks and format sensibly

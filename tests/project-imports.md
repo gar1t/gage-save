@@ -58,6 +58,7 @@
     gage._internal.file_select
     gage._internal.file_util
     gage._internal.gagefile
+    gage._internal.lang
     gage._internal.log
     gage._internal.opref_util
     gage._internal.project_util
@@ -66,6 +67,7 @@
     gage._internal.run_config_py
     gage._internal.run_context
     gage._internal.run_dependencies
+    gage._internal.run_help
     gage._internal.run_output
     gage._internal.run_select
     gage._internal.run_sourcecode

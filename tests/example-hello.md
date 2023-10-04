@@ -12,7 +12,11 @@ possible Gage project.
     >>> cat("gage.toml")
     [hello]
     ⤶
-    description = "Say hello to my friend"
+    description = """
+    Say hello to my friend.
+    ⤶
+    Sample operation that prints a greeting.
+    """
     ⤶
     exec = "python hello.py"
     config = "hello.py"
@@ -20,9 +24,9 @@ possible Gage project.
 List operations.
 
     >>> run("gage ops")
-    | operation | description            |
-    |-----------|------------------------|
-    | hello     | Say hello to my friend |
+    | operation | description             |
+    |-----------|-------------------------|
+    | hello     | Say hello to my friend. |
     <0>
 
 Run hello.
@@ -46,10 +50,10 @@ Run hello.
                                Files
     | name            |type               |               size |
     | ----------------|-------------------|------------------- |
-    | gage.toml       |source code        |               94 B |
+    | gage.toml       |source code        |              143 B |
     | hello.py        |source code        |               38 B |
     | ----------------|-------------------|------------------- |
-    |                 |                   |       total: 132 B |
+    |                 |                   |       total: 181 B |
     ⤶
                                Output
     | Hello Gage                                               |

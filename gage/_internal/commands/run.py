@@ -9,7 +9,7 @@ OpSpec = Annotated[
     str,
     Argument(
         metavar="[operation]",
-        help="Operation to start.",
+        help="Operation to run.",
     ),
 ]
 
@@ -58,6 +58,14 @@ YesFlag = Annotated[
     ),
 ]
 
+HelpOpFlag = Annotated[
+    bool,
+    Option(
+        "--help-op",
+        help="Show help for [arg]operation[/].",
+    ),
+]
+
 PreviewSourceCodeFlag = Annotated[
     bool,
     Option(
@@ -90,6 +98,7 @@ def run(
     stage: StageFlag = False,
     quiet: QuietFlag = False,
     yes: YesFlag = False,
+    help_op: HelpOpFlag = False,
     preview_sourcecode: PreviewSourceCodeFlag = False,
     preview_all: PreviewAllFlag = False,
     json: JSONFlag = False,
@@ -113,6 +122,7 @@ def run(
             stage,
             quiet,
             yes,
+            help_op,
             preview_sourcecode,
             preview_all,
             json=json,

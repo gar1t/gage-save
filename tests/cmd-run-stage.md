@@ -1,4 +1,4 @@
-# Stage a run
+# `run` command - stage run
 
     >>> use_example("hello")
 
