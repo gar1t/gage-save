@@ -22,17 +22,9 @@ from .. import cli
 
 from ..run_output import RunOutputReader
 
-from ..run_util import RunManifest
-from ..run_util import RunFileType
-from ..run_util import format_run_timestamp
-from ..run_util import meta_config
-from ..run_util import run_attr
-from ..run_util import run_meta_path
-from ..run_util import run_status
-from ..run_util import run_timestamp
-from ..run_util import run_user_attr
+from ..run_util import *
 
-from ..util import format_dir
+from ..util import format_user_dir
 
 from .impl_support import one_run
 
@@ -80,7 +72,8 @@ def Header(run: Run):
 def Attributes(run: Run):
     started = run_timestamp(run, "started")
     stopped = run_timestamp(run, "stopped")
-    location = format_dir(os.path.dirname(run.run_dir))
+    location = format_user_dir(os.path.dirname(run.run_dir))
+    project_dir = format_user_dir(run_project_dir(run) or "")
     exit_code = str(run_attr(run, "exit_code", None))
 
     attributes = Table.grid(
@@ -94,6 +87,7 @@ def Attributes(run: Run):
     attributes.add_row("started", format_run_timestamp(started))
     attributes.add_row("stopped", format_run_timestamp(stopped))
     attributes.add_row("location", location)
+    attributes.add_row("project", project_dir)
     attributes.add_row("exit_code", str(exit_code) if exit_code is not None else "")
 
     return cli.Panel(attributes, title="Attributes")

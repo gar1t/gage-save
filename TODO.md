@@ -1,5 +1,18 @@
 # Gage To Do
 
+- Labels, tags, and notes
+  - Should any of these land in the meta dir, ever?
+  - Get `.user` going
+  - Research a distributed file store data scheme - or can we get by
+    with time sortable UUIDs?
+
+- Dependencies
+  - Project files
+  - Run files
+  - Run summaries
+
+- Batches
+
 - Runs list
   - Where filter
   - Sort filter
@@ -13,17 +26,6 @@
 
 - Get command line completion working again (want support for bash, zsh,
   fish, nu)
-
-- Labels, tags, and notes
-  - Should any of these land in the meta dir, ever?
-  - Get `.user` going
-  - Research a distributed file store data scheme - or can we get by
-    with time sortable UUIDs?
-
-- Dependencies
-  - Project files
-  - Run files
-  - Run summaries
 
 - Replace links with ref files
 
@@ -180,7 +182,8 @@ operation = "prepare-data"
 - Drop use of pip download support! If we continue to support downloads
   use anything else. Might just drop download support for 1.0 though.
 
-"""
+- Delete unused code - start with dead code analysis (e.g. vulture) but
+  we need test coverage as well - should be 100%
 
 ## Use cases
 

@@ -29,6 +29,8 @@
     gage._internal.ansi_util
     gage._internal.channel
     gage._internal.cli
+    gage._internal.commands.associate
+    gage._internal.commands.associate_impl
     gage._internal.commands.check
     gage._internal.commands.check_impl
     gage._internal.commands.error_handlers

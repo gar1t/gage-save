@@ -38,12 +38,21 @@ MetaDirFlag = Annotated[
     ),
 ]
 
+ProjectDirFlag = Annotated[
+    bool,
+    Option(
+        "--project-dir",
+        help="Select project directory.",
+    ),
+]
+
 
 def select(
     runs: RunSpecs = None,
     name: NameFlag = False,
     run_dir: RunDirFlag = False,
     meta_dir: MetaDirFlag = False,
+    project_dir: ProjectDirFlag = False,
 ):
     """Selects runs and their attributes.
 
@@ -52,4 +61,12 @@ def select(
     """
     from .select_impl import select, Args
 
-    select(Args(runs, name, run_dir, meta_dir))
+    select(
+        Args(
+            runs,
+            name,
+            run_dir,
+            meta_dir,
+            project_dir,
+        )
+    )

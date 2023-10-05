@@ -78,6 +78,10 @@
           "type": "string",
           "title": "Prefix to remove from keys"
         },
+        "rename": {
+          "type": "string",
+          "title": "Alternative name for keys"
+        },
         "keys": {
           "$ref": "#/$defs/keys-pattern",
           "title": "Configuration keys"

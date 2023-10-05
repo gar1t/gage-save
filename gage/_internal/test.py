@@ -34,6 +34,7 @@ __all__ = [
     "cat_json",
     "cat_log",
     "cd",
+    "compare_paths",
     "copytree",
     "datetime_now",
     "datetime_fromiso",
@@ -85,6 +86,7 @@ LogCapture = util.LogCapture
 StderrCapture = util.StderrCapture
 basename = os.path.basename
 delete_temp_dir = file_util.delete_temp_dir
+compare_paths = file_util.compare_paths
 copytree = file_util.copy_tree
 lsl = file_util.ls
 pprint = pprint.pprint
@@ -125,7 +127,7 @@ def parse_ver(s: str):
     return m.groups()
 
 
-@parse_type("path", r"/[/\w_\-.:]*")
+@parse_type("path", r"[/~][/\w_\-.:]*")
 def parse_path(s: str):
     return s
 

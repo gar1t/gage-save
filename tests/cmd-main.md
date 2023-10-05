@@ -4,7 +4,7 @@
 
 Running `gage` without arguments shows help.
 
-    >>> run("gage")  # +diff
+    >>> run("gage", cols=70)  # +diff
     Usage: gage [options] command
     ⤶
       Gage ML command line interface.
@@ -16,6 +16,7 @@ Running `gage` without arguments shows help.
       -h, --help  Show this message and exit.
     ⤶
     Commands:
+      associate        Associate a run with a project directory.
       check            Show and validate settings.
       delete, rm       Delete runs.
       help             Show help for a topic.

@@ -60,6 +60,7 @@ Run hello.
     | started    {:datetime}                                   |
     | stopped    {:datetime}                                   |
     | location   {runs_dir:path}                               |
+    | project    {:path}/examples/hello                        |
     | exit_code  0                                             |
     ⤶
                            Configuration

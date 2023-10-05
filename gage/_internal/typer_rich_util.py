@@ -67,7 +67,7 @@ STYLE_ERRORS_PANEL_BORDER = "dim"
 ALIGN_ERRORS_PANEL: Literal["left", "center", "right"] = "left"
 STYLE_ERRORS_SUGGESTION = ""
 STYLE_ABORTED = "red"
-STYLE_CMD = "bold"
+STYLE_CMD = "b green"
 
 _TERMINAL_WIDTH = getenv("TERMINAL_WIDTH")
 MAX_WIDTH = int(_TERMINAL_WIDTH) if _TERMINAL_WIDTH else None
@@ -87,8 +87,6 @@ if _TYPER_FORCE_DISABLE_TERMINAL:
 DEPRECATED_STRING = "(deprecated) "
 DEFAULT_STRING = "Default is {}."
 ENVVAR_STRING = "[env var: {}]"
-REQUIRED_SHORT_STRING = "*"
-REQUIRED_LONG_STRING = "[required]"
 RANGE_STRING = " [{}]"
 ARGUMENTS_PANEL_TITLE = "Arguments"
 OPTIONS_PANEL_TITLE = "Options"
@@ -307,10 +305,6 @@ def _get_parameter_help(
                     )
                 )
 
-    # Required?
-    if param.required:
-        items.append(Text(REQUIRED_LONG_STRING, style=STYLE_REQUIRED_LONG))
-
     # Use Columns - this allows us to group different renderable types
     # (Text, Markdown) onto a single line.
     return Columns(items)
@@ -402,11 +396,6 @@ def _print_options_panel(
             # click.types._NumberRangeBase is only in Click 8x onwards
             pass
 
-        # Required asterisk
-        required: Union[str, Text] = ""
-        if param.required:
-            required = Text(REQUIRED_SHORT_STRING, style=STYLE_REQUIRED_SHORT)
-
         # Highlighter to make [ | ] and <> dim
         class MetavarHighlighter(RegexHighlighter):
             highlights = [
@@ -429,7 +418,6 @@ def _print_options_panel(
             else []
         )
 
-        required_rows.append(required)
         options_rows.append(
             [
                 *opt_str_cols,
@@ -696,7 +684,7 @@ def rich_format_error(e: click.ClickException) -> None:
     if ctx is not None and ctx.command.get_help_option(ctx) is not None:
         console.print()
         console.print(
-            f"Try '[bold]{ctx.command_path} {ctx.help_option_names[0]}[/]' for help.",
+            f"Try '[cmd]{ctx.command_path} {ctx.help_option_names[0]}[/]' for help.",
             style=STYLE_ERRORS_SUGGESTION,
         )
 

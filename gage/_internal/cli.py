@@ -21,6 +21,7 @@ import rich.prompt
 import rich.status
 import rich.style
 import rich.text
+import rich.theme
 import rich.table
 
 import typer.core
@@ -44,9 +45,19 @@ __all__ = [
 
 log = logging.getLogger(__name__)
 
-_out = rich.console.Console(soft_wrap=False)
+STYLE_METAVAR = "b i cyan"
+STYLE_CMD = "b green"
 
-_err = rich.console.Console(stderr=True, soft_wrap=False)
+_theme = rich.theme.Theme(
+    {
+        "arg": STYLE_METAVAR,
+        "cmd": STYLE_CMD,
+    },
+)
+
+_out = rich.console.Console(soft_wrap=False, theme=_theme)
+
+_err = rich.console.Console(stderr=True, soft_wrap=False, theme=_theme)
 
 is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
@@ -76,21 +87,26 @@ def console_width():
     return _out.width
 
 
-def out(val: Any, style: str | None = None, wrap: bool = False, err: bool = False):
+def out(
+    val: rich.console.RenderableType,
+    style: str | None = None,
+    wrap: bool = False,
+    err: bool = False,
+):
     print = _err.print if err else _out.print
     print(val, soft_wrap=not wrap, style=style)
 
 
-def err(val: Any, style: str | None = None):
+def err(val: rich.console.RenderableType, style: str | None = None):
     out(val, err=True)
 
 
-def exit_with_error(msg: str, code: int = 1) -> NoReturn:
+def exit_with_error(msg: rich.console.RenderableType, code: int = 1) -> NoReturn:
     err(msg)
     raise SystemExit(code)
 
 
-def exit_with_message(msg: str) -> NoReturn:
+def exit_with_message(msg: rich.console.RenderableType) -> NoReturn:
     err(msg)
     raise SystemExit(0)
 
@@ -166,7 +182,7 @@ def incompatible_with(*incompatible: str):
                 markup(
                     f"[b cyan]{param.name}[/] and [b cyan]{used_param}[/] "
                     "cannot be used together.\n\n"
-                    f"Try '[b]{ctx.command_path} {ctx.help_option_names[0]}[/]' "
+                    f"Try '[cmd]{ctx.command_path} {ctx.help_option_names[0]}[/]' "
                     "for help."
                 )
             )

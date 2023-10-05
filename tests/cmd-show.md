@@ -32,6 +32,7 @@ Show the run.
     | started    {:datetime}                                   |
     | stopped    {:datetime}                                   |
     | location   {:path}                                       |
+    | project    {:path}/examples/hello                        |
     | exit_code  0                                             |
     ⤶
                            Configuration

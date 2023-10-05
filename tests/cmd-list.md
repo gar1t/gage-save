@@ -50,13 +50,13 @@ Generate some sample runs.
 
 List runs.
 
-    >>> run("gage list")  # +parse
+    >>> run("gage list")  # +parse -space
     | #  | name    | operation       | started   | status      |
     |----|---------|-----------------|-----------|-------------|
-    | 1  | {:rn}   | hello:hello     | now       | completed   |
-    | 2  | {:rn}   | hello:hello     | now       | completed   |
-    | 3  | {:rn}   | hello:hello     | now       | completed   |
-    | 4  | {:rn}   | hello:hello     | now       | completed   |
+    | 1  | {:rn}   | hello:hello     | {}        | completed   |
+    | 2  | {:rn}   | hello:hello     | {}        | completed   |
+    | 3  | {:rn}   | hello:hello     | {}        | completed   |
+    | 4  | {:rn}   | hello:hello     | {}        | completed   |
     <0>
 
 ## Incompatible params

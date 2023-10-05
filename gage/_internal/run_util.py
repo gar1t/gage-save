@@ -41,6 +41,8 @@ __all__ = [
     "RunManifestEntry",
     "RunFileType",
     "apply_config",
+    "associate_project",
+    "disassociate_project",
     "finalize_run",
     "finalize_staged_run",
     "format_run_timestamp",
@@ -55,8 +57,10 @@ __all__ = [
     "run_meta_path",
     "run_name_for_id",
     "run_phase_channel",
+    "run_project_dir",
     "run_status",
     "run_timestamp",
+    "run_user_attr",
     "stage_dependencies",
     "stage_run",
     "stage_runtime",
@@ -238,6 +242,33 @@ _ATTR_READERS = {
     "timestamp": _run_adaptive_timestamp_reader,
     "exit_code": _run_exit_code_reader,
 }
+
+
+def run_project_dir(run: Run):
+    ref_filename = _project_ref_filename(run)
+    try:
+        f = open(ref_filename)
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        log.warning("Error reading project ref in \"%s\": %s", ref_filename, e)
+        return None
+    else:
+        try:
+            with f:
+                uri = f.read().rstrip()
+        except Exception as e:
+            log.warning("Error reading project ref in \"%s\": %s", ref_filename, e)
+            return None
+        else:
+            if not uri.startswith("file:"):
+                log.warning("Unexpected project ref encoding in \"%s\"", ref_filename)
+                return None
+            return uri[5:]
+
+
+def _project_ref_filename(run: Run):
+    return run.run_dir + ".project"
 
 
 # =================================================================
@@ -435,8 +466,8 @@ def init_run_meta(
     opdef: OpDef,
     config: RunConfig,
     cmd: OpCmd,
-    user_attrs: Optional[dict[str, Any]] = None,
-    system_attrs: Optional[dict[str, Any]] = None,
+    user_attrs: dict[str, Any] | None = None,
+    system_attrs: dict[str, Any] | None = None,
 ):
     _write_schema_file(run)
     log = _runner_log(run)
@@ -509,6 +540,27 @@ def _gen_write_attrs(dir: str, attrs: dict[str, Any], run: Run, log: Logger):
         filename = os.path.join(full_dir, name + ".json")
         encoded = json.dumps(attrs[name])
         write_file(filename, encoded, readonly=True)
+
+
+# =================================================================
+# Associate project
+# =================================================================
+
+
+def associate_project(run: Run, project_dir: str):
+    if not os.path.isabs(project_dir):
+        raise ValueError(f"project_dir must be absolute: \"{project_dir}\"")
+    ref_filename = _project_ref_filename(run)
+    with open(ref_filename, "w") as f:
+        f.write(f"file:{project_dir}")
+
+
+def disassociate_project(run: Run):
+    ref_filename = _project_ref_filename(run)
+    try:
+        os.remove(ref_filename)
+    except FileNotFoundError:
+        pass
 
 
 # =================================================================

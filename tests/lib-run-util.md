@@ -488,3 +488,58 @@ Invalidate the cache and read the label again.
 
     >>> run_attr(run, "label")
     'Again modified'
+
+## Associate project
+
+`associate_project()` associates a run with a project directory.
+
+Create a run.
+
+    >>> runs_root = make_temp_dir()
+    >>> opref = OpRef("test", "test")
+    >>> run = make_run(opref, runs_root)
+
+Create a project directory.
+
+    >>> project_dir = make_temp_dir()
+
+Associate the run with the project directory.
+
+    >>> associate_project(run, project_dir)
+
+Project directories are tracked using a `.project` sidecar file.
+
+    >>> ls(runs_root)  # +parse
+    {run_id:run_id}.meta/opref
+    {x:run_id}.project
+
+    >>> assert x == run_id == run.id
+
+The project reference is a URI to the project directory.
+
+    >>> cat(path_join(runs_root, run.id + ".project"))  # +parse
+    file:{x:path}
+
+    >>> assert x == project_dir
+
+Use `run_project_dir()` to read the project directory associated with a
+run.
+
+    >>> assert run_project_dir(run) == project_dir
+
+Use `disassociate_project()` to disassociate the run from the project
+directory.
+
+    >>> disassociate_project(run)
+
+    >>> ls(runs_root)  # +parse
+    {:run_id}.meta/opref
+
+    >>> run_project_dir(run)  # +pprint
+    None
+
+Project directories must be absolute.
+
+    >>> associate_project(run, "relative")
+    Traceback (most recent call last):
+    ValueError: project_dir must be absolute: "relative"

@@ -30,6 +30,7 @@
     .meta/proc/env.json
     .meta/staged
     .meta/sys/platform.json
+    .project
     /gage.toml
     /hello.py
 

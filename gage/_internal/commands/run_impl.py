@@ -169,6 +169,7 @@ def _stage(context: RunContext, args: Args):
     user_attrs = _user_attrs(args)
     sys_attrs = _sys_attrs()
     init_run_meta(run, context.opdef, config, cmd, user_attrs, sys_attrs)
+    associate_project(run, context.project_dir)
     with _RunPhaseStatus(args):
         stage_run(run, context.project_dir)
     return run

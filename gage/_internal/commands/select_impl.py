@@ -4,6 +4,8 @@ from typing import *
 
 from .. import cli
 
+from ..run_util import run_project_dir
+
 from .impl_support import one_run
 
 
@@ -12,6 +14,7 @@ class Args(NamedTuple):
     name: bool
     run_dir: bool
     meta_dir: bool
+    project_dir: bool
 
 
 class RunSupport(NamedTuple):
@@ -27,5 +30,7 @@ def select(args: Args):
             cli.out(run.run_dir)
         elif args.meta_dir:
             cli.out(run.meta_dir)
+        elif args.project_dir:
+            cli.out(run_project_dir(run) or "")
         else:
             cli.out(run.id)

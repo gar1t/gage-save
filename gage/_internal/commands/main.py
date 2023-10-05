@@ -7,6 +7,7 @@ from typer import Typer
 
 from .. import cli
 
+from .associate import associate
 from .check import check
 from .help import help_app
 from .open import open
@@ -73,6 +74,7 @@ def main_app():
         options_metavar="[options]",
     )
     app.callback()(main)
+    app.command("associate")(associate)
     app.command("check")(check)
     app.command("delete, rm")(runs_delete)
     app.add_typer(help_app())

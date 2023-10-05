@@ -40,7 +40,7 @@ def one_run(args: OneRunSupport | str):
     if not selected:
         cli.err(
             f"No runs match {run!r}\n\n"  # \
-            "Use '[b]gage list[/]' to show available runs."
+            "Use '[cmd]gage list[/]' to show available runs."
         )
         raise SystemExit()
     if len(selected) > 1:
