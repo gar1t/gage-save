@@ -27,6 +27,7 @@
     gage.__main__
     gage._internal.__init__
     gage._internal.ansi_util
+    gage._internal.attr_log
     gage._internal.channel
     gage._internal.cli
     gage._internal.commands.associate
@@ -36,6 +37,8 @@
     gage._internal.commands.error_handlers
     gage._internal.commands.help
     gage._internal.commands.impl_support
+    gage._internal.commands.label
+    gage._internal.commands.label_impl
     gage._internal.commands.main
     gage._internal.commands.main_impl
     gage._internal.commands.open

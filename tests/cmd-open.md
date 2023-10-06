@@ -10,7 +10,8 @@ optionally be used with a custom command.
     ⤶
     Arguments:
       [run]  Run to show information for. Value may be an
-             index number, run ID, or run name.
+             index number, run ID, or run name. Default is
+             latest run.
     ⤶
     Options:
       -p, --path path  Run file to open. Use 'gage show

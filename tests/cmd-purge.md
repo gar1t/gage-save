@@ -38,12 +38,12 @@ Delete the run.
     <0>
 
     >>> run("gage ls -s")
-    | # | operation | status | description                     |
+    | # | operation | status | label                           |
     |---|-----------|--------|---------------------------------|
     <0>
 
     >>> run("gage ls -s -d")
-    | # | operation   | status    | description                |
+    | # | operation   | status    | label                      |
     |---|-------------|-----------|----------------------------|
     | 1 | hello:hello | completed |                            |
     <0>
@@ -65,11 +65,11 @@ Purge the run.
     <0>
 
     >>> run("gage ls -s")
-    | # | operation | status | description                     |
+    | # | operation | status | label                           |
     |---|-----------|--------|---------------------------------|
     <0>
-    
+
     >>> run("gage ls -s -d")
-    | # | operation | status | description                     |
+    | # | operation | status | label                           |
     |---|-----------|--------|---------------------------------|
     <0>

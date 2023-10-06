@@ -33,7 +33,7 @@ Generate a run.
     <0>
 
     >>> run("gage ls -s")
-    | # | operation   | status    | description                |
+    | # | operation   | status    | label                      |
     |---|-------------|-----------|----------------------------|
     | 1 | hello:hello | completed |                            |
     <0>
@@ -77,7 +77,7 @@ Show runs.
 Show deleted runs.
 
     >>> run("gage ls -ds")
-    | # | operation   | status    | description                |
+    | # | operation   | status    | label                      |
     |---|-------------|-----------|----------------------------|
     | 1 | hello:hello | completed |                            |
     <0>
@@ -89,7 +89,7 @@ Generate another run.
     <0>
 
     >>> run("gage ls", cols=64)  # +parse
-    | # | name  | operation   | started | status    | description  |
+    | # | name  | operation   | started | status    | label        |
     |---|-------|-------------|---------|-----------|--------------|
     | 1 | {nme} | hello:hello | now     | completed | Run 2        |
     <0>
@@ -108,7 +108,7 @@ Show runs.
     <0>
 
     >>> run("gage list -ds")
-    | # | operation   | status    | description                |
+    | # | operation   | status    | label                      |
     |---|-------------|-----------|----------------------------|
     | 1 | hello:hello | completed |                            |
     <0>

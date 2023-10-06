@@ -46,6 +46,7 @@ def _maybe_prompt(args: Args, runs: list[tuple[int, Run]]):
     permanent_prefix = "permanently " if args.permanent else ""
     run_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
     cli.err(f"You are about to {permanent_prefix}delete {run_count}.")
+    cli.err()
     if not cli.confirm(f"Continue?", default=not args.permanent):
         raise SystemExit(0)
 

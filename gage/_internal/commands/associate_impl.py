@@ -7,7 +7,7 @@ import os
 from .. import cli
 
 from ..run_util import associate_project
-from ..run_util import disassociate_project
+from ..run_util import remove_associate_project
 
 from .impl_support import one_run
 
@@ -21,7 +21,7 @@ class Args(NamedTuple):
 def associate(args: Args):
     run = one_run(args)
     if args.remove:
-        disassociate_project(run)
+        remove_associate_project(run)
         cli.out(f"Removed project association for \"{run.id}\"")
     else:
         if not args.project_dir:

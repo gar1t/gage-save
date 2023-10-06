@@ -42,21 +42,19 @@ Generate some sample runs.
     >>> run("gage run hello -l run-2 -q -y")
     <0>
 
-    >>> run("gage run hello -l run-3 -q -y")
-    <0>
+    >>> sleep(1)
 
-    >>> run("gage run hello -l run-4 -q -y")
+    >>> run("gage run hello -l run-3 -q -y")
     <0>
 
 List runs.
 
-    >>> run("gage list")  # +parse -space
-    | #  | name    | operation       | started   | status      |
-    |----|---------|-----------------|-----------|-------------|
-    | 1  | {:rn}   | hello:hello     | {}        | completed   |
-    | 2  | {:rn}   | hello:hello     | {}        | completed   |
-    | 3  | {:rn}   | hello:hello     | {}        | completed   |
-    | 4  | {:rn}   | hello:hello     | {}        | completed   |
+    >>> run("gage list -s")
+    | # | operation   | status    | label                      |
+    |---|-------------|-----------|----------------------------|
+    | 1 | hello:hello | completed | run-3                      |
+    | 2 | hello:hello | completed | run-2                      |
+    | 3 | hello:hello | completed | run-1                      |
     <0>
 
 ## Incompatible params

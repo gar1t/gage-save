@@ -13,7 +13,7 @@ from .. import run_select
 from ..run_util import meta_opref
 from ..run_util import run_status
 from ..run_util import run_timestamp
-from ..run_util import run_user_attr
+from ..run_util import run_user_attrs
 
 
 __all__ = [
@@ -157,11 +157,11 @@ def _table_cols(width: int, deleted: bool, simplified: bool) -> list[cli.ColSpec
             },
         ),
         (
-            "description",
+            "label",
             {
                 "ratio": 1,
                 "no_wrap": True,
-                "style": _col_style("description", deleted),
+                "style": _col_style("label", deleted),
             },
         ),
     ]
@@ -191,7 +191,7 @@ def _col_style(name: str, deleted: bool):
             return "dim"
         case "status", False:
             return ""
-        case "description", False:
+        case "label", False:
             return cli.SECOND_LABEL_STYLE
         case _, False:
             assert False, (name, deleted)
@@ -207,7 +207,8 @@ def _table_row(index: int, run: Run, width: int, simplified: bool) -> list[str]:
     started = run_timestamp(run, "started")
     started_str = human_readable.date_time(started) if started else ""
     status = run_status(run)
-    label = run_user_attr(run, "label") or ""
+    user_attrs = run_user_attrs(run)
+    label = user_attrs.get("label") or ""
 
     row = [
         index_str,

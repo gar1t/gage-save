@@ -185,6 +185,11 @@ operation = "prepare-data"
 - Delete unused code - start with dead code analysis (e.g. vulture) but
   we need test coverage as well - should be 100%
 
+- cli.incompatible_with is not going to work as designed. ctx.param is
+  under construction so it may not contain the incompatible values when
+  the param callback is made. Look for a better solution or roll
+  something new.
+
 ## Use cases
 
 Running

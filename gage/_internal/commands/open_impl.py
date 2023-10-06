@@ -2,6 +2,8 @@
 
 from typing import *
 
+from ..types import *
+
 import logging
 import os
 import shlex
@@ -9,6 +11,8 @@ import subprocess
 import sys
 
 from .. import cli
+
+from ..run_util import run_user_dir
 
 from .impl_support import one_run
 
@@ -20,14 +24,23 @@ class Args(NamedTuple):
     path: str
     cmd: str
     meta: bool
+    user: bool
 
 
 def open(args: Args):
     run = one_run(args)
-    dirname = run.meta_dir if args.meta else run.run_dir
+    dirname = _dirname(run, args)
     path = os.path.join(dirname, args.path) if args.path else dirname
     _open(path, args)
     _flush_streams_and_exit()
+
+
+def _dirname(run: Run, args: Args):
+    if args.meta:
+        return run.meta_dir
+    if args.user:
+        return run_user_dir(run)
+    return run.run_dir
 
 
 def _open(path: str, args: Args):

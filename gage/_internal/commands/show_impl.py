@@ -50,7 +50,8 @@ def show(args: Args):
 
 def Header(run: Run):
     status = run_status(run)
-    label = run_user_attr(run, "label") or ""
+    user_attrs = run_user_attrs(run)
+    label = user_attrs.get("label") or ""
 
     header = Table.grid(
         Column(),

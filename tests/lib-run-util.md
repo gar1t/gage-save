@@ -56,6 +56,9 @@ The first 8 chars must be hexadecimal.
 
 ## Init run meta
 
+A run meta directory contains run metadata. A run exists on a system for
+every valid meta directory.
+
 `init_run_meta()` initializes the run meta directory. It requires a run,
 an op ref, an op def, op config, and an op command.
 
@@ -74,6 +77,34 @@ an op ref, an op def, op config, and an op command.
 
     >>> cat(run_meta_path(run, "opdef.json"))
     {}
+
+## Init run user dir/attrs
+
+A run user directory contains a record of user settings applied to a
+run. A user directory can be merged with other user directories to apply
+user from other systems.
+
+`init_run_user_attrs()` initializes the user directory with attributes.
+
+The user directory doesn't initially exist.
+
+    >>> user_dir = run_user_dir(run)
+
+    >>> os.path.exists(user_dir)
+    False
+
+Initialize the run user directory.
+
+    >>> init_run_user_attrs(run, {"label": "Hello", "comment": "Looks good!"})
+
+    >>> os.path.exists(user_dir)
+    True
+
+The user directory contains a single log entry, which contains the
+initial attributes.
+
+    >>> ls(user_dir)  # +parse
+    {:uuid4}.json
 
 ## Copy source code
 
@@ -294,10 +325,19 @@ List the run files.
 
 ## Run attributes
 
-Run attributes may be read from the run directly or from files written
-to run meta. Use `run_attr()` to read either.
+Run attributes fall into the following categories:
 
-Attributes supported `run_attr()` are listed in the private module
+- Core
+- User
+- System
+- Logged
+
+Run attributes are read from different locations depending on the
+attribute.
+
+## Core attributes
+
+Core attributes supported `run_attr()` are listed in the private module
 variable `_ATTR_READERS`.
 
     >>> from gage._internal.run_util import _ATTR_READERS
@@ -306,7 +346,6 @@ variable `_ATTR_READERS`.
     ['dir',
      'exit_code',
      'id',
-     'label',
      'name',
      'staged',
      'started',
@@ -322,9 +361,9 @@ Create a run that's not bound to a directory.
     ...     run_dir="/run_dir",
     ...     name="def")
 
-`run_attr()` provides access to a limited number of run attributes.
-These are considered publicly accessible attributes. In one case, `dir`,
-which maps to `run_dir`, the attribute is renamed.
+`run_attr()` provides access to core run attributes. These are
+considered publicly accessible attributes. In one case, `dir`, which
+maps to `run_dir`, the attribute is renamed.
 
     >>> run_attr(run, "id")
     'abc'
@@ -334,16 +373,6 @@ which maps to `run_dir`, the attribute is renamed.
 
     >>> run_attr(run, "dir")
     '/run_dir'
-
-Other attributes are read from disk. In this case, `run_attr()` raises
-an attribute error unless a default is provided.
-
-    >>> run_attr(run, "label")
-    Traceback (most recent call last):
-    AttributeError: label
-
-    >>> run_attr(run, "label", "a default")
-    'a default'
 
 Create a run from a run meta directory.
 
@@ -360,18 +389,10 @@ Create a run from a run meta directory.
     ...     run=run,
     ...     opdef=OpDef("test", {}),
     ...     config={},
-    ...     cmd=OpCmd([], {}),
-    ...     user_attrs={
-    ...         "label": "Hello run",
-    ...         "custom-123": 123
-    ...     },
-    ...     system_attrs={
-    ...         "platform": "some-tests",
-    ...         "custom-list": [1, 2, "shoe"]
-    ...     }
+    ...     cmd=OpCmd([], {})
     ... )
 
-Core attributes:
+Various core attributes:
 
     >>> run_attr(run, "id")
     'abc'
@@ -381,11 +402,6 @@ Core attributes:
 
     >>> run_attr(run, "dir")
     '/run_dir'
-
-User attribute `label` is available.
-
-    >>> run_attr(run, "label")
-    'Hello run'
 
 Started and stopped timestamps are read from the meta dir. Neither are
 present and attempting to read either generates an attribute error.
@@ -439,55 +455,77 @@ default is provided.
 
 When successfully read, attribute values are cached to avoid re-reading.
 
-Re-write the run label.
+Modify the run ID.
 
-    >>> write(
-    ...     run_meta_path(run, "user", "label.json"),
-    ...     "\"Modified label\"",
-    ...     force=True
-    ... )
+    >>> run.id = "bca"
 
 Re-reading does not change the run attribute value.
 
-    >>> run_attr(run, "label")
-    'Hello run'
+    >>> run_attr(run, "id")
+    'abc'
 
 To force a re-read, recreate the run.
 
     >>> run = Run(
-    ...     id="abc",
+    ...     id="cba",
     ...     opref=OpRef("test", "test"),
     ...     meta_dir=meta_dir,
     ...     run_dir="/run_dir",
     ...     name="def")
 
-    >>> run_attr(run, "label")
-    'Modified label'
+    >>> run_attr(run, "id")
+    'cba'
 
 In cases where recreating a run is not desireable, the cache can be
 invalidated directly by accessing `run._cache`.
 
     >>> run._cache  # +pprint
-    {'_attr_label': 'Modified label'}
+    {'_attr_id': 'cba'}
 
-Re-write the label.
+Modify the run ID.
 
-    >>> write(
-    ...     run_meta_path(run, "user", "label.json"),
-    ...     "\"Again modified\""
-    ... )
+    >>> run.id = 'xxx'
 
 The cached value is used.
 
-    >>> run_attr(run, "label")
-    'Modified label'
+    >>> run_attr(run, "id")
+    'cba'
 
 Invalidate the cache and read the label again.
 
     >>> run._cache.clear()
 
-    >>> run_attr(run, "label")
-    'Again modified'
+    >>> run_attr(run, "id")
+    'xxx'
+
+### User attributes
+
+User attributes are written to a run user directory. This directory is
+created along with initial attributes using `init_run_user_attrs()`.
+
+Create a new run.
+
+    >>> runs_home = make_temp_dir()
+
+    >>> run = make_run(OpRef("test", "test"), runs_home)
+
+Initialize user attributes.
+
+    >>> init_run_user_attrs(run, {
+    ...   "label": "Hello run",
+    ...   "custom-123": 123
+    ... })
+
+`run_user_attrs()` reads a run's user attributes.
+
+    >>> run_user_attrs(run)  # +pprint
+    {'custom-123': 123, 'label': 'Hello run'}
+
+### System attributes
+
+### Logged attributes
+
+TODO
 
 ## Associate project
 
@@ -527,10 +565,10 @@ run.
 
     >>> assert run_project_dir(run) == project_dir
 
-Use `disassociate_project()` to disassociate the run from the project
+Use `remove_associate_project()` to disassociate the run from the project
 directory.
 
-    >>> disassociate_project(run)
+    >>> remove_associate_project(run)
 
     >>> ls(runs_root)  # +parse
     {:run_id}.meta/opref

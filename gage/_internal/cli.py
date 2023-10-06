@@ -88,7 +88,7 @@ def console_width():
 
 
 def out(
-    val: rich.console.RenderableType,
+    val: rich.console.RenderableType = "",
     style: str | None = None,
     wrap: bool = False,
     err: bool = False,
@@ -97,7 +97,7 @@ def out(
     print(val, soft_wrap=not wrap, style=style)
 
 
-def err(val: rich.console.RenderableType, style: str | None = None):
+def err(val: rich.console.RenderableType = "", style: str | None = None):
     out(val, err=True)
 
 

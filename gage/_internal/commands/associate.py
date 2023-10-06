@@ -9,9 +9,7 @@ RunSpec = Annotated[
     str,
     Argument(
         metavar="run",
-        help=(
-            "Run to associate. Value may be an index number, run ID, or run name."
-        ),
+        help=("Run to associate. Value may be an index number, run ID, or run name."),
         show_default=False,
     ),
 ]

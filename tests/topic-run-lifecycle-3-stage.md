@@ -74,7 +74,7 @@ List meta files before init.
 
 Initialize run meta.
 
-    >>> init_run_meta(run, opdef, config, cmd, {}, {})
+    >>> init_run_meta(run, opdef, config, cmd, {})
 
 List meta files after init.
 

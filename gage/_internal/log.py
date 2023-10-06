@@ -11,6 +11,7 @@ from . import ansi_util
 
 __all__ = [
     "init_logging",
+    "current_settings",
 ]
 
 __last_init_kw = {}

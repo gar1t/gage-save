@@ -22,6 +22,7 @@ from . import sys_config
 from . import run_config
 from . import run_sourcecode
 from . import run_output
+from . import attr_log
 from . import util
 
 from .file_select import copy_files
@@ -42,11 +43,13 @@ __all__ = [
     "RunFileType",
     "apply_config",
     "associate_project",
-    "disassociate_project",
+    "remove_associate_project",
     "finalize_run",
     "finalize_staged_run",
     "format_run_timestamp",
     "init_run_meta",
+    "init_run_user_attrs",
+    "log_user_attrs",
     "make_run_timestamp",
     "make_run",
     "meta_config",
@@ -60,7 +63,8 @@ __all__ = [
     "run_project_dir",
     "run_status",
     "run_timestamp",
-    "run_user_attr",
+    "run_user_attrs",
+    "run_user_dir",
     "stage_dependencies",
     "stage_run",
     "stage_runtime",
@@ -70,9 +74,6 @@ __all__ = [
 ]
 
 META_SCHEMA = "1"
-
-__last_ts = None
-__last_ts_lock = threading.Lock()
 
 log = logging.getLogger(__name__)
 
@@ -174,17 +175,6 @@ def run_attr(run: Run, name: str, default: Any = _RAISE):
             return val
 
 
-def run_user_attr(run: Run, name: str, default: Any = None):
-    filename = _meta_user_attr_filename(run, name)
-    try:
-        f = open(filename)
-    except FileNotFoundError:
-        return default
-    else:
-        with f:
-            return json.load(f)
-
-
 def run_timestamp(run: Run, name: RunTimestamp, default: Any = None):
     filename = _meta_timestamp_filename(run, name)
     try:
@@ -233,7 +223,6 @@ def _run_exit_code_reader(run: Run, name: str, default: Any = None):
 
 _ATTR_READERS = {
     "id": getattr,
-    "label": run_user_attr,
     "name": getattr,
     "dir": _run_dir_reader,
     "staged": run_timestamp,
@@ -242,6 +231,11 @@ _ATTR_READERS = {
     "timestamp": _run_adaptive_timestamp_reader,
     "exit_code": _run_exit_code_reader,
 }
+
+
+# =================================================================
+# Other run directories
+# =================================================================
 
 
 def run_project_dir(run: Run):
@@ -269,6 +263,10 @@ def run_project_dir(run: Run):
 
 def _project_ref_filename(run: Run):
     return run.run_dir + ".project"
+
+
+def run_user_dir(run: Run):
+    return run.run_dir + ".user"
 
 
 # =================================================================
@@ -368,10 +366,6 @@ def _meta_timestamp_filename(run: Run, name: RunTimestamp):
     return run_meta_path(run, name)
 
 
-def _meta_user_attr_filename(run: Run, name: str):
-    return run_meta_path(run, "user", name + ".json")
-
-
 # =================================================================
 # Load run
 # =================================================================
@@ -418,7 +412,7 @@ def _run_dir_for_meta_dir(meta_dir: str):
 # =================================================================
 
 
-def make_run(opref: OpRef, location: Optional[str] = None):
+def make_run(opref: OpRef, location: str | None = None):
     run_id = make_run_id()
     location = location or sys_config.runs_home()
     run_dir = os.path.join(location, run_id)
@@ -443,8 +437,12 @@ def run_name_for_id(run_id: str) -> str:
     return uint2quint(int(run_id[:8], 16))
 
 
+__last_ts = None
+__last_ts_lock = threading.Lock()
+
+
 def make_run_timestamp():
-    """Returns an integer use for run timestamps.
+    """Returns an integer in epoch microseconds use for run timestamps.
 
     Ensures that subsequent calls return increasing values.
     """
@@ -466,7 +464,6 @@ def init_run_meta(
     opdef: OpDef,
     config: RunConfig,
     cmd: OpCmd,
-    user_attrs: dict[str, Any] | None = None,
     system_attrs: dict[str, Any] | None = None,
 ):
     _write_schema_file(run)
@@ -476,8 +473,6 @@ def init_run_meta(
     _write_config(config, run, log)
     _write_proc_cmd(cmd, run, log)
     _write_proc_env(cmd, run, log)
-    if user_attrs:
-        _write_user_attrs(user_attrs, run, log)
     if system_attrs:
         _write_system_attrs(system_attrs, run, log)
     _write_timestamp("initialized", run, log)
@@ -524,10 +519,6 @@ def _write_proc_env(cmd: OpCmd, run: Run, log: Logger):
     write_file(filename, _encode_json(cmd.env), readonly=True)
 
 
-def _write_user_attrs(attrs: dict[str, Any], run: Run, log: Logger):
-    _gen_write_attrs("user", attrs, run, log)
-
-
 def _write_system_attrs(attrs: dict[str, Any], run: Run, log: Logger):
     _gen_write_attrs("sys", attrs, run, log)
 
@@ -555,12 +546,44 @@ def associate_project(run: Run, project_dir: str):
         f.write(f"file:{project_dir}")
 
 
-def disassociate_project(run: Run):
+def remove_associate_project(run: Run):
     ref_filename = _project_ref_filename(run)
     try:
         os.remove(ref_filename)
     except FileNotFoundError:
         pass
+
+
+# =================================================================
+# Run user attrs
+# =================================================================
+
+
+def run_user_attrs(run: Run) -> dict[str, Any]:
+    attrs_dir = run_user_dir(run)
+    if not os.path.exists(attrs_dir):
+        return {}
+    return attr_log.get_attrs(attrs_dir)
+
+
+def init_run_user_attrs(run: Run, user_attrs: dict[str, Any]):
+    if not user_attrs:
+        return
+    attrs_dir = run_user_dir(run)
+    make_dir(attrs_dir)
+    # TODO hook up user ID scheme - using 'anonymous' for now
+    attr_log.log_attrs(attrs_dir, "anonymous", user_attrs, [])
+
+
+def log_user_attrs(run: Run, set: dict[str, Any], delete: list[str] | None = None):
+    if not set and not delete:
+        return
+    attrs_dir = run_user_dir(run)
+    if not os.path.exists(attrs_dir):
+        if not set:
+            return
+        make_dir(attrs_dir)
+    attr_log.log_attrs(attrs_dir, "anonymous", set, delete)
 
 
 # =================================================================

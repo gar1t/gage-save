@@ -74,10 +74,6 @@ Define inputs to the init function.
     ...     {"foo": "123", "bar": "abc"}
     ... )
 
-    >>> user_attrs = {
-    ...     "label": "A test run"
-    ... }
-
     >>> system_attrs = {
     ...     "platform": "test 123"
     ... }
@@ -89,7 +85,6 @@ Initialize the run meta with `init_run_meta()`.
     ...     opdef,
     ...     config,
     ...     cmd,
-    ...     user_attrs,
     ...     system_attrs
     ... )
 
@@ -109,8 +104,6 @@ Gage creates the following files:
     -r--r--r-- proc/env.json
     drwxrwxr-x sys
     -r--r--r-- sys/platform.json
-    drwxrwxr-x user
-    -r--r--r-- user/label.json
 
 Files are read only with the exception of the runner log, which is
 assumed to be writable until the run is finalized (see below).
@@ -181,7 +174,6 @@ The log contains a record of the changes made during init.
     Writing meta config
     Writing meta proc cmd
     Writing meta proc env
-    Writing meta user/label
     Writing meta sys/platform
     Writing meta initialized
 
@@ -225,13 +217,10 @@ vars respectively. These are used to start the run process.
       "foo": "123"
     }
 
-### `sys` and `user`
+### System attributes
 
-`sys` and `user` contain JSON encoded attributes specified at the time
-of meta init.
+`sys` contains JSON encoded system attributes specified at the time of
+meta init.
 
     >>> cat(run_meta_path(run, "sys", "platform.json"))
     "test 123"
-
-    >>> cat(run_meta_path(run, "user", "label.json"))
-    "A test run"

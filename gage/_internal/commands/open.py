@@ -11,7 +11,7 @@ RunSpec = Annotated[
         metavar="[run]",
         help=(
             "Run to show information for. Value may be an index "
-            "number, run ID, or run name."
+            "number, run ID, or run name. Default is latest run."
         ),
     ),
 ]
@@ -36,7 +36,8 @@ Cmd = Annotated[
     ),
 ]
 
-MetaFlag = Annotated[bool, Option("-m", "--meta", hidden=True)]
+MetaFlag = Annotated[bool, Option("--meta", hidden=True)]
+UserFlag = Annotated[bool, Option("--user", hidden=True)]
 
 
 def open(
@@ -44,9 +45,10 @@ def open(
     path: Path = "",
     cmd: Cmd = "",
     meta: MetaFlag = False,
+    user: UserFlag = False,
 ):
     """Open a run in the file explorer."""
 
     from .open_impl import open, Args
 
-    open(Args(run, path, cmd, meta))
+    open(Args(run, path, cmd, meta, user))

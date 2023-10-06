@@ -10,6 +10,7 @@ from .. import cli
 from .associate import associate
 from .check import check
 from .help import help_app
+from .label import label
 from .open import open
 from .operations import operations
 from .run import run
@@ -78,12 +79,13 @@ def main_app():
     app.command("check")(check)
     app.command("delete, rm")(runs_delete)
     app.add_typer(help_app())
+    app.command("label")(label)
+    app.command("list, ls")(runs_list)
     app.command("open")(open)
     app.command("operations, ops")(operations)
-    app.command("run")(run)
-    app.command("list, ls")(runs_list)
     app.command("purge")(runs_purge)
     app.command("restore")(runs_restore)
+    app.command("run")(run)
     app.command("select")(select)
     app.command("show")(show)
     return app

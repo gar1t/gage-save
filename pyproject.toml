@@ -24,6 +24,7 @@ dependencies = [
     "natsort==8.4.0",
     "proquint==0.2.1",
     "psutil==5.9.5",
+    "python-ulid==2.2.0",
     "pyyaml==6.0.1",
     "rich==13.5.2",
     "tomli==2.0.1",

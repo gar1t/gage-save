@@ -20,6 +20,7 @@ Running `gage` without arguments shows help.
       check            Show and validate settings.
       delete, rm       Delete runs.
       help             Show help for a topic.
+      label            Set or clear run labels.
       list, ls         List runs.
       open             Open a run in the file explorer.
       operations, ops  Show available operations.

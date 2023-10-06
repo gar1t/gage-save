@@ -58,6 +58,7 @@ __all__ = [
     "parse_short_run_name",
     "parse_sha256",
     "parse_timestamp",
+    "parse_uuid4",
     "parse_ver",
     "path_exists",
     "path_join",
@@ -71,6 +72,7 @@ __all__ = [
     "samples_dir",
     "set_runs_home",
     "sha256",
+    "sleep",
     "symlink",
     "sys",
     "touch",
@@ -91,6 +93,7 @@ copytree = file_util.copy_tree
 lsl = file_util.ls
 pprint = pprint.pprint
 sha256 = file_util.file_sha256
+sleep = time.sleep
 symlink = os.symlink
 touch = file_util.touch
 
@@ -134,6 +137,11 @@ def parse_path(s: str):
 
 @parse_type("run_id", r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
 def parse_run_id(s: str):
+    return s
+
+
+@parse_type("uuid4", r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
+def parse_uuid4(s: str):
     return s
 
 
