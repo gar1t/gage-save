@@ -18,6 +18,7 @@ Running `gage` without arguments shows help.
     Commands:
       associate        Associate a run with a project directory.
       check            Show and validate settings.
+      comment          Comment on runs.
       delete, rm       Delete runs.
       help             Show help for a topic.
       label            Set or clear run labels.

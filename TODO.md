@@ -10,6 +10,7 @@
   - Project files
   - Run files
   - Run summaries
+  - Replace links with ref files on finalize
 
 - Batches
 
@@ -24,10 +25,10 @@
 
 - API and View
 
-- Get command line completion working again (want support for bash, zsh,
-  fish, nu)
+- Sync / collaboration
 
-- Replace links with ref files
+- Command completion working again (want support for bash, zsh, fish,
+  nu)
 
 - How to identify runs by their project?
 

@@ -34,6 +34,8 @@
     gage._internal.commands.associate_impl
     gage._internal.commands.check
     gage._internal.commands.check_impl
+    gage._internal.commands.comment
+    gage._internal.commands.comment_impl
     gage._internal.commands.error_handlers
     gage._internal.commands.help
     gage._internal.commands.impl_support

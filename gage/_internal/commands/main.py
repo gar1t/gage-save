@@ -9,6 +9,7 @@ from .. import cli
 
 from .associate import associate
 from .check import check
+from .comment import comment
 from .help import help_app
 from .label import label
 from .open import open
@@ -77,6 +78,7 @@ def main_app():
     app.callback()(main)
     app.command("associate")(associate)
     app.command("check")(check)
+    app.command("comment")(comment)
     app.command("delete, rm")(runs_delete)
     app.add_typer(help_app())
     app.command("label")(label)
