@@ -72,6 +72,25 @@ Valid formats but not supported:
     >>> print("2023-09-03T11:21:33-05:00:30")  # +fails
     {:isodate}
 
+### Timestamps
+
+The `timestamp` pattern matches epoch microsecond timestamps.
+
+    >>> import time
+
+    >>> print(int(time.time() * 1000000))  # +parse
+    {:timestamp}
+
+`timestamp_ms` matches epoch millisecond timestamps.
+
+    >>> print(int(time.time() * 1000))  # +parse
+    {:timestamp_ms}
+
+`timestamp_s` matches epoch seconds timestamps.
+
+    >>> print(int(time.time()))  # +parse
+    {:timestamp_s}
+
 ## `cat_json`
 
 `cat_json` prints a JSON file as formatted JSON.

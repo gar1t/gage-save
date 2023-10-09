@@ -4,13 +4,17 @@ from typing import *
 
 from ..types import *
 
+import datetime
 import logging
 import os
+
+import human_readable
 
 import rich.box
 
 from rich.console import Group
 from rich.padding import Padding
+from rich.markdown import Markdown
 from rich.text import Text
 from rich.table import Table, Column
 
@@ -23,6 +27,8 @@ from .. import cli
 from ..run_output import RunOutputReader
 
 from ..run_util import *
+
+from ..run_comment import get_comments
 
 from ..util import format_user_dir
 
@@ -39,13 +45,10 @@ class Args(NamedTuple):
 
 def show(args: Args):
     run = one_run(args)
-    default = True
     if args.files:
-        _show_files(run)
-        default = False
-    if default:
-        with cli.pager():
-            _show(run)
+        _show_files_and_exit(run)
+    with cli.pager():
+        _show(run)
 
 
 def Header(run: Run):
@@ -61,11 +64,11 @@ def Header(run: Run):
         collapse_padding=False,
     )
     header.add_row(
-        Text(run.opref.get_full_name(), style="bold " + cli.LABEL_STYLE),
+        Text(run.opref.get_full_name(), style="bold " + cli.STYLE_LABEL),
         Text(status, style=cli.run_status_style(status)),
     )
     if label:
-        header.add_row(Text(label, style=cli.SECOND_LABEL_STYLE))
+        header.add_row(Text(label, style=cli.STYLE_SECOND_LABEL))
 
     return cli.Panel(header, title=run.id)
 
@@ -78,8 +81,8 @@ def Attributes(run: Run):
     exit_code = str(run_attr(run, "exit_code", None))
 
     attributes = Table.grid(
-        Column(style=cli.LABEL_STYLE),
-        Column(style=cli.VALUE_STYLE),
+        Column(style=cli.STYLE_LABEL),
+        Column(style=cli.STYLE_VALUE),
         padding=(0, 1),
         collapse_padding=False,
     )
@@ -99,8 +102,8 @@ def Config(run: Run):
     if not config:
         return Group()
     config_table = Table.grid(
-        Column(style=cli.LABEL_STYLE),
-        Column(style=cli.VALUE_STYLE),
+        Column(style=cli.STYLE_LABEL),
+        Column(style=cli.STYLE_VALUE),
         padding=(0, 1),
         collapse_padding=False,
     )
@@ -113,25 +116,21 @@ def Config(run: Run):
 def Files(run: Run, table_only: bool = False):
     with RunManifest(run) as m:
         files = list(m)
-    files_table = cli.Table(
+    table = cli.Table(
         expand=not table_only,
         show_footer=not table_only,
         show_edge=table_only,
-        box=None
-        if table_only
-        else rich.box.MARKDOWN
-        if cli.is_plain
-        else rich.box.SIMPLE,
+        box=_files_box(table_only),
         padding=(0, 1) if table_only else 0,
     )
-    files_table.add_column(
+    table.add_column(
         "name",
     )
-    files_table.add_column(
+    table.add_column(
         "type",
         style="dim",
     )
-    files_table.add_column(
+    table.add_column(
         "size",
         justify="right",
         style="magenta",
@@ -140,18 +139,24 @@ def Files(run: Run, table_only: bool = False):
     total_size = 0
     for type, digest, path in natsorted(files):
         stat = os.stat(os.path.join(run.run_dir, path))
-        files_table.add_row(
+        table.add_row(
             path,
             _type_desc(type),
             _format_file_size(stat.st_size),
         )
         total_size += stat.st_size
 
-    files_table.columns[2].footer = f"total: {_format_file_size(total_size)}"
+    table.columns[2].footer = f"total: {_format_file_size(total_size)}"
 
     if table_only:
-        return files_table
-    return cli.Panel(files_table, title="Files")
+        return table
+    return cli.Panel(table, title="Files")
+
+
+def _files_box(table_only: bool):
+    return (
+        None if table_only else rich.box.MARKDOWN if cli.is_plain else rich.box.SIMPLE
+    )
 
 
 def _type_desc(type: RunFileType):
@@ -173,30 +178,6 @@ def _format_file_size(size: int):
         # human_readable applies (decimal) formatting to bytes, bypass
         return f"{size} B"
     return human_readable.file_size(size, formatting=".1f")
-
-
-def OutputTable(reader: RunOutputReader, name: str = "", pad: bool = False):
-    table = cli.Table(
-        (name, {"style": "dim"}),
-        show_header=name != "",
-        expand=True,
-        show_edge=False,
-        padding=0,
-        box=rich.box.SIMPLE_HEAD,
-    )
-    try:
-        lines = list(reader)
-    except Exception as e:
-        log.warning(
-            "Error reading run output (%s): %s",
-            reader.filename,
-            e,
-        )
-    else:
-        # TODO truncate lines and show message if too long
-        for line in lines:
-            table.add_row(Text(line.text, style="orange3" if line.stream == 1 else ""))
-    return Padding(table, (1 if pad else 0, 0, 0, 0))
 
 
 def Output(run: Run):
@@ -243,13 +224,80 @@ def _output_desc(name: str):
     }.get(name, name)
 
 
+def OutputTable(reader: RunOutputReader, name: str = "", pad: bool = False):
+    table = cli.Table(
+        (name, {"style": "dim"}),
+        show_header=name != "",
+        expand=True,
+        show_edge=False,
+        padding=0,
+        box=rich.box.SIMPLE_HEAD,
+    )
+    try:
+        lines = list(reader)
+    except Exception as e:
+        log.warning(
+            "Error reading run output (%s): %s",
+            reader.filename,
+            e,
+        )
+    else:
+        # TODO truncate lines and show message if too long
+        for line in lines:
+            table.add_row(Text(line.text, style="orange3" if line.stream == 1 else ""))
+    return Padding(table, (1 if pad else 0, 0, 0, 0))
+
+
+def Comments(run: Run):
+    comments = get_comments(run)
+    if not comments:
+        return Group()
+    stack = Table.grid(padding=(1, 0))
+    for comment in comments:
+        stack.add_row(CommentTable(comment))
+    return cli.Panel(stack, title="Comments")
+
+
+def CommentTable(comment: RunComment):
+    table = Table(
+        show_header=False,
+        expand=True,
+        show_edge=False,
+        padding=0,
+        show_lines=True,
+        box=rich.box.MARKDOWN if cli.is_plain else rich.box.SIMPLE,
+        border_style=cli.STYLE_TABLE_BORDER,
+    )
+    header = Table.grid(
+        Column(style="b " + cli.STYLE_LABEL),
+        Column(justify="right", style="bright_black"),
+        expand=True,
+        padding=(0, 1),
+        collapse_padding=False,
+    )
+    header.add_row(
+        comment.author,
+        _format_comment_date(comment.timestamp),
+    )
+    table.add_row(header)
+    table.add_row(Markdown(comment.msg))
+    return table
+
+
+def _format_comment_date(timestamp: int):
+    comment_date = datetime.datetime.fromtimestamp(timestamp / 1000)
+    return human_readable.date_time(comment_date)
+
+
 def _show(run: Run):
     cli.out(Header(run))
     cli.out(Attributes(run))
     cli.out(Config(run))
     cli.out(Files(run))
     cli.out(Output(run))
+    cli.out(Comments(run))
 
 
-def _show_files(run: Run):
+def _show_files_and_exit(run: Run):
     cli.out(Files(run, table_only=True))
+    raise SystemExit(0)

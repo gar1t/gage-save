@@ -29,9 +29,9 @@ def label(args: Args):
         )
     if not args.runs and not args.all:
         cli.exit_with_error(
-            f"Specify a run to modify or use '--all'.\n\n"
-            f"Use '[cmd]gage list[/]' to show available runs.\n\n"
-            f"Try '[cmd]gage label -h[/]' for additional help."
+            "Specify a run to modify or use '--all'.\n\n"
+            "Use '[cmd]gage list[/]' to show available runs.\n\n"
+            "Try '[cmd]gage label -h[/]' for additional help."
         )
     runs, from_count = selected_runs(args)
     if not runs:

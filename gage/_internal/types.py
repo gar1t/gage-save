@@ -14,6 +14,7 @@ __all__ = [
     "OpDefExec",
     "OpDefConfig",
     "Run",
+    "RunComment",
     "RunConfig",
     "RunConfigValue",
     "RunContext",
@@ -244,6 +245,13 @@ class RunConfig(dict[str, RunConfigValue]):
     def apply(self) -> str:
         """Applies config returning the new source."""
         raise NotImplementedError()
+
+
+class RunComment(NamedTuple):
+    id: str
+    author: str
+    timestamp: int
+    msg: str
 
 
 UnifiedDiff = list[str]

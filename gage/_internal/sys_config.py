@@ -7,6 +7,7 @@ import threading
 
 __all__ = [
     "cwd",
+    "get_user",
     "runs_home",
     "set_cwd",
     "set_runs_home",
@@ -96,3 +97,11 @@ def runs_home():
 
 def default_runs_home():
     return os.path.join(USER_HOME, ".gage", "runs")
+
+
+def get_user():
+    # TODO: scheme should support optional verification, so we'll need
+    # to take in house with likely support for open auth style user ID
+    import getpass
+
+    return getpass.getuser()

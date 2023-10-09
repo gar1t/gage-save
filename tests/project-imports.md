@@ -70,6 +70,7 @@
     gage._internal.opref_util
     gage._internal.project_util
     gage._internal.python_util
+    gage._internal.run_comment
     gage._internal.run_config
     gage._internal.run_config_py
     gage._internal.run_context

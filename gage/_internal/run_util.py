@@ -36,6 +36,8 @@ from .file_util import write_file
 from .opref_util import decode_opref
 from .opref_util import encode_opref
 
+from .sys_config import get_user
+
 __all__ = [
     "META_SCHEMA",
     "RunManifest",
@@ -571,8 +573,7 @@ def init_run_user_attrs(run: Run, user_attrs: dict[str, Any]):
         return
     attrs_dir = run_user_dir(run)
     make_dir(attrs_dir)
-    # TODO hook up user ID scheme - using 'anonymous' for now
-    attr_log.log_attrs(attrs_dir, "anonymous", user_attrs, [])
+    attr_log.log_attrs(attrs_dir, get_user(), user_attrs, [])
 
 
 def log_user_attrs(run: Run, set: dict[str, Any], delete: list[str] | None = None):
@@ -583,7 +584,7 @@ def log_user_attrs(run: Run, set: dict[str, Any], delete: list[str] | None = Non
         if not set:
             return
         make_dir(attrs_dir)
-    attr_log.log_attrs(attrs_dir, "anonymous", set, delete)
+    attr_log.log_attrs(attrs_dir, get_user(), set, delete)
 
 
 # =================================================================

@@ -61,12 +61,12 @@ _err = rich.console.Console(stderr=True, soft_wrap=False, theme=_theme)
 
 is_plain = os.getenv("TERM") in ("dumb", "unknown")
 
-TABLE_HEADER_STYLE = "bright_yellow"
-TABLE_BORDER_STYLE = "dim"
-PANEL_TITLE_STYLE = "yellow"
-LABEL_STYLE = "cyan1"
-SECOND_LABEL_STYLE = "cyan"
-VALUE_STYLE = "dim"
+STYLE_TABLE_HEADER = "bright_yellow"
+STYLE_TABLE_BORDER = "dim"
+STYLE_PANEL_TITLE = "yellow"
+STYLE_LABEL = "cyan1"
+STYLE_SECOND_LABEL = "cyan"
+STYLE_VALUE = "dim"
 
 
 def run_status_style(status: str):
@@ -120,7 +120,7 @@ def json(val: Any):
 
 
 def label(s: str):
-    return text(s, style=LABEL_STYLE)
+    return text(s, style=STYLE_LABEL)
 
 
 def markdown(md: str):
@@ -229,8 +229,8 @@ ColSpec = str | tuple[str, dict[str, Any]]
 
 def Table(*cols: ColSpec, **kw: Any):
     box = kw.pop("box", None) or (rich.box.MARKDOWN if is_plain else rich.box.ROUNDED)
-    border_style = kw.pop("border_style", None) or TABLE_BORDER_STYLE
-    header_style = kw.pop("header_style", None) or TABLE_HEADER_STYLE
+    border_style = kw.pop("border_style", None) or STYLE_TABLE_BORDER
+    header_style = kw.pop("header_style", None) or STYLE_TABLE_HEADER
     t = rich.table.Table(
         box=box,
         border_style=border_style,
@@ -254,7 +254,7 @@ def _split_col(col: ColSpec) -> tuple[str, dict[str, Any]]:
 def Panel(renderable: rich.console.RenderableType, **kw: Any):
     title = kw.pop("title", None)
     if isinstance(title, str):
-        title = rich.text.Text(title, PANEL_TITLE_STYLE)
+        title = rich.text.Text(title, STYLE_PANEL_TITLE)
     return rich.panel.Panel(
         renderable,
         title=title,
@@ -312,13 +312,10 @@ class _MarkdownHeading(rich.markdown.Heading):
         options: rich.console.ConsoleOptions,
     ) -> rich.console.RenderResult:
         text = self.text
-        text._text = [s.upper() for s in text._text]
         if self.tag == "h1":
             text.justify = "center"
-            yield rich.panel.Panel(text)
+            yield rich.panel.Panel(text, style="dim")
         else:
-            if self.tag == "h2":
-                yield Text("")
             yield text
 
 

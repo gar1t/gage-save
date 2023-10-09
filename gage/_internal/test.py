@@ -49,6 +49,7 @@ __all__ = [
     "normlf",
     "os",
     "parse_any",
+    "parse_comment_id",
     "parse_datetime",
     "parse_isodate",
     "parse_path",
@@ -58,6 +59,8 @@ __all__ = [
     "parse_short_run_name",
     "parse_sha256",
     "parse_timestamp",
+    "parse_timestamp_ms",
+    "parse_timestamp_s",
     "parse_uuid4",
     "parse_ver",
     "path_exists",
@@ -160,8 +163,23 @@ def parse_run_name(s: str):
     return s
 
 
+@parse_type("comment_id", r"[0-9a-f]{8}-[0-9a-f]{4}")
+def parse_comment_id(s: str):
+    return s
+
+
 @parse_type("timestamp", r"1[6-7]\d{14}")  # epoch microseconds
 def parse_timestamp(s: str):
+    return int(s)
+
+
+@parse_type("timestamp_ms", r"1[6-7]\d{11}")  # epoch seconds
+def parse_timestamp_ms(s: str):
+    return int(s)
+
+
+@parse_type("timestamp_s", r"1[6-7]\d{8}")  # epoch seconds
+def parse_timestamp_s(s: str):
     return int(s)
 
 

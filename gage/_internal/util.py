@@ -964,7 +964,11 @@ def bind_method(obj: Any, method_name: str, function: Any):
     setattr(obj, method_name, function.get(obj, obj.__class__))
 
 
-def edit(s: str, extension: str = ".txt", strip_comment_lines: bool = False):
+def edit(
+    s: str = "",
+    extension: str = ".txt",
+    strip_comments_prefix: str = "",
+):
     import click
 
     try:
@@ -973,10 +977,12 @@ def edit(s: str, extension: str = ".txt", strip_comment_lines: bool = False):
         raise ValueError(e) from e
     else:
         if edited is None:
-            edited = s
-        if strip_comment_lines:
-            edited = _strip_comment_lines(edited)
-        return edited
+            return None
+        return (
+            _strip_comment_lines(edited, strip_comments_prefix)
+            if strip_comments_prefix
+            else edited
+        )
 
 
 def _try_editor():
@@ -1004,8 +1010,8 @@ def _try_editor_bin():
     return None
 
 
-def _strip_comment_lines(s: str):
-    return "\n".join([line for line in s.split("\n") if line.rstrip()[:1] != "#"])
+def _strip_comment_lines(s: str, prefix: str):
+    return "\n".join([line for line in s.split("\n") if line.rstrip()[:1] != prefix])
 
 
 PropertyCacheProp = tuple[str, Any, Callable[..., Any], float]

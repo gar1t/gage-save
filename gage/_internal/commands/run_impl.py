@@ -289,4 +289,4 @@ def _run_staged(run: Run, args: Args):
 
 def _running_status_desc(run: Run):
     opref = meta_opref(run)
-    return f"[dim]Running [{cli.PANEL_TITLE_STYLE}]{opref.get_full_name()}"
+    return f"[dim]Running [{cli.STYLE_PANEL_TITLE}]{opref.get_full_name()}"

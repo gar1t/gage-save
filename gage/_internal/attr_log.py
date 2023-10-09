@@ -14,12 +14,14 @@ import time
 import ulid
 
 __all__ = [
+    "LogEntry",
     "UNKNOWN_AUTHOR",
     "get_attrs",
     "get_attrs_by_author",
     "log_attrs",
     "make_log_id",
     "merge_attrs",
+    "now_ms",
 ]
 
 UNKNOWN_AUTHOR = "__unknown__"
@@ -78,9 +80,11 @@ def log_attrs(
     set: dict[str, Any],
     delete: list[str] | None = None,
 ):
-    log_id = make_log_id()
+    timestamp = now_ms()
+    log_id = make_log_id(timestamp)
     log_filename = os.path.join(dest_dir, log_id + ".json")
-    _write_log_entry(LogEntry(author, set, delete or []), log_filename)
+    log_entry = LogEntry(author, set, delete or [])
+    _write_log_entry(log_entry, log_filename)
 
 
 def _write_log_entry(log_entry: LogEntry, filename: str):
@@ -98,7 +102,7 @@ __last_ts = None
 __last_ts_lock = threading.Lock()
 
 
-def _now_ms():
+def now_ms():
     ts = time.time_ns() // 1000000  # milliseconds, used by ULID
     with __last_ts_lock:
         if __last_ts is not None and __last_ts >= ts:
@@ -107,8 +111,9 @@ def _now_ms():
     return ts
 
 
-def make_log_id():
-    return str(ulid.ULID.from_timestamp(_now_ms()).to_uuid4())
+def make_log_id(timestamp_ms: int = 0):
+    timestamp_ms = timestamp_ms or now_ms()
+    return str(ulid.ULID.from_timestamp(timestamp_ms).to_uuid4())
 
 
 def merge_attrs(src_dir: str, dest_dir: str):

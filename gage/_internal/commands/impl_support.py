@@ -180,19 +180,19 @@ def _simplify(items: list[Any]):
 def _col_style(name: str, deleted: bool):
     match name, deleted:
         case "#", False:
-            return cli.TABLE_HEADER_STYLE
+            return cli.STYLE_TABLE_HEADER
         case "#", True:
-            return f"strike dim {cli.TABLE_HEADER_STYLE}"
+            return f"strike dim {cli.STYLE_TABLE_HEADER}"
         case "name", False:
             return "dim"
         case "operation", False:
-            return cli.LABEL_STYLE
+            return cli.STYLE_LABEL
         case "started", False:
             return "dim"
         case "status", False:
             return ""
         case "label", False:
-            return cli.SECOND_LABEL_STYLE
+            return cli.STYLE_SECOND_LABEL
         case _, False:
             assert False, (name, deleted)
         case _, True:

@@ -25,8 +25,8 @@ class Args(NamedTuple):
 def runs_delete(args: Args):
     if not args.runs and not args.all:
         cli.exit_with_error(
-            f"Specify a run to delete or use '--all'.\n\n"
-            f"Use '[cmd]gage list[/]' to show available runs.\n\n"
+            "Specify a run to delete or use '--all'.\n\n"
+            "Use '[cmd]gage list[/]' to show available runs.\n\n"
             f"Try '[cmd]{args.ctx.command_path} {args.ctx.help_option_names[0]}[/]' "
             "for additional help."
         )

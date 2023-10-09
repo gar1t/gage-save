@@ -1,5 +1,11 @@
 # Gage To Do
 
+- Concept of a "user"
+  - Works without any config
+  - Something that can be authenticated/verified
+  - Include verifiable info in user attrs (i.e. can I rely that "sam"
+    wrote a comment - e.g. a signature).
+
 - Labels, tags, and notes
   - Should any of these land in the meta dir, ever?
   - Get `.user` going
@@ -115,6 +121,13 @@ name = "msg"
 
 - Source code preview should show the source code stage command if
   specified.
+
+- `cli.Table` isn't doing much work - do we need this? Same for the
+  other rich wrappers in `cli`, apart from the traditional cli API (e.g.
+  out, err, exit_with_message, etc.)
+
+- Upper case section titles in help (no longer doing this markdown
+  formatter)
 
 ## Lifting by `gage check`
 
