@@ -9,7 +9,7 @@ A run is created with `make_run()`. To create a run, specify:
 - Optional location
 
 If a location isn't specified, the run is assumed to be located in the
-system default as provided by `sys_config.runs_home()`.
+system default as provided by `sys_config.get_runs_home()`.
 
 For the tests below, use a new location.
 

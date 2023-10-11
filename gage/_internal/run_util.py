@@ -45,24 +45,26 @@ __all__ = [
     "RunFileType",
     "apply_config",
     "associate_project",
-    "remove_associate_project",
     "finalize_run",
     "finalize_staged_run",
     "format_run_timestamp",
     "init_run_meta",
     "init_run_user_attrs",
     "log_user_attrs",
+    "make_run_id",
     "make_run_timestamp",
     "make_run",
     "meta_config",
     "meta_opdef",
     "meta_opref",
     "open_run_output",
+    "remove_associate_project",
     "run_attr",
     "run_meta_path",
     "run_name_for_id",
     "run_phase_channel",
     "run_project_dir",
+    "run_project_ref",
     "run_status",
     "run_timestamp",
     "run_user_attrs",
@@ -72,7 +74,6 @@ __all__ = [
     "stage_runtime",
     "stage_sourcecode",
     "start_run",
-    "make_run_id",
 ]
 
 META_SCHEMA = "1"
@@ -241,7 +242,7 @@ _ATTR_READERS = {
 
 
 def run_project_dir(run: Run):
-    ref_filename = _project_ref_filename(run)
+    ref_filename = run_project_ref(run)
     try:
         f = open(ref_filename)
     except FileNotFoundError:
@@ -263,7 +264,7 @@ def run_project_dir(run: Run):
             return uri[5:]
 
 
-def _project_ref_filename(run: Run):
+def run_project_ref(run: Run):
     return run.run_dir + ".project"
 
 
@@ -416,7 +417,7 @@ def _run_dir_for_meta_dir(meta_dir: str):
 
 def make_run(opref: OpRef, location: str | None = None):
     run_id = make_run_id()
-    location = location or sys_config.runs_home()
+    location = location or sys_config.get_runs_home()
     run_dir = os.path.join(location, run_id)
     meta_dir = run_dir + ".meta"
     name = run_name_for_id(run_id)
@@ -543,13 +544,13 @@ def _gen_write_attrs(dir: str, attrs: dict[str, Any], run: Run, log: Logger):
 def associate_project(run: Run, project_dir: str):
     if not os.path.isabs(project_dir):
         raise ValueError(f"project_dir must be absolute: \"{project_dir}\"")
-    ref_filename = _project_ref_filename(run)
+    ref_filename = run_project_ref(run)
     with open(ref_filename, "w") as f:
         f.write(f"file:{project_dir}")
 
 
 def remove_associate_project(run: Run):
-    ref_filename = _project_ref_filename(run)
+    ref_filename = run_project_ref(run)
     try:
         os.remove(ref_filename)
     except FileNotFoundError:

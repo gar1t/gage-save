@@ -1,4 +1,4 @@
-# Operations
+# OPERATIONS
 
 Operations specify how Gage ML runs something. Operations are defined in
 a Gage file. For example, the following Gage file (written in TOML)

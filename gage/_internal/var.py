@@ -6,13 +6,15 @@ from .types import *
 import functools
 import logging
 import os
-import shutil
 
 from . import sys_config
 
 from .run_util import run_attr
 from .run_util import run_for_meta_dir
+from .run_util import run_user_dir
+from .run_util import run_project_ref
 
+from .file_util import ensure_safe_delete_tree
 from .file_util import safe_delete_tree
 
 __all__ = [
@@ -39,7 +41,7 @@ def list_runs(
     sort: list[str] | None = None,
     deleted: bool = False,
 ):
-    root = root or sys_config.runs_home()
+    root = root or sys_config.get_runs_home()
     filter = filter or _all_runs_filter
     runs = [run for run in _iter_runs(root, deleted) if filter(run)]
     if not sort:
@@ -113,10 +115,25 @@ def delete_runs(runs: list[Run], permanent: bool = False):
 
 def _delete_run(run: Run, permanent: bool):
     if permanent:
-        _delete_tree(run.meta_dir)
-        _delete_tree(run.run_dir)
+        for src in _run_sources(run):
+            _delete_tree(src)
     else:
-        _move(run.meta_dir, _deleted_meta_dir(run))
+        deleted_meta_dir = _deleted_meta_dir(run)
+        ensure_safe_delete_tree(deleted_meta_dir)
+        _move(run.meta_dir, deleted_meta_dir)
+
+
+def _run_sources(run: Run):
+    if os.path.exists(run.meta_dir):
+        yield run.meta_dir
+    if os.path.exists(run.run_dir):
+        yield run.run_dir
+    user_dir = run_user_dir(run)
+    if os.path.exists(user_dir):
+        yield user_dir
+    project_ref = run_project_ref(run)
+    if os.path.exists(project_ref):
+        yield project_ref
 
 
 def _deleted_meta_dir(run: Run):
@@ -128,7 +145,7 @@ def _delete_tree(dirname: str):
 
 
 def _move(src: str, dest: str):
-    shutil.move(src, dest)
+    os.rename(src, dest)
 
 
 # =================================================================

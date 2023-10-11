@@ -40,6 +40,7 @@ __all__ = [
     "datetime_fromiso",
     "delete_temp_dir",
     "diff",
+    "diffl",
     "lsl",
     "json",
     "json_pprint",
@@ -338,6 +339,7 @@ def run(
     rstrip: bool = True,
     cols: int | None = None,
     _capture: bool = False,
+    **other_env: str,
 ):
     proc_env = dict(os.environ)
     _apply_venv_bin_path(proc_env)
@@ -347,6 +349,7 @@ def run(
     elif cols >= 0:
         proc_env["COLUMNS"] = str(cols)
     proc_env.update(env or {})
+    proc_env.update(other_env)
     p = _popen(cmd, proc_env, cwd)
     with _kill_after(p, timeout) as timeout_context:
         try:
@@ -542,6 +545,12 @@ def diff(path1: str, path2: str):
     lines1 = [s.rstrip() for s in open(path1).readlines()]
     lines2 = [s.rstrip() for s in open(path2).readlines()]
     diff_lines = list(difflib.unified_diff(lines1, lines2, path1, path2, lineterm=""))
+    for line in diff_lines[2:]:
+        print(line)
+
+
+def diffl(l1: list[str], l2: list[str]):
+    diff_lines = list(difflib.unified_diff(l1, l2, "list 1", "list 2", lineterm=""))
     for line in diff_lines[2:]:
         print(line)
 

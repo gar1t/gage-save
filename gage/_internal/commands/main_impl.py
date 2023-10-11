@@ -14,16 +14,23 @@ from .. import log
 class Args(NamedTuple):
     version: bool
     cwd: str
+    runs_dir: str
     debug: bool
 
 
 def main(args: Args):
     _init_logging(args)
+    _init_runs_home(args)
     if args.version:
         cli.out(f"gage {__version__}")
         raise SystemExit(0)
     if args.cwd:
         _apply_cwd(args.cwd)
+
+
+def _init_runs_home(args: Args):
+    if args.runs_dir:
+        sys_config.set_runs_home(args.runs_dir)
 
 
 def _init_logging(args: Args):

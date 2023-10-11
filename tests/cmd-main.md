@@ -10,15 +10,17 @@ Running `gage` without arguments shows help.
       Gage ML command line interface.
     ⤶
     Options:
-      --version   Print program version and exit.
-      -C path     Change directory for command.
-      --debug     Show debug messages.
-      -h, --help  Show this message and exit.
+      --version    Print program version and exit.
+      -C path      Run command from a different directory.
+      --runs path  Use a different location for runs.
+      --debug      Show debug messages.
+      -h, --help   Show this message and exit.
     ⤶
     Commands:
       associate        Associate a run with a project directory.
       check            Show and validate settings.
       comment          Comment on runs.
+      copy             Copy runs.
       delete, rm       Delete runs.
       help             Show help for a topic.
       label            Set or clear run labels.

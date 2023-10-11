@@ -6,12 +6,6 @@
   - Include verifiable info in user attrs (i.e. can I rely that "sam"
     wrote a comment - e.g. a signature).
 
-- Labels, tags, and notes
-  - Should any of these land in the meta dir, ever?
-  - Get `.user` going
-  - Research a distributed file store data scheme - or can we get by
-    with time sortable UUIDs?
-
 - Dependencies
   - Project files
   - Run files
@@ -32,6 +26,10 @@
 - API and View
 
 - Sync / collaboration
+  - Resolve copy-from filter and preview (need support for listing remote runs)
+  - Issue with run dir, user dir, and meta, and delete meta being "out
+    of sync" when copying - what are the scenarios and which ones are
+    problematic?
 
 - Command completion working again (want support for bash, zsh, fish,
   nu)
@@ -126,7 +124,7 @@ name = "msg"
   other rich wrappers in `cli`, apart from the traditional cli API (e.g.
   out, err, exit_with_message, etc.)
 
-- Upper case section titles in help (no longer doing this markdown
+- Make upper case section titles in help (no longer doing this markdown
   formatter)
 
 ## Lifting by `gage check`

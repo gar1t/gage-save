@@ -1,4 +1,4 @@
-# Exec Specification
+# EXEC SPECIFICATION
 
 An *exec* specification tells Gage what to run for an operation.
 
@@ -20,7 +20,7 @@ The example above could also be specified as:
 exec = ["python", "train.py"]
 ```
 
-## Shells
+## SHELLS
 
 When specified as a string, Gage runs the command using the default
 system shell. On POSIX like systems (e.g. macOS, Linux, BSD) this is
@@ -40,7 +40,7 @@ python test.py
 """
 ```
 
-## Run life cycle hooks
+## RUN LIFE CYCLE HOOKS
 
 `exec` can be used to specify commands to run at various phases of a run
 life cycle.

@@ -1,4 +1,4 @@
-# Filters
+# FILTERS
 
 Some commands show filterable results. These commands have a **--where**
 option that takes a _filter expression_ argument. When specified, a
@@ -22,7 +22,7 @@ See **Examples** below for more examples.
 Filter expressions must be provided as a single argument, which means
 they must be quoted.
 
-## Operators
+## OPERATORS
 
 Filter expressions may use any of the operations listed below.
 
@@ -46,7 +46,7 @@ Filter expressions may use any of the operations listed below.
 | and      | Logical and              |
 | or       | Logical or               |
 
-## Commands
+## COMMANDS
 
 Commands may be used in expressions to return calculated values.
 Commands must be enclosed in parenthesis to call them.
@@ -58,7 +58,7 @@ Filter expressions may use any of the commands listed below.
 | now     | Current day and time                 |
 | today   | Time at the start of the current day |
 
-## Examples
+## EXAMPLES
 
 ```shell
 gage runs --where "status in [completed terminated]"

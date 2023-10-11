@@ -13,6 +13,7 @@
       filters     Filtering results.
       gagefile    Defining and using gage files.
       operations  Defining and running operations.
+      remotes     Defining and using remote locations.
     <0>
 
 Note that topics are listed under the heading **Commands**, which is

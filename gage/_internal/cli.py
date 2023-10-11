@@ -17,6 +17,7 @@ import rich.markdown
 import rich.markup
 import rich.padding
 import rich.panel
+import rich.progress
 import rich.prompt
 import rich.status
 import rich.style
@@ -30,6 +31,7 @@ __all__ = [
     "AliasGroup",
     "Group",
     "Panel",
+    "Progress",
     "Table",
     "confirm",
     "console_width",
@@ -41,6 +43,7 @@ __all__ = [
     "markdown",
     "out",
     "status",
+    "track",
 ]
 
 log = logging.getLogger(__name__)
@@ -163,10 +166,23 @@ class _NullStatus(rich.status.Status):
         pass
 
 
-def status(description: str, quiet: bool = False):
+def status(description: str = "", quiet: bool = False):
     if quiet or log.getEffectiveLevel() < logging.WARN:
         return _NullStatus()
     return _out.status(description)
+
+
+def Progress(**kw: Any):
+    return rich.progress.Progress(**kw)
+
+
+def track(
+    sequence: Sequence[rich.progress.ProgressType]
+    | Iterable[rich.progress.ProgressType],
+    description: str = "",
+    **kw: Any,
+):
+    return rich.progress.track(sequence, description, **kw)
 
 
 def incompatible_with(*incompatible: str):

@@ -21,7 +21,7 @@ __all__ = [
     "copy_tree",
     "dir_size",
     "ensure_dir",
-    "ensure_safe_rmtree",
+    "ensure_safe_delete_tree",
     "expand_path",
     "file_md5",
     "file_sha1",
@@ -439,7 +439,7 @@ def safe_delete_tree(path: str, force: bool = False):
         raise ValueError(f"{path} does not exist")
 
 
-def ensure_safe_rmtree(path: str):
+def ensure_safe_delete_tree(path: str):
     try:
         safe_delete_tree(path, force=True)
     except OSError as e:

@@ -46,6 +46,8 @@ ProjectDirFlag = Annotated[
     ),
 ]
 
+LabelFlag = Annotated[bool, Option("--label", help="Select run label.")]
+
 
 def select(
     runs: RunSpecs = None,
@@ -53,6 +55,7 @@ def select(
     run_dir: RunDirFlag = False,
     meta_dir: MetaDirFlag = False,
     project_dir: ProjectDirFlag = False,
+    label: LabelFlag = False,
 ):
     """Selects runs and their attributes.
 
@@ -68,5 +71,6 @@ def select(
             run_dir,
             meta_dir,
             project_dir,
+            label,
         )
     )

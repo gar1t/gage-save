@@ -35,6 +35,11 @@ def exec():
     _show_help("exec")
 
 
+def remotes():
+    """Defining and using remote locations."""
+    _show_help("remotes")
+
+
 def _show_help(topic: str):
     help = _read_help_topic(topic)
     with cli.pager():
@@ -60,9 +65,10 @@ def help_app():
     def topic(fn: Callable[..., Any]):
         app.command(rich_help_panel="Topics")(fn)
 
+    topic(exec)
     topic(filters)
     topic(gagefile)
     topic(operations)
-    topic(exec)
+    topic(remotes)
 
     return app

@@ -10,6 +10,7 @@ from .. import cli
 from .associate import associate
 from .check import check
 from .comment import comment
+from .copy import copy
 from .help import help_app
 from .label import label
 from .open import open
@@ -35,7 +36,16 @@ Cwd = Annotated[
     Option(
         "-C",
         metavar="path",
-        help="Change directory for command.",
+        help="Run command from a different directory.",
+    ),
+]
+
+RunsDir = Annotated[
+    str,
+    Option(
+        "--runs",
+        metavar="path",
+        help="Use a different location for runs.",
     ),
 ]
 
@@ -51,13 +61,14 @@ DebugFlag = Annotated[
 def main(
     version: VersionFlag = False,
     cwd: Cwd = "",
+    runs_dir: RunsDir = "",
     debug: DebugFlag = False,
 ):
     """Gage ML command line interface."""
 
     from .main_impl import main, Args
 
-    main(Args(version, cwd, debug))
+    main(Args(version, cwd, runs_dir, debug))
 
 
 def main_app():
@@ -79,6 +90,7 @@ def main_app():
     app.command("associate")(associate)
     app.command("check")(check)
     app.command("comment")(comment)
+    app.command("copy")(copy)
     app.command("delete, rm")(runs_delete)
     app.add_typer(help_app())
     app.command("label")(label)

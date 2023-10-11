@@ -1,6 +1,6 @@
-# Gage File
+# GAGE FILE
 
-## Overview
+## OVERVIEW
 
 A Gage File specifies Gage ML operations. It may be defined using TOML,
 JSON, or YAML and named with the corresponding file extension. For
@@ -30,7 +30,7 @@ train:
   exec: python train.py
 ```
 
-## Using a Gage file
+## USING A GAGE FILE
 
 Gage file are associated with *projects* that contain source code files.
 To see which Gage file, if any, is applicable to Gage commands, run
@@ -43,23 +43,23 @@ To run an operation, run 'gage run **OPERATION**'.
 
 To show help for an operation, run 'gage run **OPERATION** --help-op'.
 
-## Validating
+## VALIDATING
 
 To validate a Gage file, run 'gage check **PATH**' where **PATH** is the
 path to a Gage file.
 
-## Operations
+## OPERATIONS
 
 TODO
 
-## Namespaces
+## NAMESPACES
 
 TODO
 
-## Operation defaults
+## OPERATION DEFAULTS
 
 TODO
 
-## Examples
+## EXAMPLES
 
-TOOO
+TODO
