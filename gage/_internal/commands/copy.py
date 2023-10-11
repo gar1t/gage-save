@@ -67,6 +67,15 @@ YesFlag = Annotated[
     ),
 ]
 
+Verbose = Annotated[
+    Optional[list[bool]],
+    Option(
+        "-v",
+        "--verbose",
+        help="Show copy details.",
+    ),
+]
+
 
 def copy(
     runs: RunSpecs = None,
@@ -75,6 +84,7 @@ def copy(
     where: Where = "",
     all: AllFlag = False,
     yes: YesFlag = False,
+    verbose: Verbose = None,
 ):
     """Copy runs.
 
@@ -90,4 +100,14 @@ def copy(
     """
     from .copy_impl import copy, Args
 
-    copy(Args(runs or [], dest, src, where, all, yes))
+    copy(
+        Args(
+            runs or [],
+            dest,
+            src,
+            where,
+            all,
+            yes,
+            sum(verbose or []),
+        )
+    )

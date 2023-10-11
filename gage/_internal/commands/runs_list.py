@@ -100,7 +100,7 @@ def runs_list(
     runs_list(
         Args(
             runs or [],
-            more,
+            sum(more or []),
             limit,
             all,
             where,

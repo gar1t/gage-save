@@ -12,7 +12,7 @@ from .impl_support import selected_runs
 
 class Args(NamedTuple):
     runs: list[str]
-    more: list[bool] | None
+    more: int
     limit: int
     all: bool
     where: str
@@ -36,7 +36,7 @@ def runs_list(args: Args):
 def _limit_runs(runs: list[tuple[int, Run]], args: Args):
     if args.all:
         return runs
-    limit = (sum(args.more or []) + 1) * args.limit
+    limit = (args.more + 1) * args.limit
     return runs[:limit]
 
 
@@ -45,7 +45,7 @@ def _table_caption(shown_count: int, from_count: int, args: Args):
         return None
     assert shown_count < from_count, (shown_count, from_count)
     more_help = (
-        f" [bright_black i](use -{'m' * (len(args.more or []) + 1)} to show more)"
+        f" [bright_black i](use -{'m' * (args.more + 1)} to show more)"
         if not args.runs
         else ""
     )

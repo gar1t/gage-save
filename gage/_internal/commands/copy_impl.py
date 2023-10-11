@@ -5,6 +5,7 @@ from typing import *
 from ..types import *
 
 import json
+import logging
 import os
 import re
 import subprocess
@@ -20,6 +21,14 @@ from ..util import flatten
 from .impl_support import runs_table
 from .impl_support import selected_runs
 
+log = logging.getLogger(__name__)
+
+
+class _CopyError(Exception):
+    def __init__(self, exit_code: int, out: str):
+        self.exit_code = exit_code
+        self.out = out
+
 
 class Args(NamedTuple):
     runs: list[str]
@@ -28,6 +37,7 @@ class Args(NamedTuple):
     where: str
     all: bool
     yes: bool
+    verbose: int
 
 
 def copy(args: Args):
@@ -56,12 +66,46 @@ def _copy_to(args: Args):
     with cli.status("Preparing for copy"):
         src_dir, includes = _src_run_includes([run for index, run in runs])
         total_bytes = _rclone_size(src_dir, includes)
-    with cli.Progress(transient=True) as p:
-        task = p.add_task("Copying runs", total=total_bytes)
-        for total_copied in _rclone_copy_to(src_dir, args.dest, includes):
-            p.update(task, completed=total_copied)
+
+    p = None  # Lazy init to avoid progress display on early error
+    task = None
+    try:
+        for total_copied, line in _rclone_copy_to(
+            src_dir, args.dest, includes, args.verbose
+        ):
+            if p is None:
+                p = cli.Progress(transient=True)
+                p.start()
+                task = p.add_task("Copying runs", total=total_bytes)
+            assert task is not None
+            if line:
+                p.console.out(line)
+            if total_copied:
+                p.update(task, completed=total_copied)
+    except _CopyError as e:
+        _handle_copy_error(e)
+    finally:
+        if p:
+            p.stop()
+
     runs_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
     cli.err(f"Copied {runs_count}")
+
+
+def _handle_copy_error(e: _CopyError):
+    m = re.search(
+        r"Failed to create file system for \"(.+?):\": didn't "
+        r"find section in config file",
+        e.out,
+    )
+    if m:
+        cli.exit_with_error(
+            f"Undefined remote \"{m.group(1)}\"\n\n"
+            "Try '[cmd]gage help remotes[/]' for help defining and using remotes."
+        )
+    else:
+        log.error(e.out)
+        cli.exit_with_error("Error copying runs - see output above for details")
 
 
 def _maybe_prompt_copy_to(args: Args, runs: list[tuple[int, Run]]):
@@ -125,10 +169,40 @@ def _rclone_size(src: str, includes: list[str]):
     return bytes
 
 
-_TRANSFERRED_P = re.compile(r"-Transferred:\s+([\d\.]+) ([\S]+) /")
+_TRANSFERRED_P = re.compile(r"([\d\.]+) ([\S]+) /")
 
 
-def _rclone_copy_to(src: str, dest: str, includes: list[str]):
+def _rclone_copy_to(src: str, dest: str, includes: list[str], verbose: int):
+    """Use rclone to copy to a location.
+
+    `includes` is a list of patterns under `src` to include. Anything is
+    skipped.
+
+    Yields a tuple of bytes copied and output line. Either value may be
+    None.
+
+    `verbose` is a number indicating the level of output verbosity.
+    Output based on this argument is provided by the generator as the
+    second item in the tuple.
+
+    Implementation notes:
+
+    - Always use at least one level of verbosity to cause progress
+      reports to be printed at the expected interval. This is required
+      due to rclone's surprising behavior of not printing progress when
+      `--stats-one-line` is specified.
+
+    - Set `--stats-log-level` to DEBUG to avoid duplicate progress
+      output. Progress output is shown per line when at least one `-v`
+      option is used.
+
+    - Stats are configured to print ever 100ms. This seems fast but is
+      the frequency needed for smooth progress bars. Note that progress
+      output is never yielded as output so this frequency does not
+      impact performance even with verbose logging.
+
+    """
+    verbose_opts = ["-" + "v" * verbose] if verbose else ["-v"]
     p = subprocess.Popen(
         [
             "rclone",
@@ -139,8 +213,12 @@ def _rclone_copy_to(src: str, dest: str, includes: list[str]):
             "-",
             "--progress",
             "--stats",
-            "200ms",
-        ],
+            "100ms",
+            "--stats-one-line",
+            "--stats-log-level",
+            "DEBUG",
+        ]
+        + verbose_opts,
         text=True,
         stdin=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -151,17 +229,40 @@ def _rclone_copy_to(src: str, dest: str, includes: list[str]):
     for include in includes:
         p.stdin.write(include + "\n")
     p.stdin.close()
+    out = []
     while True:
         line = p.stdout.readline()
         if not line:
             break
-        m = _TRANSFERRED_P.search(line)
+        # Only buffer 100 lines - used for errors
+        if len(out) < 100:
+            out.append(line)
+        m = _TRANSFERRED_P.match(line)
         if m:
-            assert m.group(2) == "KiB", line
-            yield int(float(m.group(1)) * 1024)
-    result = p.wait()
-    if result != 0:
-        raise RuntimeError(result)
+            yield _transferred_bytes_for_match(m), None
+        elif verbose:
+            yield None, line.rstrip()
+    exit_code = p.wait()
+    if exit_code != 0:
+        raise _CopyError(exit_code, "".join(out))
+
+
+_SIZE = {
+    "B": 1,
+    "KiB": 1024,
+    "MiB": pow(1024, 2),
+    "GiB": pow(1024, 3),
+    "TiB": pow(1024, 4),
+    "PiB": pow(1024, 5),
+}
+
+
+def _transferred_bytes_for_match(m: re.Match[str]):
+    n = float(m.group(1))
+    try:
+        return _SIZE[m.group(2)] * n
+    except KeyError:
+        assert False, m.string
 
 
 def _copy_from(args: Args):
@@ -208,7 +309,7 @@ def _rclone_copy_from(src: str, dest: str, excludes: list[str]):
             dest,
             "--progress",
             "--stats",
-            "10ms",
+            "100ms",
         ]
         + exclude_opts,
         text=True,
