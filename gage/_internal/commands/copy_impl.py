@@ -12,6 +12,9 @@ import subprocess
 
 from .. import cli
 
+from ..remote import remote_copy_to
+from ..remote import RemoteError
+
 from ..run_util import run_user_dir
 
 from ..sys_config import get_runs_home
@@ -57,15 +60,37 @@ def copy(args: Args):
             f"Try '[cmd]gage copy -h[/]' for additional help."
         )
 
-def copy_to_xxx(args: Args):
+
+def _copy_to_v2(args: Args):
     runs = _selected_runs(args)
+    copy_to = _remote_copy_to(args)
     _verify_copy_to(args, runs)
+    with cli.status(copy_to.get_init_desc()):
+        copy_to.init()
+    with cli.status(copy_to.get_waiting_for_event_desc()):
+        copy_to.wait_for_event()
+    with cli.Progress(transient=True) as p:
+        task = p.add_task(copy_to.get_task_desc(), total=copy_to.get_progress_total())
+        for event in copy_to.iter_events():
+            if event.output is not None:
+                p.console.out(event.output)
+            if event.progress_completed:
+                p.update(task, completed=event.progress_completed)
+
+
+def _remote_copy_to(args: Args):
+    try:
+        return remote_copy_to(args.dest)
+    except RemoteError as e:
+        cli.exit_with_error(
+            f"{e}\n\nTry '[cmd]gage help remotes[/]' for help with remotes."
+        )
 
 
 def _copy_to(args: Args):
     runs = _selected_runs(args)
     _verify_copy_to(args, runs)
-    with cli.status("Preparing for copy"):
+    with cli.status("Preparing to copy"):
         src_dir, includes = _src_run_includes([run for index, run in runs])
         total_bytes = _rclone_size(src_dir, includes)
 
