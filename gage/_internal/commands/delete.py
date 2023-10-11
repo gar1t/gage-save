@@ -71,6 +71,6 @@ def runs_delete(
     values may be specified for run ID and run name if they uniquely
     identify a run. Multiple runs may be specified.
     """
-    from .runs_delete_impl import runs_delete, Args
+    from .delete_impl import runs_delete, Args
 
     runs_delete(Args(ctx, runs or [], where, all, permanent, yes))

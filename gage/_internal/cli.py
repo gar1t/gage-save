@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import shlex
+import time
 
 import click
 
@@ -172,8 +173,39 @@ def status(description: str = "", quiet: bool = False):
     return _out.status(description)
 
 
-def Progress(**kw: Any):
-    return rich.progress.Progress(**kw)
+def Progress(*cols: str | rich.progress.ProgressColumn, **kw: Any):
+    cols = cols or _default_progress_cols()
+    return rich.progress.Progress(*cols, **kw)
+
+
+def _default_progress_cols() -> tuple[rich.progress.ProgressColumn, ...]:
+    return (
+        rich.progress.TextColumn("[progress.description]{task.description}"),
+        rich.progress.BarColumn(),
+        rich.progress.TaskProgressColumn(),
+        _TimeRemainingColumn(),
+    )
+
+
+class _TimeRemainingColumn(rich.progress.TimeRemainingColumn):
+    """Time remaining col with controlled refresh interval.
+
+    The default time remaining column refreshes with the progress bar,
+    causing it to change too frequently. Use this class with an optional
+    `refresh` arg to control how often the time remaining refreshes.
+    """
+    def __init__(self, refresh: float = 1.0):
+        super().__init__()
+        self._refresh = refresh
+        self._next_render = 0
+        self._last_render = None
+
+    def render(self, task: rich.progress.Task):
+        now = time.time()
+        if now > self._next_render:
+            self._last_render = super().render(task)
+            self._next_render = now + self._refresh
+        return self._last_render
 
 
 def track(

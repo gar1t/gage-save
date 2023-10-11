@@ -50,7 +50,7 @@ def _handle_delete(args: Args):
         cli.exit_with_error("Only one run can be specified with '-d / --delete'.\n\n")
     run = one_run(args.runs[0])
     comment = _run_comment(run, args.delete)
-    _maybe_prompt(args, run, comment)
+    _verify_delete(args, run, comment)
     delete_comment(run, args.delete)
     cli.err(f"Delete comment [arg]{comment.id}[/] from run [arg]{run.name}[/]")
 
@@ -65,7 +65,7 @@ def _run_comment(run: Run, comment_id: str):
     )
 
 
-def _maybe_prompt(args: Args, run: Run, comment: RunComment):
+def _verify_delete(args: Args, run: Run, comment: RunComment):
     if args.yes:
         return
     cli.err(CommentPanel(run, comment))

@@ -95,7 +95,7 @@ def runs_list(
     slice notation. Try '[cmd]gage help select-runs[/]' for help with
     select options.
     """
-    from .runs_list_impl import runs_list, Args
+    from .list_impl import runs_list, Args
 
     runs_list(
         Args(

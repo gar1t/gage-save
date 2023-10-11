@@ -16,10 +16,10 @@ from .label import label
 from .open import open
 from .operations import operations
 from .run import run
-from .runs_delete import runs_delete
-from .runs_list import runs_list
-from .runs_purge import runs_purge
-from .runs_restore import runs_restore
+from .delete import runs_delete
+from .list import runs_list
+from .purge import runs_purge
+from .restore import runs_restore
 from .select import select
 from .show import show
 

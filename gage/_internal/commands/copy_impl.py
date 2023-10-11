@@ -57,22 +57,31 @@ def copy(args: Args):
             f"Try '[cmd]gage copy -h[/]' for additional help."
         )
 
+def copy_to_xxx(args: Args):
+    runs = _selected_runs(args)
+    _verify_copy_to(args, runs)
+
 
 def _copy_to(args: Args):
-    runs, from_count = selected_runs(args)
-    if not runs:
-        cli.exit_with_error("Nothing selected")
-    _maybe_prompt_copy_to(args, runs)
+    runs = _selected_runs(args)
+    _verify_copy_to(args, runs)
     with cli.status("Preparing for copy"):
         src_dir, includes = _src_run_includes([run for index, run in runs])
         total_bytes = _rclone_size(src_dir, includes)
 
     p = None  # Lazy init to avoid progress display on early error
     task = None
+    pre_copy_status = cli.status("Looking for changes")
+    pre_copy_status.start()
+    nothing_copied = False
     try:
         for total_copied, line in _rclone_copy_to(
             src_dir, args.dest, includes, args.verbose
         ):
+            if total_copied == -1:
+                nothing_copied = True
+                break
+            pre_copy_status.stop()
             if p is None:
                 p = cli.Progress(transient=True)
                 p.start()
@@ -85,11 +94,15 @@ def _copy_to(args: Args):
     except _CopyError as e:
         _handle_copy_error(e)
     finally:
+        pre_copy_status.stop()
         if p:
             p.stop()
 
     runs_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
-    cli.err(f"Copied {runs_count}")
+    if nothing_copied:
+        cli.err("Nothing copied, runs are up-to-date")
+    else:
+        cli.err(f"Copied {runs_count}")
 
 
 def _handle_copy_error(e: _CopyError):
@@ -108,13 +121,20 @@ def _handle_copy_error(e: _CopyError):
         cli.exit_with_error("Error copying runs - see output above for details")
 
 
-def _maybe_prompt_copy_to(args: Args, runs: list[tuple[int, Run]]):
+def _selected_runs(args: Args):
+    runs, from_count = selected_runs(args)
+    if not runs:
+        cli.exit_with_error("Nothing selected")
+    return runs
+
+
+def _verify_copy_to(args: Args, runs: list[tuple[int, Run]]):
     if args.yes:
         return
     table = runs_table(runs)
     cli.out(table)
     run_count = "1 run" if len(runs) == 1 else f"{len(runs)} runs"
-    cli.err(f"You are about copy {run_count} to {args.dest}.")
+    cli.err(f"You are about copy {run_count} to {args.dest}")
     cli.err()
     if not cli.confirm(f"Continue?"):
         raise SystemExit(0)
@@ -240,6 +260,8 @@ def _rclone_copy_to(src: str, dest: str, includes: list[str], verbose: int):
         m = _TRANSFERRED_P.match(line)
         if m:
             yield _transferred_bytes_for_match(m), None
+        elif "nothing to transfer" in line:
+            yield -1, None
         elif verbose:
             yield None, line.rstrip()
     exit_code = p.wait()
@@ -274,7 +296,7 @@ def _copy_from(args: Args):
         cli.exit_with_error("'--all' is required when using '-s / --source'")
     if args.where:
         cli.exit_with_error("'--where' cannot be used with '-s / --source'")
-    _maybe_prompt_copy_from(args)
+    _verify_copy_from(args)
     with cli.Progress(transient=True) as p:
         task = p.add_task("Copying runs")
         for copied, total in _rclone_copy_from(
@@ -287,10 +309,10 @@ def _copy_from(args: Args):
     cli.err(f"Copied runs")
 
 
-def _maybe_prompt_copy_from(args: Args):
+def _verify_copy_from(args: Args):
     if args.yes:
         return
-    cli.err(f"You are about copy all runs from {args.src}.")
+    cli.err(f"You are about copy all runs from {args.src}")
     cli.err()
     if not cli.confirm(f"Continue?"):
         raise SystemExit(0)

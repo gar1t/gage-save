@@ -67,7 +67,7 @@ def _handle_start(args: Args):
             "Only staged runs can be started with '--start'."
         )
     config = meta_config(run)
-    _maybe_prompt(args, run, config)
+    _verify_action(args, run, config)
     _run_staged(run, args)
 
 
@@ -164,7 +164,7 @@ def _init_sourcecode_preview(opdef: OpDef):
 def _stage(context: RunContext, args: Args):
     run = make_run(context.opref, get_runs_home())
     config = _run_config(context, args)
-    _maybe_prompt(args, run, config)
+    _verify_action(args, run, config)
     cmd = _op_cmd(context, config)
     user_attrs = _user_attrs(args)
     sys_attrs = _sys_attrs()
@@ -201,7 +201,7 @@ class _RunPhaseStatus:
         if name == "exec-output":
             assert isinstance(arg, tuple), arg
             phase_name, stream, output = arg
-            self._status.console.out(output.decode(), end="")
+            self._status.console.out(cast(bytes, output).decode(), end="")
         else:
             desc = self.phase_desc.get(name)
             if desc:
@@ -210,7 +210,7 @@ class _RunPhaseStatus:
                 log.debug("Unexpected run phase callback: %r %r", name, arg)
 
 
-def _maybe_prompt(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
+def _verify_action(args: Args, run: Run, config: RunConfig) -> None | NoReturn:
     if args.yes:
         return
     action = "stage" if args.stage else "run"

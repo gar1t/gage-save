@@ -36,12 +36,12 @@ def label(args: Args):
     runs, from_count = selected_runs(args)
     if not runs:
         cli.exit_with_error("Nothing selected")
-    _maybe_prompt(args, runs)
+    _verify_label(args, runs)
     _apply_label(runs, args)
     cli.err(_applied_label_desc(runs, args))
 
 
-def _maybe_prompt(args: Args, runs: list[tuple[int, Run]]):
+def _verify_label(args: Args, runs: list[tuple[int, Run]]):
     if args.yes:
         return
     table = runs_table(runs)

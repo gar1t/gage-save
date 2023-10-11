@@ -12,7 +12,7 @@ from .. import cli
 RunSpecs = Annotated[
     Optional[list[str]],
     Argument(
-        help="Runs to restore. Required unless '--all' is specified.",
+        help="Runs to remove. Required unless '--all' is specified.",
         metavar="[run]...",
         show_default=False,
         callback=cli.incompatible_with("all"),
@@ -25,7 +25,7 @@ Where = Annotated[
         "-w",
         "--where",
         metavar="expr",
-        help="Restore runs matching filter expression.",
+        help="Remove runs matching filter expression.",
     ),
 ]
 
@@ -34,7 +34,7 @@ AllFlag = Annotated[
     Option(
         "-a",
         "--all",
-        help="Restore all deleted runs.",
+        help="Remove all deleted runs.",
     ),
 ]
 
@@ -43,26 +43,26 @@ YesFlag = Annotated[
     Option(
         "-y",
         "--yes",
-        help="Restore runs without prompting.",
+        help="Remove runs without prompting.",
     ),
 ]
 
 
-def runs_restore(
+def runs_purge(
     ctx: click.Context,
     runs: RunSpecs = None,
     where: Where = "",
     all: AllFlag = False,
     yes: YesFlag = False,
 ):
-    """Restore runs.
+    """Remove deleted runs.
 
-    Use to restore deleted runs. Note that is a run is permanently
-    deleted, it cannot be restored.
+    Use to remove deleted runs, freeing disk space. Note that purged
+    runs cannot be recovered.
 
     Use [cmd]gage list --deleted[/] to list deleted runs that can be
-    restored.
+    removed.
     """
-    from .runs_restore_impl import runs_restore, Args
+    from .purge_impl import runs_purge, Args
 
-    runs_restore(Args(ctx, runs or [], where, all, yes))
+    runs_purge(Args(ctx, runs or [], where, all, yes))

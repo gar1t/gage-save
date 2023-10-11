@@ -127,6 +127,10 @@ name = "msg"
 - Make upper case section titles in help (no longer doing this markdown
   formatter)
 
+- Annoying fast updates of estimated remaining time on copy run progress
+  (shows up on anything over a network) Fix may require a custom column
+  that doesn't refresh as frequently as the default.
+
 ## Lifting by `gage check`
 
 Fanciful (down the road):
