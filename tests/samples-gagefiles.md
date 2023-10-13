@@ -13,7 +13,7 @@ Use `load_gagefile()` to load a Gage file.
 An empty file is invalid JSON and can't be loaded.
 
     >>> run("gage check empty.json")
-    Error loading empty.json: invalid JSON: Expecting value: line 1 column 1 (char 0)
+    Error loading empty.json: Expecting value: line 1 column 1 (char 0)
     <1>
 
 ## Empty object

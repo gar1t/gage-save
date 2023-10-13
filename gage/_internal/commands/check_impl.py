@@ -15,6 +15,7 @@ from .. import cli
 from .. import sys_config
 from .. import gagefile
 from .. import project_util
+from .. import schema_util
 from .. import util
 
 
@@ -74,7 +75,7 @@ def _gagefile_find_error(path: str) -> NoReturn:
 
 def _gagefile_data(filename: str, args: Args):
     try:
-        return gagefile.load_data(filename)
+        return gagefile.load_gagefile_data(filename)
     except gagefile.GageFileLoadError as e:
         _gagefile_load_error(e, args)
 
@@ -85,8 +86,8 @@ def _gagefile_load_error(e: gagefile.GageFileLoadError, args: Args):
 
 def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> NoReturn:
     try:
-        gagefile.validate_data(data)
-    except gagefile.ValidationError as e:
+        gagefile.validate_gagefile_data(data)
+    except gagefile.GageFileValidationError as e:
         _gagefile_validation_error(e, filename, args)
     else:
         cli.err(f"{filename} is a valid Gage file")
@@ -94,14 +95,14 @@ def _validate_gagefile_data_and_exit(data: Any, filename: str, args: Args) -> No
 
 
 def _gagefile_validation_error(
-    e: gagefile.ValidationError, filename: str, args: Args
+    e: gagefile.GageFileValidationError, filename: str, args: Args
 ) -> NoReturn:
     cli.err(f"There are errors in {filename}")
     if args.verbose:
-        output = gagefile.validation_error_output(e)
+        output = schema_util.validation_error_output(e)
         cli.err(json.dumps(output, indent=2, sort_keys=True))
     else:
-        for err in gagefile.validation_errors(e):
+        for err in schema_util.validation_errors(e):
             cli.err(err)
     raise SystemExit(1)
 

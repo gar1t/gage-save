@@ -72,9 +72,11 @@
     gage._internal.opref_util
     gage._internal.project_util
     gage._internal.python_util
-    gage._internal.remote
-    gage._internal.remote_github
-    gage._internal.remote_rclone
+    gage._internal.repo
+    gage._internal.repo_git
+    gage._internal.repo_local
+    gage._internal.repo_rclone
+    gage._internal.repo_util
     gage._internal.run_comment
     gage._internal.run_config
     gage._internal.run_config_py
@@ -85,11 +87,13 @@
     gage._internal.run_select
     gage._internal.run_sourcecode
     gage._internal.run_util
+    gage._internal.schema_util
     gage._internal.shlex_util
     gage._internal.sys_config
     gage._internal.test
     gage._internal.typer_rich_util
     gage._internal.types
+    gage._internal.user_config
     gage._internal.util
     gage._internal.var
     gage._internal.vcs_util

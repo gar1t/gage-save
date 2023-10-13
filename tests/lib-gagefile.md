@@ -4,26 +4,29 @@
 
 Gage files are represented by JSON-decoded objects Python.
 
-The `validate_data()` function is used to validate a Python object.
+The `validate_gagefile_data()` function is used to validate a Python object.
 
     >>> from gage._internal.gagefile import *
+    >>> from gage._internal.types import *
 
-`validate_data()` returns silently when data is valid.
+`validate_gagefile_data()` returns silently when data is valid.
 
-    >>> validate_data({})
+    >>> validate_gagefile_data({})
 
-It raises `ValidationError` for invalid date.
+It raises `GageFileValidationError` for invalid date.
 
-    >>> validate_data(123)
+    >>> validate_gagefile_data(123)
     Traceback (most recent call last):
-    gage._internal.gagefile.ValidationError: invalid
+    gage._internal.types.GageFileValidationError: invalid
 
 The function `validation_error_output()` returns a JSON compatible
 object of error information.
 
+    >>> from gage._internal.schema_util import validation_error_output
+
     >>> try:
-    ...     validate_data(123)
-    ... except ValidationError as e:
+    ...     validate_gagefile_data(123)
+    ... except GageFileValidationError as e:
     ...     json_pprint(validation_error_output(e))
     {
       "absoluteKeywordLocation": "https://gageml.org/gagefile#",
@@ -50,9 +53,11 @@ object of error information.
 
 `validation_errors()` provides a list of error messages.
 
+    >>> from gage._internal.schema_util import validation_errors
+
     >>> try:
-    ...     validate_data(123)
-    ... except ValidationError as e:
+    ...     validate_gagefile_data(123)
+    ... except GageFileValidationError as e:
     ...     json_pprint(validation_errors(e))
     [
       "The instance must be of type \"object\""
@@ -62,8 +67,8 @@ Create functions that validates Gage file data and prints results.
 
     >>> def validate(data, verbose=False):
     ...     try:
-    ...         validate_data(data)
-    ...     except ValidationError as e:
+    ...         validate_gagefile_data(data)
+    ...     except GageFileValidationError as e:
     ...         if verbose:
     ...             import json
     ...             output = validation_error_output(e)
@@ -355,3 +360,105 @@ Config objects may specify `prefix`, `strip-prefix` and `description` properties
 TODO: prefix/strip-prefix in the above example wants to be `rename`.
 E.g. `rename = "x train_x"` where `rename` is a string or list of
 strings (each string applying a rename rule to the associated keys).
+
+## Gage file data
+
+`as_json()` returns Gage file data for the gage file itself and for
+operations.
+
+    >>> data = {
+    ...   "test": {
+    ...     "config": "hello.py",
+    ...     "exec": {
+    ...       "stage-sourcecode": "echo sourcecode",
+    ...       "stage-dependencies": "echo deps",
+    ...       "stage-runtime": "echo runtime",
+    ...       "run": "echo run",
+    ...       "finalize-run": "echo finalize"
+    ...     },
+    ...     "depends": [
+    ...       {
+    ...         "type": "project-files",
+    ...         "files": "hello.txt"
+    ...       }
+    ...     ]
+    ...   }
+    ... }
+
+    >>> validate_gagefile_data(data)
+
+    >>> gf = GageFile("test", data)
+
+Gage file as JSON:
+
+    >>> gf.as_json()  # +json +diff
+    {
+      "test": {
+        "config": "hello.py",
+        "depends": [
+          {
+            "files": "hello.txt",
+            "type": "project-files"
+          }
+        ],
+        "exec": {
+          "finalize-run": "echo finalize",
+          "run": "echo run",
+          "stage-dependencies": "echo deps",
+          "stage-runtime": "echo runtime",
+          "stage-sourcecode": "echo sourcecode"
+        }
+      }
+    }
+
+Op def:
+
+    >>> test_op =  gf.get_operations()["test"]
+
+    >>> test_op.as_json()  # +json +diff
+    {
+      "config": "hello.py",
+      "depends": [
+        {
+          "files": "hello.txt",
+          "type": "project-files"
+        }
+      ],
+      "exec": {
+        "finalize-run": "echo finalize",
+        "run": "echo run",
+        "stage-dependencies": "echo deps",
+        "stage-runtime": "echo runtime",
+        "stage-sourcecode": "echo sourcecode"
+      }
+    }
+
+Op def config:
+
+    >>> [config.as_json() for config in test_op.get_config()]  # +json +diff
+    [
+      {
+        "keys": "hello.py"
+      }
+    ]
+
+Op def exec:
+
+    >>> test_op.get_exec().as_json()  # +json +diff
+    {
+      "finalize-run": "echo finalize",
+      "run": "echo run",
+      "stage-dependencies": "echo deps",
+      "stage-runtime": "echo runtime",
+      "stage-sourcecode": "echo sourcecode"
+    }
+
+Op def dependencies:
+
+    >>> [dep.as_json() for dep in test_op.get_dependencies()]  # +json +diff
+    [
+      {
+        "files": "hello.txt",
+        "type": "project-files"
+      }
+    ]

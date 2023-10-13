@@ -1,118 +1,48 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import *
+
 from .types import *
 
-import json
 import os
-
-# Avoid jschon imports here - expensive
-
-import tomli
 
 from . import sys_config
 
 from .project_util import find_project_dir
+from .project_util import load_data
+from .schema_util import validate_data
 
 __all__ = [
-    "ValidationError",
     "gagefile_candidates",
     "gagefile_path_for_dir",
     "load_gagefile",
-    "load_data",
-    "validate_data",
-    "validation_error_output",
-    "validation_errors",
+    "load_gagefile_data",
+    "validate_gagefile_data",
 ]
 
-__schema: Any = None
+GAGEFILE_NAMES = [
+    "gage.toml",
+    "gage.yaml",
+    "gage.json",
+]
 
 
-JSONCompatible = None | bool | int | float | str | Sequence[Any] | Mapping[str, Any]
-
-
-class ValidationError(Exception):
-    def __init__(self, validation_result: Any):
-        super().__init__(validation_result)
-        self.validation_result = validation_result
-
-
-def validation_error_output(e: ValidationError):
-    return e.validation_result.output("verbose")
-
-
-def validation_errors(e: ValidationError):
-    return list(e.validation_result.collect_errors())
-
-
-def validate_data(obj: JSONCompatible):
-    import jschon
-
-    schema = _ensure_schema()
-    result = schema.evaluate(jschon.JSON(obj))
+def validate_gagefile_data(obj: JSONCompatible):
+    result = validate_data(obj, "gagefile")
     if not result.valid:
-        raise ValidationError(result)
-
-
-def _ensure_schema():
-    if not __schema:
-        import jschon
-
-        catalog = jschon.create_catalog("2020-12")
-        globals()["__schema"] = _load_schema()
-    assert __schema
-    return __schema
-
-
-def _load_schema():
-    from jschon import JSONSchema
-
-    src = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "gagefile.schema.json",
-    )
-    with open(src) as f:
-        schema_data = json.load(f)
-    return JSONSchema(schema_data)
+        raise GageFileValidationError(result)
 
 
 def load_gagefile(filename: str):
-    data = load_data(filename)
+    data = load_gagefile_data(filename)
     return GageFile(filename, data)
 
 
-def load_data(filename: str):
-    if not os.path.exists(filename):
-        raise GageFileLoadError(filename, f"file does not exist: {filename}")
-    ext = os.path.splitext(filename)[1].lower()
-    if ext == ".toml":
-        return _load_toml(filename)
-    if ext == ".json":
-        return _load_json(filename)
-    if ext in (".yaml", ".yml"):
-        return _load_yaml(filename)
-    raise GageFileLoadError(filename, f"unsupported file extension for {filename}")
-
-
-def _load_toml(filename: str):
-    with open(filename, "rb") as f:
-        return tomli.load(f)
-
-
-def _load_json(filename: str):
-    with open(filename) as f:
-        s = "".join([line for line in f if line.lstrip()[:2] != "//"])
-        try:
-            return json.loads(s)
-        except json.JSONDecodeError as e:
-            raise GageFileLoadError(filename, f"invalid JSON: {e}")
-
-
-def _load_yaml(filename: str):
-    import yaml
-
-    with open(filename) as f:
-        return yaml.safe_load(f)
+def load_gagefile_data(filename: str):
+    try:
+        return load_data(filename)
+    except Exception as e:
+        raise GageFileLoadError(filename, str(e))
 
 
 def gagefile_for_dir(dirname: str):
@@ -129,12 +59,7 @@ def gagefile_path_for_dir(dirname: str):
 
 
 def gagefile_candidates():
-    return [
-        os.path.join(".gage", "settings.json"),
-        "gage.toml",
-        "gage.yaml",
-        "gage.json",
-    ]
+    return GAGEFILE_NAMES
 
 
 def gagefile_for_project(cwd: str | None = None):

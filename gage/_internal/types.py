@@ -7,12 +7,15 @@ __all__ = [
     "GageFileError",
     "GageFileLoadError",
     "GageFileNotFoundError",
+    "GageFileValidationError",
+    "JSONCompatible",
     "OpCmd",
     "OpDef",
     "OpDefNotFound",
     "OpRef",
     "OpDefExec",
     "OpDefConfig",
+    "Repository",
     "Run",
     "RunComment",
     "RunConfig",
@@ -20,12 +23,26 @@ __all__ = [
     "RunContext",
     "RunStatus",
     "RunTimestamp",
+    "SchemaValidationError",
     "UnifiedDiff",
+    "UserConfig",
+    "UserConfigError",
+    "UserConfigLoadError",
+    "UserConfigValidationError",
 ]
 
 Data = dict[str, Any]
 
 # NO IMPORTS ALLOWED
+
+
+# =================================================================
+# Errors
+# =================================================================
+
+
+class SchemaValidationError(Protocol):
+    validation_result: Any
 
 
 class OpDefNotFound(Exception):
@@ -46,6 +63,33 @@ class GageFileLoadError(GageFileError):
     def __init__(self, filename: str, msg: Any):
         self.filename = filename
         self.msg = msg
+
+
+class GageFileValidationError(GageFileError):
+    def __init__(self, validation_result: Any):
+        super().__init__(validation_result)
+        self.validation_result = validation_result
+
+
+class UserConfigError(Exception):
+    pass
+
+
+class UserConfigLoadError(UserConfigError):
+    def __init__(self, filename: str, msg: Any):
+        self.filename = filename
+        self.msg = msg
+
+
+class UserConfigValidationError(UserConfigError):
+    def __init__(self, validation_result: Any):
+        super().__init__(validation_result)
+        self.validation_result = validation_result
+
+
+# =================================================================
+# Gage file
+# =================================================================
 
 
 class OpRef:
@@ -75,6 +119,9 @@ class OpDefExec:
     def __init__(self, data: Data):
         self._data = data
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_stage_sourcecode(self) -> CmdArgs | None:
         return self._data.get("stage-sourcecode")
 
@@ -95,6 +142,9 @@ class OpDefConfig:
     def __init__(self, data: Data):
         self._data = data
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_description(self) -> str | None:
         return self._data.get("description")
 
@@ -111,6 +161,9 @@ class OpDefDependency:
     def __init__(self, data: Data):
         self._data = data
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_type(self):
         type = self._data.get("type")
         if type:
@@ -126,20 +179,20 @@ class OpDef:
     def __init__(self, name: str, data: Data, src: str | None = None):
         self.name = name
         self._data = data
-        self.src = src
+        self._src = src
 
     def as_json(self) -> Data:
         return self._data
 
     def get_src(self):
-        if self.src is None:
+        if self._src is None:
             raise TypeError(
                 "OpDef was not created with src - read src attribute "
                 "directly to bypass this check"
             )
-        return self.src
+        return self._src
 
-    def get_description(self) -> Optional[str]:
+    def get_description(self) -> str | None:
         return self._data.get("description")
 
     def get_default(self):
@@ -185,11 +238,56 @@ class GageFile:
         self.filename = filename
         self._data = data
 
+    def as_json(self) -> Data:
+        return self._data
+
     def get_operations(self):
         return {
             name: OpDef(name, self._data[name], self.filename)  # \
             for name in self._data
         }
+
+
+# =================================================================
+# User config
+# =================================================================
+
+
+class Repository:
+    def __init__(self, name: str, data: dict[str, Any]):
+        self.name = name
+        self._data = data
+
+    def as_json(self) -> Data:
+        return self._data
+
+    def get_type(self) -> str:
+        return self._data.get("type", "local")
+
+    def attrs(self):
+        return {name: self._data[name] for name in self._data if name != "type"}
+
+
+class UserConfig:
+    def __init__(self, filename: str, data: Data):
+        self.filename = filename
+        self._data = data
+
+    def as_json(self) -> Data:
+        return self._data
+
+    def get_repositories(self):
+        repos = self._data.get("repos", {})
+        return {name: Repository(name, repos[name]) for name in repos}
+
+
+def _repo_name(data: dict[str, Any]):
+    return data.get("name") or data.get("type") or "local"
+
+
+# =================================================================
+# Run
+# =================================================================
 
 
 class RunContext(NamedTuple):
@@ -254,4 +352,11 @@ class RunComment(NamedTuple):
     msg: str
 
 
+# =================================================================
+# General
+# =================================================================
+
+
 UnifiedDiff = list[str]
+
+JSONCompatible = None | bool | int | float | str | Sequence[Any] | Mapping[str, Any]

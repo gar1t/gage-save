@@ -194,6 +194,7 @@ class _TimeRemainingColumn(rich.progress.TimeRemainingColumn):
     causing it to change too frequently. Use this class with an optional
     `refresh` arg to control how often the time remaining refreshes.
     """
+
     def __init__(self, refresh: float = 1.0):
         super().__init__()
         self._refresh = refresh
