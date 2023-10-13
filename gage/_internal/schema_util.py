@@ -48,8 +48,8 @@ def _load_schema(name: str):
     return jschon.JSONSchema(schema_data)
 
 
-def validation_error_output(e: SchemaValidationError):
-    return e.validation_result.output("verbose")
+def validation_error_output(e: SchemaValidationError, verbose: bool = False):
+    return e.validation_result.output("verbose" if verbose else "basic")
 
 
 def validation_errors(e: SchemaValidationError):

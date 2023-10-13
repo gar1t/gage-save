@@ -27,7 +27,7 @@ object of error information.
     >>> try:
     ...     validate_gagefile_data(123)
     ... except GageFileValidationError as e:
-    ...     json_pprint(validation_error_output(e))
+    ...     json_pprint(validation_error_output(e, verbose=True))
     {
       "absoluteKeywordLocation": "https://gageml.org/gagefile#",
       "errors": [

@@ -1,6 +1,7 @@
 # User config
 
     >>> from gage._internal.user_config import *
+    >>> from gage._internal.types import *
 
 User config is non-project configuration provide by the user.
 
@@ -27,7 +28,6 @@ Create sample project config.
     ... path = "~/Backups/gage-runs"
     ... """)
 
-
 Load the config.
 
     >>> config = user_config_for_dir(".")
@@ -44,6 +44,8 @@ Load the config.
         }
       }
     }
+
+    >>> validate_user_config_data(config.as_json())
 
 `get_repositories()` returns a dict of repositories keyed by name.
 
@@ -83,3 +85,87 @@ The default type is 'local'.
 
     >>> backup_repo.attrs()
     {'path': '~/Backups/gage-runs'}
+
+## Validation
+
+    >>> from gage._internal.schema_util import validation_errors
+
+    >>> def validate(data):
+    ...     try:
+    ...         validate_user_config_data(data)
+    ...     except UserConfigValidationError as e:
+    ...         json_pprint(validation_errors(e))
+
+Empty config.
+
+    >>> validate({})
+
+    >>> validate({"repos": {}})
+
+Unknown top-level attributes.
+
+    >>> validate({"unknown": {}})
+    [
+      [
+        "unknown"
+      ]
+    ]
+
+Invalid repository type.
+
+    >>> validate({"repos": 123})
+    [
+      "Properties ['repos'] are invalid",
+      "The instance must be of type \"object\""
+    ]
+
+Invalid repo type.
+
+    >>> validate({"repos": {"test": 123}})  # +wildcard
+    [
+      "Properties ['repos'] are invalid",
+      "Properties ['test'] are invalid",
+      "The instance must be of type \"object\"",
+      ...
+    ]
+
+Missing required type or path.
+
+    >>> validate({"repos": {"test": {}}})  # +wildcard
+    [
+      "Properties ['repos'] are invalid",
+      "Properties ['test'] are invalid",
+      ...
+      "The object is missing required properties ['type']",
+      "The object is missing required properties ['path']"
+    ]
+
+    >>> validate({"repos": {"test": {"foo": 123}}})  # +wildcard
+    [
+      "Properties ['repos'] are invalid",
+      "Properties ['test'] are invalid",
+      ...
+      "The object is missing required properties ['type']",
+      "The object is missing required properties ['path']"
+    ]
+
+Invalid type attribute.
+
+    >>> validate({"repos": {"test": {"type": 123}}})
+    [
+      "Properties ['repos'] are invalid",
+      "Properties ['test'] are invalid",
+      "Properties ['type'] are invalid",
+      "The instance must be of type \"string\""
+    ]
+
+Invalid path attribute.
+
+    >>> validate({"repos": {"test": {"path": 123}}})
+    [
+      "Properties ['repos'] are invalid",
+      "Properties ['test'] are invalid",
+      "Properties ['path'] are invalid",
+      "The instance must be of type \"string\""
+    ]
+    
