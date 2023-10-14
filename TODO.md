@@ -1,5 +1,17 @@
 # Gage To Do
 
+- User config and repos
+  - Some CLI interface to show user config (respect parents)
+  - CLI to list available repos
+
+- Integrate repos into copy command
+  - General IO command - use for backup and restore
+  - Enables sync, archive features - use for collaboration and run org
+
+- New commands: sync and archive
+  - sync is to make sharing convenient (sync's configured something - shares? or remote)
+  - archive makes archival convenient
+
 - Concept of a "user"
   - Works without any config
   - Something that can be authenticated/verified
