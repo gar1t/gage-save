@@ -26,6 +26,7 @@ from . import shlex_util
 from . import util
 
 __all__ = [
+    "Env",
     "LogCapture",
     "StderrCapture",
     "SysPath",
@@ -88,6 +89,7 @@ __all__ = [
 
 # Pass-through
 
+Env = util.Env
 LogCapture = util.LogCapture
 StderrCapture = util.StderrCapture
 basename = os.path.basename
@@ -322,7 +324,7 @@ def normlf(s: str):
     return s.replace("\r", "")
 
 
-Env = dict[str, str]
+_Env = dict[str, str]
 
 
 def quiet(cmd: str, **kw: Any):
@@ -335,7 +337,7 @@ def run(
     ignore: str | list[str] | None = None,
     timeout: int = 3600,
     cwd: Optional[str] = None,
-    env: Optional[Env] = None,
+    env: Optional[_Env] = None,
     rstrip: bool = True,
     cols: int | None = None,
     _capture: bool = False,
@@ -384,13 +386,13 @@ def _apply_venv_bin_path(env: dict[str, str]):
         env["PATH"] = f"{python_bin_dir}{os.path.pathsep}{path}"
 
 
-def _popen(cmd: str, env: Env, cwd: Optional[str]):
+def _popen(cmd: str, env: _Env, cwd: Optional[str]):
     if os.name == "nt":
         return _popen_win(cmd, env, cwd)
     return _popen_posix(cmd, env, cwd)
 
 
-def _popen_win(cmd: str, env: Env, cwd: Optional[str]):
+def _popen_win(cmd: str, env: _Env, cwd: Optional[str]):
     split_cmd = shlex_util.shlex_split(file_util.standardize_path(cmd))
     return subprocess.Popen(
         split_cmd,
@@ -402,7 +404,7 @@ def _popen_win(cmd: str, env: Env, cwd: Optional[str]):
     )
 
 
-def _popen_posix(cmd: str, env: Env, cwd: Optional[str]):
+def _popen_posix(cmd: str, env: _Env, cwd: Optional[str]):
     cmd = f"set -eu && {cmd}"
     return subprocess.Popen(
         cmd,

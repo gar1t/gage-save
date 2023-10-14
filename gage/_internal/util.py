@@ -49,6 +49,10 @@ def find_apply(
     return default
 
 
+def apply_acc(funs: list[Callable[..., T]], *args: Any) -> list[T]:
+    return [x for x in [f(*args) for f in funs] if x is not None]
+
+
 def try_apply(funs: Iterable[Callable[..., Any]], *args: Any):
     for f in funs:
         try:

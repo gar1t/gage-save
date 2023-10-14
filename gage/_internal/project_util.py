@@ -13,9 +13,13 @@ __all__ = [
 ]
 
 PROJECT_MARKERS = [
+    (".gage",),
     ("gage.json",),
     ("gage.toml",),
     ("gage.yaml",),
+    ("gageconfig.json",),
+    ("gageconfig.toml",),
+    ("gageconfig.yaml",),
     ("pyproject.toml",),
     (".vscode",),
     (".git",),

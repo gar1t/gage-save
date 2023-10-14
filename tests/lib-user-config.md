@@ -168,4 +168,191 @@ Invalid path attribute.
       "Properties ['path'] are invalid",
       "The instance must be of type \"string\""
     ]
-    
+
+
+## User config file locations
+
+User config files may be defined for a project directory.
+`user_config_candidates()` returns the list of names considered, in
+order of precedence.
+
+    >>> user_config_candidates()  # +pprint
+    ['.gage/config.toml',
+     '.gage/config.yaml',
+     '.gage/config.json',
+     'gageconfig.toml',
+     'gageconfig.yaml',
+     'gageconfig.json']
+
+`user_config_path_for_dir()` locates a user config file within a
+directory and returns its path.
+
+Create a sample directory structure.
+
+    >>> cd(make_temp_dir())
+
+    >>> make_dir(".gage")
+    >>> touch(".gage/config.toml")
+    >>> touch(".gage/config.yaml")
+    >>> touch(".gage/config.json")
+    >>> touch("gageconfig.toml")
+    >>> touch("gageconfig.yaml")
+    >>> touch("gageconfig.json")
+
+    >>> ls()
+    .gage/config.json
+    .gage/config.toml
+    .gage/config.yaml
+    gageconfig.json
+    gageconfig.toml
+    gageconfig.yaml
+
+Apply `user_config_path_for_dir()` to the current directory.
+
+    >>> user_config_path_for_dir(".")
+    './.gage/config.toml'
+
+    >>> rm(".gage/config.toml")
+
+    >>> user_config_path_for_dir(".")
+    './.gage/config.yaml'
+
+    >>> rm(".gage/config.yaml")
+
+    >>> user_config_path_for_dir(".")
+    './.gage/config.json'
+
+    >>> rm(".gage/config.json")
+
+    >>> user_config_path_for_dir(".")
+    './gageconfig.toml'
+
+    >>> rm("./gageconfig.toml")
+
+    >>> user_config_path_for_dir(".")
+    './gageconfig.yaml'
+
+    >>> rm("gageconfig.yaml")
+
+    >>> user_config_path_for_dir(".")
+    './gageconfig.json'
+
+    >>> rm("gageconfig.json")
+
+    >>> user_config_path_for_dir(".")
+    Traceback (most recent call last):
+    FileNotFoundError: .
+
+## Combining project config and system config
+
+Project config extends system config.
+
+Create a sample project directory.
+
+    >>> project_dir = make_temp_dir()
+
+Create a sample user directory.
+
+    >>> user_dir = make_temp_dir()
+
+Function to return user config for the project directory given
+the user directory.
+
+    >>> def user_config():
+    ...     with Env({"HOME": user_dir}):
+    ...         return user_config_for_project(project_dir)
+
+The user config is currently empty - there's nothing defined at the
+project or system level.
+
+    >>> user_config().as_json()  # +json
+    {}
+
+Create system config that defines a repo.
+
+    >>> make_dir(path_join(user_dir, ".gage"))
+    >>> write(path_join(user_dir, ".gage", "config.json"), """
+    ... {
+    ...   "repos": {
+    ...     "backup": {
+    ...       "path": "/Backup"
+    ...     }
+    ...   }
+    ... }
+    ... """)
+
+    >>> user_config().as_json()  # +json
+    {
+      "repos": {
+        "backup": {
+          "path": "/Backup"
+        }
+      }
+    }
+
+Define a repo for the project.
+
+    >>> write(path_join(project_dir, "gageconfig.yaml"), """
+    ... repos:
+    ...   remote:
+    ...     type: git
+    ...     url: git@github.com:xxx/yyy
+    ... """)
+
+    >>> user_config().as_json()  # +json
+    {
+      "repos": {
+        "remote": {
+          "type": "git",
+          "url": "git@github.com:xxx/yyy"
+        }
+      }
+    }
+
+User config maintains references to parents. In this case, the project
+level user config references the system level config.
+
+    >>> user_config().parent.as_json()  # +json
+    {
+      "repos": {
+        "backup": {
+          "path": "/Backup"
+        }
+      }
+    }
+
+Parent configuration is included in the config interface.
+
+Show the repositories defined in the user config.
+
+    >>> repos = user_config().get_repositories()
+
+    >>> sorted(repos.keys())
+    ['backup', 'remote']
+
+    >>> repos['backup'].as_json()  # +json
+    {
+      "path": "/Backup"
+    }
+
+    >>> repos['remote'].as_json()  # +json
+    {
+      "type": "git",
+      "url": "git@github.com:xxx/yyy"
+    }
+
+Redefine the backup repo path in project level config.
+
+    >>> write(path_join(project_dir, "gageconfig.yaml"), """
+    ... repos:
+    ...   remote:
+    ...     type: git
+    ...     url: git@github.com:xxx/yyy
+    ...   backup:
+    ...     path: .backup
+    ... """)
+
+    >>> user_config().get_repositories()['backup'].as_json()  # +json
+    {
+      "path": ".backup"
+    }

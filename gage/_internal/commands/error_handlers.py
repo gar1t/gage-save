@@ -8,7 +8,7 @@ from .. import cli
 
 
 def gagefile_error(e: GageFileError) -> NoReturn:
-    if isinstance(e, GageFileNotFoundError):
+    if isinstance(e, FileNotFoundError):
         cli.err("No operations defined for the current directory")
         raise SystemExit()
     elif isinstance(e, GageFileLoadError):

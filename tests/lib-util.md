@@ -847,3 +847,18 @@ without modifying the list. If not specified the default is None.
 
     >>> l
     [1, 3]
+
+## Apply acc
+
+`apply_acc()` appends non-None function results to a list.
+
+
+    >>> from gage._internal.util import apply_acc
+
+    >>> apply_acc([
+    ...     lambda: 1,
+    ...     lambda: 2,
+    ...     lambda: None,
+    ...     lambda: 3,
+    ...     lambda: None])
+    [1, 2, 3]

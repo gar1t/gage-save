@@ -6,7 +6,6 @@ __all__ = [
     "GageFile",
     "GageFileError",
     "GageFileLoadError",
-    "GageFileNotFoundError",
     "GageFileValidationError",
     "JSONCompatible",
     "OpCmd",
@@ -52,10 +51,6 @@ class OpDefNotFound(Exception):
 
 
 class GageFileError(Exception):
-    pass
-
-
-class GageFileNotFoundError(GageFileError):
     pass
 
 
@@ -271,14 +266,21 @@ class Repository:
 class UserConfig:
     def __init__(self, filename: str, data: Data):
         self.filename = filename
+        self.parent: UserConfig | None = None
         self._data = data
 
     def as_json(self) -> Data:
         return self._data
 
     def get_repositories(self):
-        repos = self._data.get("repos", {})
-        return {name: Repository(name, repos[name]) for name in repos}
+        repos_data = self._data.get("repos", {})
+        repos = {name: Repository(name, repos_data[name]) for name in repos_data}
+        if self.parent:
+            parent_repos = self.parent.get_repositories()
+            for name in parent_repos:
+                if name not in repos:
+                    repos[name] = parent_repos[name]
+        return repos
 
 
 def _repo_name(data: dict[str, Any]):

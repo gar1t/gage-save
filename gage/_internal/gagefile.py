@@ -21,6 +21,9 @@ __all__ = [
 ]
 
 GAGEFILE_NAMES = [
+    os.path.join(".gage", "gage.toml"),
+    os.path.join(".gage", "gage.yaml"),
+    os.path.join(".gage", "gage.json"),
     "gage.toml",
     "gage.yaml",
     "gage.json",
@@ -55,7 +58,7 @@ def gagefile_path_for_dir(dirname: str):
         if not os.path.exists(path):
             continue
         return path
-    raise GageFileNotFoundError(dirname)
+    raise FileNotFoundError(dirname)
 
 
 def gagefile_candidates():
@@ -66,5 +69,5 @@ def gagefile_for_project(cwd: str | None = None):
     cwd = cwd or sys_config.cwd()
     project_dir = find_project_dir(cwd)
     if not project_dir:
-        raise GageFileNotFoundError(cwd)
+        raise FileNotFoundError(cwd)
     return gagefile_for_dir(project_dir)

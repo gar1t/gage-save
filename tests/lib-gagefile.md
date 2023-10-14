@@ -462,3 +462,76 @@ Op def dependencies:
         "type": "project-files"
       }
     ]
+
+## Gage file locations
+
+Gage files are discovered by looking for specific files names in a
+directory. These names are listed, in order of precedence, by
+`get_gagefile_candidates()`.
+
+    >>> gagefile_candidates()  # +pprint
+    ['.gage/gage.toml',
+     '.gage/gage.yaml',
+     '.gage/gage.json',
+     'gage.toml',
+     'gage.yaml',
+     'gage.json']
+
+`gagefile_path_for_dir()` locates a Gage file within a directory and
+returns its path.
+
+Create a sample directory structure.
+
+    >>> cd(make_temp_dir())
+
+    >>> make_dir(".gage")
+    >>> touch(".gage/gage.toml")
+    >>> touch(".gage/gage.yaml")
+    >>> touch(".gage/gage.json")
+    >>> touch("gage.toml")
+    >>> touch("gage.yaml")
+    >>> touch("gage.json")
+
+    >>> ls()
+    .gage/gage.json
+    .gage/gage.toml
+    .gage/gage.yaml
+    gage.json
+    gage.toml
+    gage.yaml
+
+Apply `gagefile_path_for_dir()` to the current directory.
+
+    >>> gagefile_path_for_dir(".")
+    './.gage/gage.toml'
+
+    >>> rm(".gage/gage.toml")
+
+    >>> gagefile_path_for_dir(".")
+    './.gage/gage.yaml'
+
+    >>> rm(".gage/gage.yaml")
+
+    >>> gagefile_path_for_dir(".")
+    './.gage/gage.json'
+
+    >>> rm(".gage/gage.json")
+
+    >>> gagefile_path_for_dir(".")
+    './gage.toml'
+
+    >>> rm("./gage.toml")
+
+    >>> gagefile_path_for_dir(".")
+    './gage.yaml'
+
+    >>> rm("gage.yaml")
+
+    >>> gagefile_path_for_dir(".")
+    './gage.json'
+
+    >>> rm("gage.json")
+
+    >>> gagefile_path_for_dir(".")
+    Traceback (most recent call last):
+    FileNotFoundError: .

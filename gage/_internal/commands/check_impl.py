@@ -166,7 +166,7 @@ def _maybe_verbose_info_data(verbose: bool) -> CheckData:
 def _try_gagefile(cwd: str):
     try:
         return gagefile.gagefile_for_dir(cwd)
-    except GageFileNotFoundError:
+    except FileNotFoundError:
         return None
 
 

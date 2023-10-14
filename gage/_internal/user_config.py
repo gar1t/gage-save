@@ -11,7 +11,6 @@ from . import sys_config
 from .project_util import find_project_dir
 from .project_util import load_data
 from .schema_util import validate_data
-from .util import find_apply
 
 __all__ = [
     "load_user_config",
@@ -24,12 +23,12 @@ __all__ = [
 ]
 
 USER_CONFIG_NAMES = [
-    "gageconfig.toml",
-    "gageconfig.yaml",
-    "gageconfig.json",
     os.path.join(".gage", "config.toml"),
     os.path.join(".gage", "config.yaml"),
     os.path.join(".gage", "config.json"),
+    "gageconfig.toml",
+    "gageconfig.yaml",
+    "gageconfig.json",
 ]
 
 
@@ -53,8 +52,6 @@ def load_user_config_data(filename: str):
 
 def user_config_for_dir(dirname: str):
     path = user_config_path_for_dir(dirname)
-    if not path:
-        return None
     return load_user_config(path)
 
 
@@ -64,7 +61,7 @@ def user_config_path_for_dir(dirname: str):
         if not os.path.exists(path):
             continue
         return path
-    return None
+    raise FileNotFoundError(dirname)
 
 
 def user_config_candidates():
@@ -72,16 +69,33 @@ def user_config_candidates():
 
 
 def user_config_for_project(cwd: str | None = None):
-    return find_apply([_project_config, _system_config], cwd)
+    project_config = _try_project_config(cwd)
+    system_config = _try_system_config(cwd)
+    if not project_config and not system_config:
+        return _empty_config()
+    if not project_config:
+        return system_config
+    project_config.parent = system_config
+    return project_config
 
 
-def _project_config(cwd: str | None):
+def _try_project_config(cwd: str | None):
     cwd = cwd or sys_config.cwd()
     project_dir = find_project_dir(cwd)
     if not project_dir:
         return None
-    return user_config_for_dir(project_dir)
+    try:
+        return user_config_for_dir(project_dir)
+    except FileNotFoundError:
+        return None
 
 
-def _system_config(cwd: str | None):
-    return user_config_for_dir(os.path.expanduser("~"))
+def _try_system_config(cwd: str | None):
+    try:
+        return user_config_for_dir(os.path.expanduser("~"))
+    except FileNotFoundError:
+        return None
+
+
+def _empty_config():
+    return UserConfig("__empty__", {})
