@@ -1,5 +1,16 @@
 # Gage To Do
 
+- Fill in Gage MVP so we know what's going on
+
+- Save source code digest in meta
+
+- Save run command details in meta (e.g. `run-cmd.json`)
+
+- Run tags
+
+- Latest git commit / git info (should we save git index info, e.g. a
+  source code diff?)
+
 - User config and repos
   - Some CLI interface to show user config (respect parents)
   - CLI to list available repos
@@ -9,7 +20,8 @@
   - Enables sync, archive features - use for collaboration and run org
 
 - New commands: sync and archive
-  - sync is to make sharing convenient (sync's configured something - shares? or remote)
+  - sync is to make sharing convenient (sync's configured something -
+    shares? or remote)
   - archive makes archival convenient
 
 - Concept of a "user"
@@ -18,6 +30,27 @@
   - Include verifiable info in user attrs (i.e. can I rely that "sam"
     wrote a comment - e.g. a signature).
 
+- Scalars and attributes
+  - Scan run dir routinely during a run and use to update metrics and
+    attrs in meta
+  - Where are these written? To a `summaries` subdir I think
+
+  ```
+  ./summaries/
+    metrics.json
+    attrs.json
+    # could write image thumbs here!
+  ```
+
+  Note that thumbnails should probably be written to `.thumbs` to keep
+  their potential largeness out of meta. `.thumbs` could be a user-style
+  dir where thumbnails can be written by anyone and merged over time.
+  This might also be named `.cache`.
+
+- CLI based compare view
+
+- Record Git commit in system attrs
+
 - Dependencies
   - Project files
   - Run files
@@ -25,6 +58,11 @@
   - Replace links with ref files on finalize
 
 - Batches
+
+- Restart
+  - Copy to new run and re-run using same settings
+  - Optional apply new flags to config
+  - Optional apply latest source code
 
 - Runs list
   - Where filter
@@ -42,6 +80,9 @@
   - Issue with run dir, user dir, and meta, and delete meta being "out
     of sync" when copying - what are the scenarios and which ones are
     problematic?
+
+- TensorBoard command? Maybe not - just get people off TensorBoard.
+  Should be out-competing them.
 
 - Command completion working again (want support for bash, zsh, fish,
   nu)
@@ -85,25 +126,25 @@ exec = "python train.py"
 - How can a user specify different commands for different platforms? One
   method would be something like:
 
-```
-[train.exec]
+  ```
+  [train.exec]
 
-run[windows] = "..."
-run[mac] = "..."
-run[linux] = "..."
-```
+  run[windows] = "..."
+  run[mac] = "..."
+  run[linux] = "..."
+  ```
 
 - Use config in exec commands
 
-``` toml
-[hello]
+  ``` toml
+  [hello]
 
-exec = "echo {msg}"
+  exec = "echo {msg}"
 
-[[hello.config]]
+  [[hello.config]]
 
-name = "msg"
-```
+  name = "msg"
+  ```
 
 - Review error messages for consistency
   - Capitalization
@@ -142,6 +183,8 @@ name = "msg"
 - Annoying fast updates of estimated remaining time on copy run progress
   (shows up on anything over a network) Fix may require a custom column
   that doesn't refresh as frequently as the default.
+
+- Language specific APIs
 
 ## Lifting by `gage check`
 
@@ -218,19 +261,127 @@ operation = "prepare-data"
   the param callback is made. Look for a better solution or roll
   something new.
 
+## Attributes and Scalars
+
+Op defs should support attributes.
+
+Gage will continue to support "output scalars" and "output attrs" log to
+TF event files. These, however, will be written to the run directory and
+not to the meta directory.
+
+I think it's safe to summarize the scalars to the meta directory as
+"metrics.json" or similar, under maybe "summaries".
+
+E.g.
+
+```
+summaries/
+  metrics.json
+  attrs.json
+```
+
+Technically op def defined attrs aren't summaries though. But having
+these in two places is a bad idea I think.
+
+Should such summaries be included in meta? I think so, they're like
+output.
+
+Is there a distinction between op def attrs and logged attrs?
+
+## Image thumbnails
+
+Might it make sense to write small image thumbnails to meta?
+
+Or maybe there's a new side car in play - `<run_id>.thumb`
+
+Adding images to meta is a sure way to kill status update performance.
+But it is nice to support some preview when viewing the run when the run
+dir isn't available. These could be shown as low res placeholders and,
+when clicked (or some other action) are downloaded in full resolution
+from the run dir.
+
+## Distributed training
+
+How does Gage ML handle a "run" that's distributed across many systems?
+
+This is where loggers are arguably a better architecture as they're less
+complicated and tied to the underlying process.
+
+Can we opt into a logging model in such cases? What would this look like?
+
+## Mobile interface
+
+Keeping tabs on runs from a mobile app would be very, very nice!
+
+How would this work? Setup a share or something that shows a QR code,
+scan that and then you have the ability to sync with a repo?
+
+## Optuna interface
+
+- Try to avoid `--optimize` with the `run` command -- it adds a lot of
+  complexity
+
+- Consider `gage optimize` -- this will look a lot like `run` but will
+  move any optimization related options out of run
+
+- Look around for previous results - look around the world even
+
+There's opportunity here to feature the advantages of distribution:
+
+- Collect previous trials from other runs (flag values and results)
+- Use to suggest flag values
+- Support pruning/early termination
+
+The value of Optuna here is pruning/early termination.
+
+The value of Gage for this case:
+
+- Don't change your code to even think about hyperparameter tuning
+- Gage's best-of-class visualization
+
 ## Use cases
 
-Running
+### Running
 
 - Basic run
 - Custom config via flags
 - Batches (grid, random, drive-from-file)
+- Restart a run to train some more or to apply a code fix (not handled
+  yet - need to! will be implemented by creating a new run - there are
+  no restarts in Gage)
+- Distributed training
+  - Works with Ray
+- Optimization with Optuna (can hide the Optuna part)
 
-Sharing
+### Repos, remote copy/sync
 
 - Archives runs of interest (or all runs?)
   - GitHub
   - DropBox
   - Cloud storage
 
-- Sync with a colleague
+- Sync with a colleague (sharing)
+
+- Backup runs of import (safety)
+
+- Archive runs for potential future use (organization)
+
+- Get status of remote run (e.g. training on another system)
+
+### Higher Level
+
+- Find a "best" run
+- Generate a report for a set of runs (summary ops, uses run summary
+  dependency)
+- Evaluate a run after the fact
+
+### Ecosystem of reuse
+
+- Publish something to a Gage ML public repo
+- Reference a run ID that's stored in a Gage ML public repo as a dependency
+- Use a HF training scenario as an example
+- Can we start hosting these pre-trained whatever to seed their use?
+
+### Platform scenarios
+
+- Use GitHub actions to run experiments and publish results (demo)
