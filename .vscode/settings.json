@@ -116,6 +116,7 @@
     "oplib",
     "opref",
     "opspec",
+    "Optuna",
     "pkgdir",
     "Popen",
     "pprint",

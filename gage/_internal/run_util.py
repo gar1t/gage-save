@@ -415,8 +415,8 @@ def _run_dir_for_meta_dir(meta_dir: str):
 # =================================================================
 
 
-def make_run(opref: OpRef, location: str | None = None):
-    run_id = make_run_id()
+def make_run(opref: OpRef, location: str | None = None, _id_time: int = 0):
+    run_id = make_run_id(_id_time)
     location = location or sys_config.get_runs_home()
     run_dir = os.path.join(location, run_id)
     meta_dir = run_dir + ".meta"
@@ -430,7 +430,10 @@ def _write_opref(opref: OpRef, meta_dir: str):
     write_file(_meta_opref_filename(meta_dir), encode_opref(opref), readonly=True)
 
 
-def make_run_id():
+def make_run_id(_id_time: int = 0):
+    if _id_time > 0:
+        import ulid
+        return str(ulid.ULID.from_timestamp(_id_time).to_uuid4())
     return str(uuid.uuid4())
 
 
