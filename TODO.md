@@ -30,6 +30,8 @@
   - Include verifiable info in user attrs (i.e. can I rely that "sam"
     wrote a comment - e.g. a signature).
 
+- Notebook extension to "run as experiment"
+
 - Scalars and attributes
   - Scan run dir routinely during a run and use to update metrics and
     attrs in meta
@@ -80,6 +82,9 @@
   - Issue with run dir, user dir, and meta, and delete meta being "out
     of sync" when copying - what are the scenarios and which ones are
     problematic?
+
+- Publish command
+  - Support MLflow registry, HF models, etc. (should be simple/extendible)
 
 - TensorBoard command? Maybe not - just get people off TensorBoard.
   Should be out-competing them.
@@ -332,12 +337,56 @@ There's opportunity here to feature the advantages of distribution:
 - Use to suggest flag values
 - Support pruning/early termination
 
-The value of Optuna here is pruning/early termination.
+The value of Optuna here is:
+
+- Pruning/early termination
+- Their list of algorithms (far more likely to be added to Optuna than
+  as a PR with Gage)
 
 The value of Gage for this case:
 
-- Don't change your code to even think about hyperparameter tuning
+- Don't change your code to even think about hyperparameter tuning ---
+  just run
 - Gage's best-of-class visualization
+
+Optuna does not appear to be designed for embedding, however. It seems
+as if it relies on databases in its design (at least SQL Alchemy is used
+extensively in its code base). As we're bundling everything as a
+standalone tool, these dependencies ought not matter. Nonetheless it
+would be nice to not have to embed/ship such an unwieldy package if we
+can avoid it.
+
+## Auto ML (in general)
+
+In addition to looking closely at Optuna (possibly embedding) also look
+at any variety of Auto ML implementations. I'd like to see a unified
+approach that Gage uses for any of these meta learning approaches.
+
+The fundamental problem I think is that auto-ML wants to generate runs.
+We can wrap these, using them within our own loop, or interface with
+them at a system level (e.g. screen scraping or log tailing to generate
+new runs based on output).
+
+The issue is that we have such a high ceremony around a run that we
+can't actually do "light weight" as we claim. In fact, a run is pretty
+heavy weight.
+
+Do we just punt and say, "one of these optimizing runs is just like any
+other run". But here we lose the granularity feature.
+
+## Access to datasets
+
+It will be hard I think to not support a simple caching scheme, where we
+download, cache, and link to remote files. We need to carefully consider
+what we provide in light of the many, many caching schemes used by ML
+developers.
+
+- No need to reinvent another wheel if there's a reasonable standard
+- Avoid requiring anything from the user aside from a dependency spec
+
+Consider DvC under the covers. This would use DvC's project level
+caching lazily/as needed. If the user already uses DvC for the project,
+fit into that scheme appropriately.
 
 ## Use cases
 
@@ -354,6 +403,9 @@ The value of Gage for this case:
 - Optimization with Optuna (can hide the Optuna part)
 
 ### Repos, remote copy/sync
+
+- Publish
+  - HuggingFace
 
 - Archives runs of interest (or all runs?)
   - GitHub
