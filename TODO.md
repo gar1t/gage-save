@@ -32,6 +32,8 @@
 
 - Notebook extension to "run as experiment"
 
+- Model and data set metadata (see Missing Metadata below)
+
 - Scalars and attributes
   - Scan run dir routinely during a run and use to update metrics and
     attrs in meta
@@ -190,6 +192,12 @@ exec = "python train.py"
   that doesn't refresh as frequently as the default.
 
 - Language specific APIs
+
+- Default labels and tags in op def
+
+- `--tag` option for run command
+
+- `tag` command (follow comment convention)
 
 ## Lifting by `gage check`
 
@@ -388,7 +396,39 @@ Consider DvC under the covers. This would use DvC's project level
 caching lazily/as needed. If the user already uses DvC for the project,
 fit into that scheme appropriately.
 
+## Missing metadata
+
+Big misses for a run include model and data set information. These
+should be identifiers that could tie into something.
+
+This could be a generic "identifier" tag-like attribute, which lands in
+user meta.
+
+    $ gage id <run> <some identifier>
+
+We could publish an identifier scheme. E.g. `hf:<id>` etc.
+
+Tie into an ID scheme? DID, etc?
+
+Maybe better to allow anything, as long as it's unique.
+
+Publishing schemes could use identifiers where applicable? Or perhaps
+set them, either vis the `publish` command or as a result of a publish
+operation.
+
 ## Use cases
+
+It would be most excellent to codify these use cases for easy
+understanding and use. Look for something like a "plugin" or an
+"adapter" or a template or command extension or something to attract
+contributors.
+
+Guild suffered critically from a lack of something to contribute to,
+limiting the number of GitHub contributors, stars, and ultimately
+adoption.
+
+Note that not everything in this section will fall into a category at
+all.
 
 ### Running
 
@@ -420,7 +460,7 @@ fit into that scheme appropriately.
 
 - Get status of remote run (e.g. training on another system)
 
-### Higher Level
+### Analysis
 
 - Find a "best" run
 - Generate a report for a set of runs (summary ops, uses run summary
@@ -433,6 +473,13 @@ fit into that scheme appropriately.
 - Reference a run ID that's stored in a Gage ML public repo as a dependency
 - Use a HF training scenario as an example
 - Can we start hosting these pre-trained whatever to seed their use?
+- Dedicated measurement
+
+### Publish runs
+
+- Adapters to various runtime environments - use Gage to generate runs
+  and publish to MLflow, etc.
+- Support runtime envs and model repos like HuggingFace
 
 ### Platform scenarios
 
