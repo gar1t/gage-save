@@ -301,8 +301,8 @@ def meta_config(run: Run) -> RunConfig:
 
 def meta_opcmd(run: Run) -> OpCmd:
     return OpCmd(
-        _decode_json(run_meta_path(run, "proc", "cmd.json")),
-        _decode_json(run_meta_path(run, "proc", "env.json")),
+        _decode_json(_meta_proc_cmd_filename(run)),
+        _decode_json(_meta_proc_env_filename(run)),
     )
 
 
@@ -734,12 +734,13 @@ def _reduce_files_log(run: Run):
 def start_run(run: Run):
     log = _runner_log(run)
     cmd = meta_opcmd(run)
+    env = {**cmd.env, **os.environ}
     shell = isinstance(cmd.args, str)
     _write_timestamp("started", run, log)
     log.info(f"Starting run process: {cmd.args}")
     p = subprocess.Popen(
         cmd.args,
-        env=cmd.env,
+        env=env,
         cwd=run.run_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -32,6 +32,7 @@
     "batchfile",
     "Bools",
     "bufsize",
+    "CBOR",
     "chardet",
     "compgen",
     "configparser",

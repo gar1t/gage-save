@@ -63,6 +63,7 @@
     gage._internal.commands.select_impl
     gage._internal.commands.show
     gage._internal.commands.show_impl
+    gage._internal.commands.sign
     gage._internal.exitcodes
     gage._internal.file_select
     gage._internal.file_util

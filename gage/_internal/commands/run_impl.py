@@ -244,8 +244,19 @@ def _op_cmd(context: RunContext, config: RunConfig):
     cmd_args = context.opdef.get_exec().get_run()
     if not cmd_args:
         error_handlers.missing_exec_error(context)
+    resolved_cmd_args = _resolve_cmd_args(cmd_args, context)
     env = {}
-    return OpCmd(cmd_args, env)
+    return OpCmd(resolved_cmd_args, env)
+
+
+def _resolve_cmd_args(cmd_args: CmdArgs, context: RunContext):
+    if isinstance(cmd_args, str):
+        return _resolve_project_dir_env(cmd_args, context.project_dir)
+    return [_resolve_project_dir_env(arg, context.project_dir) for arg in cmd_args]
+
+
+def _resolve_project_dir_env(arg: str, project_dir: str):
+    return arg.replace("$project_dir", project_dir)
 
 
 def _user_attrs(args: Args):

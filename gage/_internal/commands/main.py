@@ -22,6 +22,7 @@ from .purge import runs_purge
 from .restore import runs_restore
 from .select import select
 from .show import show
+from .sign import sign
 
 VersionFlag = Annotated[
     bool,
@@ -102,4 +103,5 @@ def main_app():
     app.command("run")(run)
     app.command("select")(select)
     app.command("show")(show)
+    app.command("sign")(sign)
     return app

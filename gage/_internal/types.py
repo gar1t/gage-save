@@ -3,6 +3,7 @@
 from typing import *
 
 __all__ = [
+    "CmdArgs",
     "GageFile",
     "GageFileError",
     "GageFileLoadError",

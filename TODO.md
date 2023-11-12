@@ -1,8 +1,24 @@
 # Gage To Do
 
+- Remote files dependency (non-project, non-run - whatever we call this)
+
+- Comment section in script to replace/override Gage file - config the
+  script ala RScript - do NOT support inline annotation based config -
+  everything need to be at the top of the file - one section
+
 - Fill in Gage MVP so we know what's going on
 
-- Save source code digest in meta
+- Save source code digest in meta (or maybe as an attr? see next)
+
+- Resolve "core attrs" vs "user attrs" (this involves core attrs like an
+  ID - e.g. a HF model identifier, etc. and logged attrs - e.g. a
+  computed value; and also user attrs - values that users might want to
+  add over time in a distributed way - e.g. applying a HF model
+  identifier retroactively - I think core and logged attrs should
+  probably land in meta with the option of adding/updating those values
+  via user attrs - maybe base attr, logged attrs, and user attrs??)
+
+  See **Attribute conundrum** below
 
 - Save run command details in meta (e.g. `run-cmd.json`)
 
@@ -198,6 +214,44 @@ exec = "python train.py"
 - `--tag` option for run command
 
 - `tag` command (follow comment convention)
+
+- Consider CBOR rather than JSON for attributes or other encoded files
+  (time/space benefits)
+
+- The `started` col in test output is going to present an ongoing
+  problem as the value will change based on execution time (e.g. `now`
+  vs `1 second ago`) - should replace these calls with something that
+  drops that column.
+
+  A related problem is that tables are generally formatted differently
+  based on cell content. Unless we're asserting all the values in a
+  table we may run into spurious failures based on spaces and dashes.
+  It'd be nice to have a Groktest option that knows about tables and
+  handles the formatting problem. This must be custom. I don't recall
+  how easy it is to customize Groktest with options but we need
+  something like that to address the table problem in Gage tests.
+
+- Set a breakpoint in VS Code and get interactive debugging for the run
+  (tricky but an important feature)
+
+- How to make sure secrets don't end up in runs? There ought to be a way
+  to scrub all run meta for secrets (proc/env.json and output?) or maybe
+  just don't worry about it - or tackle it at runtime by refusing to
+  write something that looks like a secret.
+
+- How do we deal with absolute paths to exec or other abs paths in
+  command args. We need these to run the command but it's not great to
+  have these in the run, locked away, recording information about the
+  users system. Currently a) resolving `$project_dir` in cmd args b) not
+  doing anything about the abs path in the meta.
+
+  See `_resolve_cmd_args` in `run_impl.py` for what we're doing.
+
+  We could leave the env ref in and resolve at runtime. This would leave
+  the hard coded path out of the file. This would rely on the project
+  dir env at runtime (i.e. for staged run) making it not portable.
+
+  What about symlinking the venv into the run dir?
 
 ## Lifting by `gage check`
 
@@ -396,6 +450,29 @@ Consider DvC under the covers. This would use DvC's project level
 caching lazily/as needed. If the user already uses DvC for the project,
 fit into that scheme appropriately.
 
+## Attribute conundrum
+
+Here are some attributes:
+
+- Model architecture - known ahead of time, can be defined in op def
+- Model architecture - cannot be known ahead of time as it's a function
+  of flags - the value is logged at runtime
+- Model architecture - applied retroactively by a user, either as a
+  commentary or to correct a mistake in the attribute without having to
+  reconstruct the run
+
+How are tags different from attributes? Do we need tags? Or could a tag
+be a specialized attribute? (Indeed this is how tags and comments are
+implemented today - they're all attributes).
+
+The point here I think is that we need to support attributes that are:
+
+- Defined in the op def
+- Specified at the command line when staging/running the operation (e.g.
+  label and tags)
+- Logged
+- Specified after the run is finalized
+
 ## Missing metadata
 
 Big misses for a run include model and data set information. These
@@ -415,6 +492,14 @@ Maybe better to allow anything, as long as it's unique.
 Publishing schemes could use identifiers where applicable? Or perhaps
 set them, either vis the `publish` command or as a result of a publish
 operation.
+
+## LangChain
+
+LangChain has some nice tooling around experiments and comparison.
+
+How might we integrate these into View?
+
+Should View be designed around Gradio, top to bottom?
 
 ## Use cases
 

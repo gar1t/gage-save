@@ -78,7 +78,7 @@ def Attributes(run: Run):
     stopped = run_timestamp(run, "stopped")
     location = format_user_dir(os.path.dirname(run.run_dir))
     project_dir = format_user_dir(run_project_dir(run) or "")
-    exit_code = str(run_attr(run, "exit_code", None))
+    exit_code = str(run_attr(run, "exit_code", ""))
 
     attributes = Table.grid(
         Column(style=cli.STYLE_LABEL),
